@@ -1,0 +1,34 @@
+{
+    "imports": [
+        "/default.json"
+    ],
+    "preferences": {
+        "editorTheme": "solarized_light",
+        "fontSize": 14,
+        "tabSize": 2,
+        "printMarginColumn": 100
+    },
+    "modes": {},
+    "keys": {
+      "Split:Switch Focus": {
+          "mac": "Command-Tab",
+          "win": "Ctrl-Tab"
+      },
+      "Navigate:Goto": {
+          "mac": "Command-O",
+          "win": "Ctrl-O"
+      },
+      "Find:Next": {
+          "win": "Ctrl-K",
+          "mac": "Command-K"
+      },
+      "Find:Previous": {
+          "mac": "Command-Shift-K",
+          "win": "Ctrl-Shift-K"
+      }
+    },
+    "commands": {},
+    "handlers": {},
+    "themes": {},
+    "packages": []
+}
