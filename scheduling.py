@@ -2,8 +2,8 @@ import math, time, random
 import numpy as np
 import tensorflow as tf
 
-class DeepScheduler(object):
-  def __init__(self, state_len, action_len, nn_len):
+class DeepScher(object):
+  def __init__(self, state_len, action_len, nn_len=10):
     self.state_len = state_len
     self.action_len = action_len
     self.nn_len = nn_len
@@ -11,30 +11,29 @@ class DeepScheduler(object):
     self.gamma = 0.1
     self.init()
   
+  def __repr__(self):
+    return "DeepScher[state_len= {}, action_len= {}]".format(self.state_len, self.action_len)
+  
   def init(self):
     self.state_input_ph = tf.placeholder(tf.float32, shape=(None, self.state_len) )
     with tf.name_scope('hidden1'):
       w = tf.Variable(
             tf.truncated_normal([self.state_len, self.nn_len], stddev=1.0 / math.sqrt(float(self.state_len) ) ),
             name='weights')
-      tf.summary.histogram('histogram', w)
       b = tf.Variable(tf.zeros([self.nn_len] ), name='biases')
       hidden1 = tf.nn.relu(tf.matmul(self.state_input_ph, w) + b)
     with tf.name_scope('hidden2'):
       w = tf.Variable(
             tf.truncated_normal([self.nn_len, self.nn_len], stddev=1.0 / math.sqrt(float(self.nn_len) ) ),
             name='weights')
-      tf.summary.histogram('histogram', w)
       b = tf.Variable(tf.zeros([self.nn_len] ), name='biases')
       hidden2 = tf.nn.relu(tf.matmul(hidden1, w) + b)
     with tf.name_scope('action_probs'):
       w = tf.Variable(
           tf.truncated_normal([self.nn_len, self.action_len], stddev=1.0 / math.sqrt(float(self.nn_len) ) ),
           name='weights')
-      tf.summary.histogram('histogram', w)
       b = tf.Variable(tf.zeros([self.action_len] ), name='biases')
       self.action_probs = tf.nn.softmax(tf.matmul(hidden2, w) + b)
-      # self.chosen_action = tf.argmax(self.action_probs, 1)
     
     self.action_ph = tf.placeholder(shape=[None], dtype=tf.int32)
     self.reward_ph = tf.placeholder(shape=[None], dtype=tf.float32)
@@ -91,9 +90,8 @@ class DeepScheduler(object):
     return np.argmax(action_probs[0] )
 
 def test_scheduler():
-  nn_len = 10
   state_len, action_len = 3, 3
-  scher = DeepScheduler(state_len, action_len, nn_len)
+  scher = DeepScher(state_len, action_len)
   
   def state():
     s = np.random.randint(10, size=state_len)
