@@ -1,11 +1,7 @@
-import sys, pprint, math, simpy, getopt, itertools, operator
-import numpy as np
-
+import math, random, simpy, pprint
 from patch import *
-from rvs import *
-from scheduling import DeepScher
 
-# ************************  Multiple Qs for Jobs with multiple Tasks  **************************** #
+# ************************  Essentials for Jobs with multiple Tasks  ***************************** # 
 class Job(object):
   def __init__(self, _id, k, tsize, n=0):
     self._id = _id
@@ -28,12 +24,11 @@ class JG(object): # Job Generator
     self.ar = ar
     self.k_dist = k_dist
     self.tsize_dist = tsize_dist
+    self.max_sent = max_sent
     
     self.nsent = 0
     self.out = None
     
-    self.action = None
-  
   def init(self):
     self.action = self.env.process(self.run() )
   
@@ -178,11 +173,11 @@ class PSQ(object): # Process Sharing Queue
           self.t_l.remove(t)
 
 class FCFS(object):
-  def __init__(self, _id, env, slowdown_dist, out):
+  def __init__(self, _id, env, slowdown_dist, out=None, out_c=None):
     self._id = _id
     self.env = env
     self.slowdown_dist = slowdown_dist
-    self.out = out
+    self.out, self.out_c = out, out_c
     
     self.t_l = []
     self.t_inserv = None
@@ -226,8 +221,10 @@ class FCFS(object):
         self.sl_l.append(lt/self.t_inserv.size)
       
         self.t_inserv.prev_hop_id = self._id
-        self.out.put_c({'jid': self.t_inserv.jid} )
-        # self.out.put(self.t_inserv)
+        if self.out is not None:
+          self.out.put(self.t_inserv)
+        elif self.out_c is not None:
+          self.out_c.put_c({'jid': self.t_inserv.jid} )
       self.t_inserv = None
   
   def put(self, t):
@@ -250,174 +247,40 @@ class FCFS(object):
       self.cancel_flag = True
       self.cancel.succeed()
 
-# *************************  Learning shortest-q scheduling on the fly  ************************** #
-# Learning from single trajectory at a time ended up having too much variance
-class ShortestQLearningWSingleTrajectory(object):
-  def __init__(self, env, n):
+class JQ(object):
+  def __init__(self, env, in_qid_l):
     self.env = env
-    self.n = n
+    self.in_qid_l = in_qid_l
     
-    slowdown_dist = DUniform(1, 1) # Dolly()
-    self.q_l = [FCFS(i, env, slowdown_dist, out=self) for i in range(self.n) ]
-    self.jid_info_m = {}
+    self.jid__t_l_map = {}
+    self.deped_jid_l = []
     
     self.store = simpy.Store(env)
     self.action = env.process(self.run() )
-    # 
-    self.scher = DeepScher(state_len=n, action_len=n)
     
-    self.training_len = 1000
-    self.training_on = False
-    self.jid_to_wait_l = []
-    
-    self.action_correctness_l = []
-  
-  def reset_training(self, jid):
-    log(WARNING, "started with jid= {}".format(jid) )
-    self.training_on = True
-    self.jid_head_of_training = jid
-    self.jid_tail_of_training = jid + self.training_len-1
-    self.jid_to_wait_l = list(range(self.jid_head_of_training, self.jid_tail_of_training+1) )
-    
-    self.action_correctness_l.clear()
-  
   def __repr__(self):
-    return "ShortestQLearningWSingleTrajectory[n= {}]".format(self.n)
-  
-  def state(self):
-    return np.mean(np.array([q.length() for q in self.q_l] ) )
+    return "JQ[in_qid_l= {}]".format(self.in_qid_l)
   
   def run(self):
     while True:
-      j = (yield self.store.get() )
+      t = (yield self.store.get() )
+      if t.jid in self.deped_jid_l: # Redundant tasks of a job may be received
+        continue
       
-      s = self.state()
-      # print("s= {}".format(s) )
-      a = self.scher.get_random_action(s)
+      if t.jid not in self.jid__t_l_map:
+        self.jid__t_l_map[t.jid] = []
+      self.jid__t_l_map[t.jid].append(t.deep_copy() )
       
-      a_ = self.scher.get_max_action(s)
-      c = 1 if (s[a_] - min(s) ) < 0.1 else 0
-      self.action_correctness_l.append(c)
-      
-      # print("qid= {}".format(a) )
-      if not self.training_on:
-        self.reset_training(j._id)
-      
-      self.jid_info_m[j._id] = {'ent': self.env.now, 'ts': j.tsize, 's': s, 'a': a}    
-      self.q_l[a].put(Task(j._id, j.k, j.tsize, j.tsize) )
+      t_l = self.jid__t_l_map[t.jid]
+      if len(t_l) > t.k:
+        log(ERROR, "len(t_l)= {} > k= {}".format(len(t_l), t.k) )
+      elif len(t_l) < t.k:
+        continue
+      else:
+        self.jid__t_l_map.pop(t.jid, None)
+        self.deped_jid_l.append(t.jid)
+        self.out_c.put_c({'jid': t.jid, 'm': 'jdone', 'deped_from': [t.prev_hop_id for t in t_l] } )
   
-  def put(self, j):
-    sim_log(DEBUG, self.env, self, "recved", j)
-    return self.store.put(j)
-  
-  def put_c(self, m):
-    sim_log(DEBUG, self.env, self, "recved", m)
-    jid = m['jid']
-    if jid not in self.jid_info_m: # from jobs that were not included in training set
-      return
-    
-    jinfo = self.jid_info_m[jid]
-    self.jid_info_m[jid]['sl'] = (self.env.now - jinfo['ent'] )/jinfo['ts']
-    
-    try:
-      self.jid_to_wait_l.remove(jid)
-      # log(WARNING, "removed jid= {}, len(jid_to_wait_l)= {}".format(jid, len(self.jid_to_wait_l) ) )
-    except:
-      pass
-      # log(WARNING, "could not remove from jid_to_wait_l; jid= {}".format(jid) )
-    if len(self.jid_to_wait_l) == 0: # Ready for training
-      print("Training:: with jobs from {} to {}".format(self.jid_head_of_training, self.jid_tail_of_training) )
-      self.training_on = False
-      s_l, a_l, r_l = [], [], []
-      for jid in range(self.jid_head_of_training, self.jid_tail_of_training+1):
-        jinfo_m = self.jid_info_m[jid]
-        s_l.append(jinfo_m['s'] )
-        a_l.append(jinfo_m['a'] )
-        r_l.append(1/jinfo_m['sl'] )
-      print("Training:: sum(r_l)= {}".format(sum(r_l) ) )
-      print("Training:: freq of correct= {}".format(sum(self.action_correctness_l)/len(self.action_correctness_l) ) )
-      self.scher.train(s_l, a_l, r_l)
-      self.jid_info_m.clear()
-
-def shortestq_learning_w_singletrajectory():
-  env = simpy.Environment()
-  jg = JG(env, ar=2.5, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1) )
-  mq = ShortestQLearningWSingleTrajectory(env, n=3)
-  jg.out = mq
-  jg.init()
-  env.run(until=1000*100) # 50000*1
-
-# **********************  Learning shortest-q scheduling with batch runs  ************************ #
-class MultiQ(object):
-  def __init__(self, env, n, scher):
-    self.env = env
-    self.n = n
-    self.scher = scher
-    
-    slowdown_dist = DUniform(1, 1) # Dolly()
-    self.q_l = [FCFS(i, env, slowdown_dist, out=self) for i in range(self.n) ]
-    self.jid_info_m = {}
-    
-    self.store = simpy.Store(env)
-    self.action = env.process(self.run() )
-  
-  def __repr__(self):
-    return "MultiQ[n= {}]".format(self.n)
-  
-  def state(self):
-    return np.mean(np.array([q.length() for q in self.q_l] ) )
-  
-  def run(self):
-    while True:
-      j = (yield self.store.get() )
-      
-      s = self.state()
-      a = self.scher.get_random_action(s)
-      
-      self.jid_info_m[j._id] = {'ent': self.env.now, 'ts': j.tsize, 's': s, 'a': a}    
-      self.q_l[a].put(Task(j._id, j.k, j.tsize, j.tsize) )
-  
-  def put(self, j):
-    sim_log(DEBUG, self.env, self, "recved", j)
-    return self.store.put(j)
-  
-  def put_c(self, m):
-    sim_log(DEBUG, self.env, self, "recved", m)
-    jid = m['jid']
-    jinfo = self.jid_info_m[jid]
-    self.jid_info_m[jid]['sl'] = (self.env.now - jinfo['ent'] )/jinfo['ts']
-    
-def shortestq_learning_w_batches():
-  # a_ = self.scher.get_max_action(s)
-  # c = 1 if (s[a_] - min(s) ) < 0.1 else 0
-  # self.action_correctness_l.append(c)
-  n = 3
-  N = 10
-  T = 100
-  
-  i_s_l, i_a_l, i_r_l = [], [], []
-  for i in range(N):
-    env = simpy.Environment()
-    jg = JG(env, ar=2.5, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
-    scher = DeepScher(state_len=n, action_len=n)
-    mq = MultiQ(env, n)
-    jg.out = mq
-    jg.init()
-    env.run(until=50000)
-    
-    s_l, a_l, r_l = [], [], []
-    for jid in range(1, T+1):
-      jinfo_m = mq.jid_info_m[jid]
-      
-      s_l.append(jinfo_m['s'] )
-      a_l.append(jinfo_m['a'] )
-      r_l.append(1/jinfo_m['sl'] )
-    i_s_l.append(s_l)
-    i_a_l.append(a_l)
-    i_r_l.append(r_l)
-  
-  
-
-if __name__ == "__main__":
-  # shortestq_learning_w_singletrajectory()
-  shortestq_learning_w_batches()
+  def put(self, t):
+    sim_log(DEBUG, self.env, self, "recved", t)
+    return self.store.put(t)
