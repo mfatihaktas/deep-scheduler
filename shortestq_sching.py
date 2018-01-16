@@ -4,7 +4,7 @@ import numpy as np
 from patch import *
 from rvs import *
 from sim import *
-from scheduling import DeepScher
+from scheduling import *
 
 # *************************  Learning shortest-q scheduling on the fly  ************************** #
 # Learning from single trajectory at a time ended up having too much variance
@@ -60,7 +60,7 @@ class ShortestQLearning_SingleTraj(object):
         self.reset_training(j._id)
       
       self.jid_info_m[j._id] = {'ent': self.env.now, 'ts': j.tsize, 's': s, 'a': a}    
-      self.q_l[a].put(Task(j._id, j.k, j.tsize, j.tsize) )
+      self.q_l[a].put(Task(j._id, j.k, j.tsize) )
   
   def put(self, j):
     sim_log(DEBUG, self.env, self, "recved", j)
@@ -106,15 +106,17 @@ def learning_shortestq_w_singletrajectory():
 # ***************  Learning shortest-q scheduling with multiple trajectories  ******************** #
 # High variance with single trajectory is resolved with multiple trajectory sampling
 class ShortestQLearning_MultTrajs(object):
-  def __init__(self, env, n, scher, act_max=False):
+  def __init__(self, env, n, scher, max_numj, act_max=False):
     self.env = env
     self.n = n
     self.scher = scher
+    self.max_numj = max_numj
     self.act_max = act_max
     
-    slowdown_dist = DUniform(1, 1) # Dolly()
+    slowdown_dist = Dolly() # DUniform(1, 1) # Bern(1, 10, 0.1)
     self.q_l = [FCFS(i, env, slowdown_dist, out_c=self) for i in range(self.n) ]
     self.jid_info_m = {}
+    self.num_jcompleted = 0
     
     self.store = simpy.Store(env)
     self.action = env.process(self.run() )
@@ -126,6 +128,7 @@ class ShortestQLearning_MultTrajs(object):
     s = np.array([q.length() for q in self.q_l] )
     sum_s = sum(s)
     return s/sum_s if sum_s != 0 else s
+    # return [q.length() for q in self.q_l]
   
   def run(self):
     while True:
@@ -147,52 +150,75 @@ class ShortestQLearning_MultTrajs(object):
     jinfo = self.jid_info_m[jid]
     self.jid_info_m[jid]['sl'] = (self.env.now - jinfo['ent'] )/jinfo['ts']
     
+    self.num_jcompleted += 1
+    if self.num_jcompleted > self.max_numj:
+      self.env.exit()
+    
 def learning_shortestq_w_mult_trajs():
   num_server = 3
   s_len = num_server
-  N, T = 10, 100
+  N, T = 1, 100
   scher = DeepScher(s_len, s_len)
   
   def sample_traj(T, act_max=False):
+    reward = lambda sl : 1/sl
+    # reward = lambda sl : (1/sl)**2
+  
     env = simpy.Environment()
     jg = JG(env, ar=2.5, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
-    mq = ShortestQLearning_MultTrajs(env, num_server, scher, act_max)
+    mq = ShortestQLearning_MultTrajs(env, num_server, scher, T, act_max)
     jg.out = mq
     jg.init()
     env.run(until=50000)
     
-    s_l, a_l, r_l = [], [], []
-    for jid in range(1, T+1):
-      jinfo_m = mq.jid_info_m[jid]
-      
-      s_l.append(jinfo_m['s'] )
-      a_l.append(jinfo_m['a'] )
-      r_l.append(1/jinfo_m['sl'] )
-    # print("r_l= {}".format(r_l) )
-    return s_l, a_l, r_l
+    t_s_l, t_a_l, t_r_l, t_sl_l = np.zeros((T, s_len)), np.zeros((T, 1)), np.zeros((T, 1)), np.zeros((T, 1))
+    for t in range(T):
+      jinfo_m = mq.jid_info_m[t+1]
+      t_s_l[t, :] = jinfo_m['s']
+      t_a_l[t, :] = jinfo_m['a']
+      t_r_l[t, :] = reward(jinfo_m['sl'] )
+      t_sl_l[t, :] = jinfo_m['sl']
+    # print("t_r_l= {}".format(t_r_l) )
+    return t_s_l, t_a_l, t_r_l, t_sl_l
   
   def evaluate(T):
     num_shortest_found = 0
-    s_l, a_l, r_l = sample_traj(T, act_max=True)
-    for i in range(len(s_l) ):
-      s, a = s_l[i], a_l[i]
-      if s[a] - min(s) < 0.01:
+    t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(T, act_max=True)
+    for t in range(T):
+      s, a = t_s_l[t], int(t_a_l[t][0] )
+      # print("s= {}, a= {}".format(s, a) )
+      if s[a] - s.min() < 0.1:
         num_shortest_found += 1
     print("freq shortest found= {}".format(num_shortest_found/T) )
+    # print("avg reward= {}".format(np.mean(t_r_l) ) )
+    print("avg slowdown= {}".format(np.mean(t_sl_l) ) )
   # 
-  for i in range(80):
+  '''
+  print("Eval before training:")
+  for _ in range(5):
+    evaluate(T)
+  for i in range(100*4):
     n_t_s_l, n_t_a_l, n_t_r_l = np.zeros((N, T, s_len)), np.zeros((N, T)), np.zeros((N, T))
     for n in range(N):
-      s_l, a_l, r_l = sample_traj(T)
-      n_t_s_l[n, :] = s_l
-      n_t_a_l[n, :] = a_l
-      n_t_r_l[n, :] = r_l
+      t_s_l, t_a_l, t_r_l, _ = sample_traj(T)
+      n_t_s_l[n, :] = t_s_l
+      n_t_a_l[n, :] = t_a_l
+      n_t_r_l[n, :] = t_r_l
     scher.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
-    if i % 4 == 0:
+    if i % 5 == 0:
       print("i= {}".format(i) )
       evaluate(T)
-  print("Final eval")
+  print("Eval after learning:")
   evaluate(T*10)
+  '''
+  value_ester = ValueEster(s_len)
+  for i in range(100*40):
+    t_s_l, t_a_l, t_r_l, _ = sample_traj(T)
+    # value_ester.train_w_single_traj(t_s_l, t_r_l)
+    scher.train_w_single_traj(t_s_l, t_a_l, t_r_l)
+    
+    print("i= {}".format(i) )
+    evaluate(T)
 
 if __name__ == "__main__":
   # learning_shortestq_w_singletrajectory()

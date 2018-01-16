@@ -42,10 +42,10 @@ class JG(object): # Job Generator
       self.out.put(Job(self.nsent, k, tsize) )
       
       if self.nsent >= self.max_sent:
-        self.env.exit()
+        return
       
 class Task(object):
-  def __init__(self, jid, k, size, remaining):
+  def __init__(self, jid, k, size, remaining=None):
     self.jid = jid
     self.k = k
     self.size = size
@@ -243,14 +243,15 @@ class FCFS(object):
     for t in self.t_l:
       if t.jid == jid:
         self.t_l.remove(t)
-    if jid == self.t_inserv.jid:
+    if self.t_inserv is not None and jid == self.t_inserv.jid:
       self.cancel_flag = True
       self.cancel.succeed()
 
 class JQ(object):
-  def __init__(self, env, in_qid_l):
+  def __init__(self, env, in_qid_l, out_c):
     self.env = env
     self.in_qid_l = in_qid_l
+    self.out_c = out_c
     
     self.jid__t_l_map = {}
     self.deped_jid_l = []
@@ -265,6 +266,7 @@ class JQ(object):
     while True:
       t = (yield self.store.get() )
       if t.jid in self.deped_jid_l: # Redundant tasks of a job may be received
+        sim_log(DEBUG, self.env, self, "already recved", t)
         continue
       
       if t.jid not in self.jid__t_l_map:
@@ -277,6 +279,7 @@ class JQ(object):
       elif len(t_l) < t.k:
         continue
       else:
+        sim_log(DEBUG, self.env, self, "completed jid= {}".format(t.jid), t)
         self.jid__t_l_map.pop(t.jid, None)
         self.deped_jid_l.append(t.jid)
         self.out_c.put_c({'jid': t.jid, 'm': 'jdone', 'deped_from': [t.prev_hop_id for t in t_l] } )
