@@ -16,14 +16,32 @@ class ValueEster(object):
   def init(self):
     # T x s_len
     self.s_ph = tf.placeholder(shape=(None, self.s_len), dtype=tf.float32)
-    self.hidden1 = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu)
-    self.hidden2 = tf.contrib.layers.fully_connected(self.hidden1, self.nn_len, activation_fn=tf.nn.relu)
-    self.v = tf.contrib.layers.fully_connected(self.hidden2, 1, activation_fn=tf.nn.relu)
-    
-    # For training with single trajectory
+    # self.hidden1 = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu)
+    # self.hidden2 = tf.contrib.layers.fully_connected(self.hidden1, self.nn_len, activation_fn=tf.nn.relu)
+    # self.v = tf.contrib.layers.fully_connected(self.hidden2, 1, activation_fn=tf.nn.relu)
+    with tf.name_scope('hidden1'):
+      w = tf.Variable(
+            tf.truncated_normal([self.s_len, self.nn_len], stddev=1.0 / math.sqrt(float(self.s_len) ) ),
+            name='weights')
+      b = tf.Variable(tf.zeros([self.nn_len] ), name='biases')
+      hidden1 = tf.nn.relu(tf.matmul(self.s_ph, w) + b)
+    with tf.name_scope('hidden2'):
+      w = tf.Variable(
+            tf.truncated_normal([self.nn_len, self.nn_len], stddev=1.0 / math.sqrt(float(self.nn_len) ) ),
+            name='weights')
+      b = tf.Variable(tf.zeros([self.nn_len] ), name='biases')
+      hidden2 = tf.nn.relu(tf.matmul(hidden1, w) + b)
+    with tf.name_scope('v_layer'):
+      w = tf.Variable(
+          tf.truncated_normal([self.nn_len, 1], stddev=1.0 / math.sqrt(float(self.nn_len) ) ),
+          name='weights')
+      b = tf.Variable(tf.zeros([1] ), name='biases')
+      self.v = tf.matmul(hidden2, w) + b
     self.sampled_v = tf.placeholder(shape=(None, 1), dtype=tf.float32)
-    self.loss = tf.reduce_sum(tf.squared_difference(self.v, self.sampled_v) )
+    # self.loss = tf.reduce_sum(tf.squared_difference(self.v, self.sampled_v) )
+    self.loss = tf.losses.mean_squared_error(self.v, self.sampled_v)
     
+    # self.optimizer = tf.train.GradientDescentOptimizer(0.01)
     self.optimizer = tf.train.AdamOptimizer(0.01)
     self.train_op = self.optimizer.minimize(self.loss)
     
@@ -35,9 +53,11 @@ class ValueEster(object):
     # print("t_s_l= {}".format(t_s_l) )
     v_p1_l = self.sess.run(self.v,
                            feed_dict={self.s_ph: t_s_l[1:] } )
-    # print("t_r_l= {}".format(t_r_l) )
     # print("v_p1_l= {}".format(v_p1_l) )
+    # print("t_r_l= {}".format(t_r_l) )
     v_l = np.add(t_r_l[:-1], np.multiply(self.gamma, v_p1_l) )
+    # v_l = t_r_l[:-1]
+    
     # print("v_l= {}".format(v_l) )
     _, loss = self.sess.run([self.train_op, self.loss],
                             feed_dict={self.s_ph: t_s_l[:-1],
@@ -64,7 +84,7 @@ class DeepScher(object):
   
   def init(self):
     if self.straj_training:
-      self.s_ph = tf.placeholder(tf.float32, shape=(None, self.s_len) )
+      self.s_ph = tf.placeholder(tf.float32, shape=(None, self.s_len), name="s_ph")
       # with tf.name_scope('hidden1'):
       #   w = tf.Variable(
       #         tf.truncated_normal([1, self.s_len, self.nn_len], stddev=1.0 / math.sqrt(float(self.s_len) ) ),
@@ -87,9 +107,9 @@ class DeepScher(object):
       hidden2 = tf.contrib.layers.fully_connected(hidden1, self.nn_len, activation_fn=tf.nn.relu)
       self.a_probs = tf.contrib.layers.fully_connected(hidden2, self.a_len, activation_fn=tf.nn.softmax)
       
-      self.a_ph = tf.placeholder(shape=[None], dtype=tf.int32)
-      self.q_ph = tf.placeholder(shape=[None], dtype=tf.float32)
-      self.v_ph = tf.placeholder(shape=[None], dtype=tf.float32)
+      self.a_ph = tf.placeholder(tf.int32, shape=(None, 1), name="a_ph")
+      self.q_ph = tf.placeholder(tf.float32, shape=(None, 1), name="q_ph")
+      self.v_ph = tf.placeholder(tf.float32, shape=(None, 1), name="v_ph")
       
       sh = tf.shape(self.a_probs)
       indices = tf.range(0, sh[0] )*sh[1] + tf.reshape(self.a_ph, [-1] )
@@ -102,9 +122,9 @@ class DeepScher(object):
       hidden2 = tf.contrib.layers.fully_connected(hidden1, self.nn_len, activation_fn=tf.nn.relu)
       self.a_probs = tf.contrib.layers.fully_connected(hidden2, self.a_len, activation_fn=tf.nn.softmax)
       
-      self.a_ph = tf.placeholder(shape=[None, None], dtype=tf.int32)
-      self.q_ph = tf.placeholder(shape=[None, None], dtype=tf.float32)
-      self.v_ph = tf.placeholder(shape=[None, None], dtype=tf.float32)
+      self.a_ph = tf.placeholder(tf.int32, shape=(None, None), name="a_ph")
+      self.q_ph = tf.placeholder(tf.float32, shape=(None, None), name="q_ph")
+      self.v_ph = tf.placeholder(tf.float32, shape=(None, None), name="v_ph")
       
       sh = tf.shape(self.a_probs)
       N, T = sh[0], sh[1]
@@ -156,8 +176,8 @@ class DeepScher(object):
   
   def train_w_single_traj(self, t_s_l, t_a_l, t_r_l):
     # print("t_r_l= {}".format(t_r_l) )
-    t_q_l = self.discount_rewards(t_r_l)
-    v = sum(t_q_l)/len(t_q_l)
+    # t_q_l = self.discount_rewards(t_r_l)
+    # v = sum(t_q_l)/len(t_q_l)
     # T = len(t_r_l)
     # t_v_l = np.array([v]*T).reshape(T, 1)
     # t_v_l = [v]*len(t_r_l)
@@ -166,16 +186,25 @@ class DeepScher(object):
     #                                   self.a_ph: t_a_l,
     #                                   self.q_ph: t_q_l,
     #                                   self.v_ph: t_v_l} )
+    # T = len(t_a_l)
+    # t_a_l = np.array(t_a_l).reshape(T, 1)
     
-    # self.v_ester.train_w_single_traj(t_s_l, t_r_l)
-    # t_v_l = self.v_ester.get_v(t_s_l)
-    # t_vp1_l = t_v_l[1:]
-    # t_r_l = np.add(t_r_l[:-1], np.multiply(self.gamma, t_vp1_l) )
-    # loss, _, sh = self.sess.run([self.loss, self.train_op, tf.shape(self.a_probs) ],
-    #                         feed_dict={self.s_ph: t_s_l[:-1],
-    #                                   self.a_ph: t_a_l[:-1],
-    #                                   self.q_ph: t_r_l,
-    #                                   self.v_ph: t_v_l[:-1] } )
+    # t_r_l = np.array(t_r_l).reshape(T, 1)
+    # print("t_r_l= {}".format(t_r_l) )
+    self.v_ester.train_w_single_traj(t_s_l, t_r_l)
+    t_v_l = self.v_ester.get_v(t_s_l)
+    t_vp1_l = t_v_l[1:]
+    t_q_l = np.add(t_r_l[:-1], np.multiply(self.gamma, t_vp1_l) )
+    # print("t_vp1_l= {}".format(t_vp1_l) )
+    # print("t_v_l= {}".format(t_v_l) )
+    # print("t_r_l= {}".format(t_r_l) )
+    # t_v_l = np.reshape(t_v_l[:-1], (-1, 1) )
+    # t_v_l = np.expand_dims(t_v_l[:-1], axis=1) # tf.reshape(t_v_l[:-1], (T-1, 1) )
+    loss, _ = self.sess.run([self.loss, self.train_op],
+                            feed_dict={self.s_ph: t_s_l[:-1],
+                                       self.a_ph: t_a_l[:-1],
+                                       self.q_ph: t_q_l,
+                                       self.v_ph: t_v_l[:-1] } )
     # print("sh= {}".format(sh) )
   
   def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
@@ -203,12 +232,12 @@ class DeepScher(object):
   
 def test():
   s_len, a_len, nn_len = 3, 3, 10
-  straj_training = False
+  straj_training = True # False
   scher = DeepScher(s_len, a_len, nn_len, straj_training)
   
   def state():
     s = np.random.randint(10, size=s_len)
-    sum_s = sum(np.random.randint(10, size=s_len) )
+    sum_s = sum(s)
     return s/sum_s if sum_s != 0 else s
   
   def reward(s, a):
@@ -216,8 +245,8 @@ def test():
     # r = 10 if s[a] == s_min else 0
     # return min(100, 1/(0.001 + s[a] - min(s) ) )
     # return 100*math.exp(-(s[a] - min(s) ) )
-    return 1/(0.001 + s[a] - min(s) )
-    
+    return 1/(0.1 + s[a] - min(s) )
+  
   def evaluate():
     num_shortest_found = 0
     for e in range(100):
@@ -230,22 +259,25 @@ def test():
   def train_w_single_traj():
     T = 100
     def gen_traj():
-      t_s_l, t_a_l, t_r_l = [], [], [] # np.zeros((T, s_len)), np.zeros((T, 1)), np.zeros((T, 1))
+      t_s_l, t_a_l, t_r_l = np.zeros((T, s_len)), np.zeros((T, 1)), np.zeros((T, 1))
       for t in range(T):
         s = state()
         a = scher.get_random_action(s)
-        t_s_l.append(s)
-        t_a_l.append(a)
-        t_r_l.append(reward(s, a) )
-        # t_s_l[t, :] = s
-        # t_a_l[t, :] = a
-        # t_r_l[t, :] = reward(s, a)
+        # a = scher.get_max_action(s)
+        # t_s_l.append(s)
+        # t_a_l.append(a)
+        # t_r_l.append(reward(s, a) )
+        t_s_l[t, :] = s
+        t_a_l[t, :] = a
+        t_r_l[t, :] = reward(s, a)
       return t_s_l, t_a_l, t_r_l
     
-    for i in range(100*20):
+    value_ester = ValueEster(s_len)
+    for i in range(100*40):
       t_s_l, t_a_l, t_r_l = gen_traj()
       scher.train_w_single_traj(t_s_l, t_a_l, t_r_l)
-      if i % 100 == 0:
+      # value_ester.train_w_single_traj(t_s_l, t_r_l)
+      if i % 10 == 0:
         evaluate()
   
   def train_w_mult_trajs():
@@ -271,6 +303,31 @@ def test():
   else:
     train_w_mult_trajs()
 
+def vsimple_regress():
+  s_len = 3
+  T = 100
+  def state():
+    s = np.random.randint(10, size=s_len)
+    sum_s = sum(s)
+    return s/sum_s if sum_s != 0 else s
+  
+  def reward(s):
+    return 10*max(s)
+  
+  def gen_traj():
+    t_s_l, t_r_l = np.zeros((T, s_len)), np.zeros((T, 1))
+    for t in range(T):
+      s = state()
+      t_s_l[t, :] = s
+      t_r_l[t, :] = reward(s)
+    return t_s_l, t_r_l
+  
+  value_ester = ValueEster(s_len)
+  for i in range(100*40):
+    t_s_l, t_r_l = gen_traj()
+    value_ester.train_w_single_traj(t_s_l, t_r_l)
+
 if __name__ == "__main__":
   test()
+  # vsimple_regress()
   

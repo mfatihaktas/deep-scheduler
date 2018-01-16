@@ -214,8 +214,8 @@ def learning_shortestq_w_mult_trajs():
   value_ester = ValueEster(s_len)
   for i in range(100*40):
     t_s_l, t_a_l, t_r_l, _ = sample_traj(T)
-    # value_ester.train_w_single_traj(t_s_l, t_r_l)
-    scher.train_w_single_traj(t_s_l, t_a_l, t_r_l)
+    value_ester.train_w_single_traj(t_s_l, t_r_l)
+    # scher.train_w_single_traj(t_s_l, t_a_l, t_r_l)
     
     print("i= {}".format(i) )
     evaluate(T)
