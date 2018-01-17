@@ -13,8 +13,8 @@ elif [ $1 = 't' ]; then
 elif [ $1 = 'tb' ]; then
   tensorboard --logdir=/home/ubuntu/deep-scheduler/log
 elif [ $1 = 's' ]; then
-  $PYTHON scheduling.py
-  # $PYTHON shortestq_sching.py
+  # $PYTHON scheduling.py
+  $PYTHON shortestq_sching.py
 elif [ $1 = 'r' ]; then
   $PYTHON rep_sching.py
 elif [ $1 = 'e' ]; then

@@ -28,5 +28,16 @@ def exp():
   ro = tf.reshape(tf.gather(tf.reshape(x, [-1] ), indices), (N, T) )
   print("ro= {}".format(ro.eval() ) )
 
+def exp2():
+  x = tf.constant([[[1.], [1.]], [[2.], [2.]]])
+  print("x.shape= {}, x= \n{}".format(x.shape, x.eval() ) )
+  
+  y = tf.reduce_mean(x, axis=0)
+  print("y.shape= {}, y= \n{}".format(y.shape, y.eval() ) )
+  
+  z = tf.reduce_mean(y, axis=0)
+  print("z.shape= {}, z= \n{}".format(z.shape, z.eval() ) )
+  
 if __name__ == "__main__":
-  exp()
+  # exp()
+  exp2()

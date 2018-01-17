@@ -35,6 +35,7 @@ class JG(object): # Job Generator
   def run(self):
     while 1:
       yield self.env.timeout(random.expovariate(self.ar) )
+      # yield self.env.timeout(1/self.ar)
       self.nsent += 1
       
       k = self.k_dist.gen_sample()

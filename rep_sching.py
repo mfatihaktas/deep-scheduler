@@ -32,10 +32,10 @@ class LearningRepSching(object):
     return "LearningRepSching[n= {}]".format(self.n)
   
   def state(self):
-    # s = np.array([q.length() for q in self.q_l] )
-    # sum_s = sum(s)
-    # return s/sum_s if sum_s != 0 else s
-    return [q.length() for q in self.q_l]
+    s = np.array([q.length() for q in self.q_l] )
+    sum_s = sum(s)
+    return s/sum_s if sum_s != 0 else s
+    # return [q.length() for q in self.q_l]
   
   def get_sorted_qids(self):
     # qid_length_m = {q._id: q.length() for q in self.q_l}
@@ -51,10 +51,19 @@ class LearningRepSching(object):
       s = self.state()
       if self.sching_m is None:
         a = self.scher.get_random_action(s) if not self.act_max else self.scher.get_max_action(s)
+        toi_l = random.sample(range(self.n), a+1)
+        # toi_l = self.get_sorted_qids()[0:a+1]
+      elif 'rep-to-idle' in self.sching_m:
+        toi_l = [i for i, ql in enumerate(s) if ql == 0]
+        if len(toi_l) == 0:
+          a = 0
+          toi_l = random.sample(range(self.n), a+1)
+        else:
+          a = len(toi_l) - 1
       else:
         a = self.sching_m['n'] - 1
-      toi_l = random.sample(range(self.n), a+1)
-      # toi_l = self.get_sorted_qids()[0:a+1]
+        toi_l = random.sample(range(self.n), a+1)
+      
       for i in toi_l:
         self.q_l[i].put(Task(j._id, j.k, j.tsize) )
       self.jid_info_m[j._id] = {'ent': self.env.now, 'ts': j.tsize, 'qid_l': toi_l, 's': s, 'a': a}
@@ -81,74 +90,79 @@ class LearningRepSching(object):
 def learning_repsching_w_mult_trajs():
   num_server = 3
   s_len, a_len = num_server, num_server
-  N, T = 2, 10000
-  scher = DeepScher(s_len, a_len)
+  nn_len = 10
+  straj_training = False
+  scher = DeepScher(s_len, a_len, nn_len, straj_training)
+  
+  N, T = 10, 1000
   
   def sample_traj(T, act_max=False, sching_m=None):
-    reward = lambda sl : 1/sl
-    # reward = lambda sl : 1 - sl
+    # reward = lambda sl : 1/sl
+    def reward(sl):
+      # if sl < 12:
+      #   sl = 1
+      return 100/sl # 101 - sl
     
     env = simpy.Environment()
-    jg = JG(env, ar=0.5, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
+    # ar=0.4
+    jg = JG(env, ar=0.8, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
     mq = LearningRepSching(env, num_server, scher, T, act_max, sching_m)
     jg.out = mq
     jg.init()
     env.run() # until=50000
     
-    s_l, a_l, r_l, sl_l = [], [], [], []
-    for jid in range(1, T+1):
-      jinfo_m = mq.jid_info_m[jid]
-      # print("jid= {}, jinfo_m= \n{}".format(jid, pprint.pformat(jinfo_m) ) )
-      
-      s_l.append(jinfo_m['s'] )
-      a_l.append(jinfo_m['a'] )
-      r_l.append(reward(jinfo_m['sl'] ) )
-      sl_l.append(jinfo_m['sl'] )
-    # min_sl = min(sl_l)
-    # r_l = [min_sl/mq.jid_info_m[jid]['sl'] for jid in range(1, T+1) ]
-    # print("r_l= {}".format(r_l) )
-    return s_l, a_l, r_l, sl_l
-  
+    t_s_l, t_a_l, t_r_l, t_sl_l = np.zeros((T, s_len)), np.zeros((T, 1)), np.zeros((T, 1)), np.zeros((T, 1))
+    for t in range(T):
+      jinfo_m = mq.jid_info_m[t+1]
+      # print("t= {}, jinfo_m= {}".format(t, jinfo_m) )
+      t_s_l[t, :] = jinfo_m['s']
+      t_a_l[t, :] = jinfo_m['a']
+      t_r_l[t, :] = reward(jinfo_m['sl'] )
+      t_sl_l[t, :] = jinfo_m['sl']
+    return t_s_l, t_a_l, t_r_l, t_sl_l
+    
   def evaluate(T, sching_m=None):
-    _, a_l, r_l, sl_l = sample_traj(T, True, sching_m)
-    # print("a_l= {}".format(a_l) )
-    print("avg a= {}".format(np.mean(a_l) ) )
-    print("avg slowdown= {}".format(np.mean(sl_l) ) )
+    _, t_a_l, t_r_l, t_sl_l = sample_traj(T, False, sching_m)
+    # print("t_a_l= {}".format(t_a_l) )
+    print("avg a= {}, avg sl= {}".format(np.mean(t_a_l), np.mean(t_sl_l) ) )
   # 
-  sching_m = {'n': num_server}
+  sching_m = {'rep-to-idle': 0}
   print("Eval with sching_m= {}".format(sching_m) )
-  for _ in range(2):
+  for _ in range(3):
     evaluate(T, sching_m)
   
-  sching_m = {'n': 1}
-  print("Eval with sching_m= {}".format(sching_m) )
-  for _ in range(2):
-    evaluate(T, sching_m)
-  
+  for n in range(1, num_server+1):
+    sching_m = {'n': n}
+    print("Eval with sching_m= {}".format(sching_m) )
+    for _ in range(3):
+      evaluate(T, sching_m)
   # print("Eval before training:")
   # for _ in range(3):
   #   evaluate(T)
   for i in range(100):
-    n_t_s_l, n_t_a_l, n_t_r_l = np.zeros((N, T, s_len)), np.zeros((N, T)), np.zeros((N, T))
+    print("i= {}".format(i) )
+    n_t_s_l, n_t_a_l, n_t_r_l, n_t_sl_l = np.zeros((N, T, s_len)), np.zeros((N, T, 1)), np.zeros((N, T, 1)), np.zeros((N, T, 1))
     for n in range(N):
-      s_l, a_l, r_l, _ = sample_traj(T)
+      s_l, a_l, r_l, sl_l = sample_traj(T)
       n_t_s_l[n, :] = s_l
       n_t_a_l[n, :] = a_l
       n_t_r_l[n, :] = r_l
+      n_t_sl_l[n, :] = sl_l
+    print("avg a= {}, training avg sl= {}".format(np.mean(n_t_a_l), np.mean(n_t_sl_l) ) )
     scher.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
-    if i % 1 == 0:
-      print("i= {}".format(i) )
-      evaluate(T)
-  print("Eval after learning:")
-  evaluate(T*1)
+    # if i % 1 == 0:
+    #   print("eval:")
+    #   evaluate(T)
+  # print("Eval after learning:")
+  # evaluate(T*1)
   
-  for i in range(100):
-    if i == 0:
-      s = [0]*num_server
-    else:
-      s = np.random.randint(100, size=num_server)
-    a = scher.get_max_action(s)
-    print("s= {}, a= {}".format(s, a) )
+  # for i in range(100):
+  #   if i == 0:
+  #     s = [0]*num_server
+  #   else:
+  #     s = np.random.randint(100, size=num_server)
+  #   a = scher.get_max_action(s)
+  #   print("s= {}, a= {}".format(s, a) )
 
 if __name__ == "__main__":
   learning_repsching_w_mult_trajs()
