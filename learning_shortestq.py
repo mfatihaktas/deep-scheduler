@@ -8,7 +8,7 @@ from scheduling import *
 
 # *************************  Learning shortest-q scheduling on the fly  ************************** #
 # Learning from single trajectory at a time ended up having too much variance
-class ShortestQLearning_SingleTraj(object):
+class LearningShortestQ_wSingleTraj(object):
   def __init__(self, env, n):
     self.env = env
     self.n = n
@@ -38,7 +38,7 @@ class ShortestQLearning_SingleTraj(object):
     self.action_correctness_l.clear()
   
   def __repr__(self):
-    return "ShortestQLearning_SingleTraj[n= {}]".format(self.n)
+    return "LearningShortestQ_wSingleTraj[n= {}]".format(self.n)
   
   def state(self):
     return np.mean(np.array([q.length() for q in self.q_l] ) )
@@ -95,17 +95,17 @@ class ShortestQLearning_SingleTraj(object):
       self.scher.train(s_l, a_l, r_l)
       self.jid_info_m.clear()
 
-def learning_shortestq_w_singletraj():
+def learning_shortestq_wsingletraj():
   env = simpy.Environment()
   jg = JG(env, ar=2.5, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1) )
-  mq = ShortestQLearning_SingleTraj(env, n=3)
+  mq = LearningShortestQ_wSingleTraj(env, n=3)
   jg.out = mq
   jg.init()
   env.run(until=1000*100) # 50000*1
 
 # ***************  Learning shortest-q scheduling with multiple trajectories  ******************** #
 # High variance with single trajectory is resolved with multiple trajectory sampling
-class ShortestQLearning_MultTrajs(object):
+class LearningShortestQ_wMultTrajs(object):
   def __init__(self, env, n, scher, max_numj, sching=None, act_max=False):
     self.env = env
     self.n = n
@@ -123,7 +123,7 @@ class ShortestQLearning_MultTrajs(object):
     self.action = env.process(self.run() )
   
   def __repr__(self):
-    return "ShortestQLearning_MultTrajs[n= {}]".format(self.n)
+    return "LearningShortestQ_wMultTrajs[n= {}]".format(self.n)
   
   def state(self):
     # s = np.array([q.length() for q in self.q_l] )
@@ -158,13 +158,13 @@ class ShortestQLearning_MultTrajs(object):
     if self.num_jcompleted > self.max_numj:
       self.env.exit()
   
-def learning_shortestq_w_mult_trajs():
+def learning_shortestq_wmulttrajs():
   num_server = 3
   s_len, a_len, nn_len = num_server, num_server, 10
   straj_training = False # True
   scher = DeepScher(s_len, a_len, nn_len, straj_training)
   
-  N, T = 10, 100 # 10, 100
+  N, T = 10, 1000 # 10, 100
   
   def sample_traj(T, sching=None, act_max=False):
     reward = lambda sl : 1/sl
@@ -172,7 +172,7 @@ def learning_shortestq_w_mult_trajs():
     
     env = simpy.Environment()
     jg = JG(env, ar=0.5, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
-    mq = ShortestQLearning_MultTrajs(env, num_server, scher, T, sching, act_max)
+    mq = LearningShortestQ_wMultTrajs(env, num_server, scher, T, sching, act_max)
     jg.out = mq
     jg.init()
     env.run(until=50000)
@@ -189,15 +189,13 @@ def learning_shortestq_w_mult_trajs():
   
   def evaluate(T, sching=None):
     num_shortest_found = 0
-    t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(T, sching, act_max=True)
+    t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(T, sching, act_max=False)
     for t in range(T):
       s, a = t_s_l[t], int(t_a_l[t][0] )
       # print("s= {}, a= {}".format(s, a) )
       if s[a] - s.min() < 0.1:
         num_shortest_found += 1
-    print("freq shortest found= {}".format(num_shortest_found/T) )
-    # print("avg reward= {}".format(np.mean(t_r_l) ) )
-    print("avg slowdown= {}".format(np.mean(t_sl_l) ) )
+    print("avg sl= {}, freq shortest found= {}".format(np.mean(t_sl_l), num_shortest_found/T) )
   # 
   if straj_training:
     print("Eval with jshortestq:")
@@ -219,20 +217,21 @@ def learning_shortestq_w_mult_trajs():
     print("Eval with jshortestq:")
     for _ in range(3):
       evaluate(T, sching='jshortestq')
-    for i in range(100):
-      print("i= {}".format(i) )
-      n_t_s_l, n_t_a_l, n_t_r_l = np.zeros((N, T, s_len)), np.zeros((N, T, 1)), np.zeros((N, T, 1))
+    for i in range(100*100):
+      n_t_s_l, n_t_a_l, n_t_r_l, n_t_sl_l = np.zeros((N, T, s_len)), np.zeros((N, T, 1)), np.zeros((N, T, 1)), np.zeros((N, T, 1))
       for n in range(N):
-        t_s_l, t_a_l, t_r_l, _ = sample_traj(T)
+        t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(T)
         n_t_s_l[n, :] = t_s_l
         n_t_a_l[n, :] = t_a_l
         n_t_r_l[n, :] = t_r_l
+        n_t_sl_l[n, :] = t_sl_l
       scher.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
-      if i % 1 == 0:
-        evaluate(T)
+      print("i= {}, avg sl= {}, avg a= {}".format(i, np.mean(n_t_sl_l), np.mean(n_t_a_l) ) )
+      # if i % 5 == 0:
+      #   evaluate(T)
     print("Eval after learning:")
-    evaluate(T*10)
+    evaluate(40000)
 
 if __name__ == "__main__":
-  # learning_shortestq_w_singletraj()
-  learning_shortestq_w_mult_trajs()
+  # learning_shortestq_wsingletraj()
+  learning_shortestq_wmulttrajs()

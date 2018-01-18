@@ -6,7 +6,7 @@ from rvs import *
 from sim import *
 from scheduling import DeepScher
 
-class LearningRepSching(object):
+class LearningHowtoRep(object):
   def __init__(self, env, n, scher, max_numj, act_max=False, sching_m=None):
     self.env = env
     self.n = n
@@ -29,13 +29,13 @@ class LearningRepSching(object):
     self.jsl_l = []
   
   def __repr__(self):
-    return "LearningRepSching[n= {}]".format(self.n)
+    return "LearningHowtoRep[n= {}]".format(self.n)
   
   def state(self):
     s = np.array([q.length() for q in self.q_l] )
-    sum_s = sum(s)
-    return s/sum_s if sum_s != 0 else s
-    # return [q.length() for q in self.q_l]
+    # sum_s = sum(s)
+    # return s/sum_s if sum_s != 0 else s
+    return s
   
   def get_sorted_qids(self):
     # qid_length_m = {q._id: q.length() for q in self.q_l}
@@ -44,6 +44,10 @@ class LearningRepSching(object):
     t_l = sorted([(q.length(), q._id) for q in self.q_l] )
     return [t[1] for t in t_l]
   
+  def sample_qids(self, n):
+    # return random.sample(range(self.n), n)
+    return self.get_sorted_qids()[0:n]
+  
   def run(self):
     while True:
       j = (yield self.store.get() )
@@ -51,18 +55,17 @@ class LearningRepSching(object):
       s = self.state()
       if self.sching_m is None:
         a = self.scher.get_random_action(s) if not self.act_max else self.scher.get_max_action(s)
-        toi_l = random.sample(range(self.n), a+1)
-        # toi_l = self.get_sorted_qids()[0:a+1]
+        toi_l = self.sample_qids(a+1)
       elif 'rep-to-idle' in self.sching_m:
         toi_l = [i for i, ql in enumerate(s) if ql == 0]
         if len(toi_l) == 0:
           a = 0
-          toi_l = random.sample(range(self.n), a+1)
+          toi_l = self.sample_qids(a+1)
         else:
           a = len(toi_l) - 1
       else:
         a = self.sching_m['n'] - 1
-        toi_l = random.sample(range(self.n), a+1)
+        toi_l = self.sample_qids(a+1)
       
       for i in toi_l:
         self.q_l[i].put(Task(j._id, j.k, j.tsize) )
@@ -87,8 +90,8 @@ class LearningRepSching(object):
     if self.num_jcompleted > self.max_numj:
       self.env.exit()
 
-def learning_repsching_w_mult_trajs():
-  num_server = 3
+def learning_howtorep_w_mult_trajs():
+  num_server = 6
   s_len, a_len = num_server, num_server
   nn_len = 10
   straj_training = False
@@ -104,9 +107,10 @@ def learning_repsching_w_mult_trajs():
       return 100/sl # 101 - sl
     
     env = simpy.Environment()
-    # ar=0.4
-    jg = JG(env, ar=0.8, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
-    mq = LearningRepSching(env, num_server, scher, T, act_max, sching_m)
+    # ar=0.3, n=3
+    # ar=0.6, n=6
+    jg = JG(env, ar=0.6, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
+    mq = LearningHowtoRep(env, num_server, scher, T, act_max, sching_m)
     jg.out = mq
     jg.init()
     env.run() # until=50000
@@ -126,6 +130,7 @@ def learning_repsching_w_mult_trajs():
     # print("t_a_l= {}".format(t_a_l) )
     print("avg a= {}, avg sl= {}".format(np.mean(t_a_l), np.mean(t_sl_l) ) )
   # 
+  print("BEFORE training")
   sching_m = {'rep-to-idle': 0}
   print("Eval with sching_m= {}".format(sching_m) )
   for _ in range(3):
@@ -153,16 +158,29 @@ def learning_repsching_w_mult_trajs():
     # if i % 1 == 0:
     #   print("eval:")
     #   evaluate(T)
-  # print("Eval after learning:")
-  # evaluate(T*1)
+    if i % 5:
+      continue
+    for j in range(20):
+      for _ in range(3):
+        if j == 0:
+          s = [0]*num_server
+        else:
+          s = np.random.randint(j*5, size=num_server)
+          # sum_s = sum(s)
+          # s = s if sum_s == 0 else s/sum_s
+        a = scher.get_random_action(s)
+        print("s= {}, a= {}".format(s, a) )
+  print("AFTER training")
+  evaluate(T=40000)
   
-  # for i in range(100):
-  #   if i == 0:
-  #     s = [0]*num_server
-  #   else:
-  #     s = np.random.randint(100, size=num_server)
-  #   a = scher.get_max_action(s)
-  #   print("s= {}, a= {}".format(s, a) )
-
+  sching_m = {'rep-to-idle': 0}
+  print("Eval with sching_m= {}".format(sching_m) )
+  evaluate(T, sching_m)
+  
+  for n in range(1, num_server+1):
+    sching_m = {'n': n}
+    print("Eval with sching_m= {}".format(sching_m) )
+    evaluate(T, sching_m)
+  
 if __name__ == "__main__":
-  learning_repsching_w_mult_trajs()
+  learning_howtorep_w_mult_trajs()
