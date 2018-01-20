@@ -225,8 +225,14 @@ def learning_shortestq_wmulttrajs():
         n_t_a_l[n, :] = t_a_l
         n_t_r_l[n, :] = t_r_l
         n_t_sl_l[n, :] = t_sl_l
+      num_shortest_found = 0
+      for n in range(N):
+        for t in range(T):
+          s, a = n_t_s_l[n, t], int(n_t_a_l[n, t][0] )
+          if s[a] - s.min() < 0.01:
+            num_shortest_found += 1
+      print("i= {}, avg sl= {}, freq shortest found= {}".format(i, np.mean(n_t_sl_l), num_shortest_found/N/T) )
       scher.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
-      print("i= {}, avg sl= {}, avg a= {}".format(i, np.mean(n_t_sl_l), np.mean(n_t_a_l) ) )
       # if i % 5 == 0:
       #   evaluate(T)
     print("Eval after learning:")

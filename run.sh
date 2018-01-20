@@ -20,5 +20,5 @@ elif [ $1 = 'r' ]; then
 elif [ $1 = 'e' ]; then
   $PYTHON exp.py
 else
-  echo "Argument did not match!"
+  echo "Arg did not match!"
 fi

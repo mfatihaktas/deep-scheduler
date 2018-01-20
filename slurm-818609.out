@@ -1,0 +1,6 @@
+slurmstepd: error: execve(): /home/mfa51/deep-scheduler/learning_shortestq_wmpi.py: Permission denied
+slurmstepd: error: execve(): /home/mfa51/deep-scheduler/learning_shortestq_wmpi.py: Permission denied
+slurmstepd: error: execve(): /home/mfa51/deep-scheduler/learning_shortestq_wmpi.py: Permission denied
+srun: error: slepner009: task 0: Exited with exit code 13
+srun: error: slepner020: task 1: Exited with exit code 13
+srun: error: slepner023: task 2: Exited with exit code 13
