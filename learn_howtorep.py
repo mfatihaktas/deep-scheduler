@@ -4,9 +4,9 @@ import numpy as np
 from patch import *
 from rvs import *
 from sim import *
-from scheduling import DeepScher
+from scher import PolicyGradScher
 
-class LearningHowtoRep(object):
+class MultiQ_wRep(object):
   def __init__(self, env, n, scher, max_numj, act_max=False, sching_m=None):
     self.env = env
     self.n = n
@@ -29,7 +29,7 @@ class LearningHowtoRep(object):
     self.jsl_l = []
   
   def __repr__(self):
-    return "LearningHowtoRep[n= {}]".format(self.n)
+    return "MultiQ_wRep[n= {}]".format(self.n)
   
   def state(self):
     s = np.array([q.length() for q in self.q_l] )
@@ -90,57 +90,51 @@ class LearningHowtoRep(object):
     if self.num_jcompleted > self.max_numj:
       self.env.exit()
 
-def learning_howtorep_w_mult_trajs():
-  num_server = 6
-  s_len, a_len = num_server, num_server
+def sample_traj(scher, ns, T, act_max=False, sching_m=None):
+  reward = lambda sl : 100/sl
+  
+  env = simpy.Environment()
+  # ar=0.3, n=3
+  # ar=0.6, n=6
+  jg = JG(env, ar=0.6, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
+  mq = MultiQ_wRep(env, ns, scher, T, act_max, sching_m)
+  jg.out = mq
+  jg.init()
+  env.run()
+  
+  t_s_l, t_a_l, t_r_l, t_sl_l = np.zeros((T, ns)), np.zeros((T, 1)), np.zeros((T, 1)), np.zeros((T, 1))
+  for t in range(T):
+    jinfo_m = mq.jid_info_m[t+1]
+    # print("t= {}, jinfo_m= {}".format(t, jinfo_m) )
+    t_s_l[t, :] = jinfo_m['s']
+    t_a_l[t, :] = jinfo_m['a']
+    t_r_l[t, :] = reward(jinfo_m['sl'] )
+    t_sl_l[t, :] = jinfo_m['sl']
+  return t_s_l, t_a_l, t_r_l, t_sl_l
+
+def evaluate(scher, ns, T, sching_m=None):
+  _, t_a_l, t_r_l, t_sl_l = sample_traj(scher, ns, T, False, sching_m)
+  print("avg a= {}, avg sl= {}".format(np.mean(t_a_l), np.mean(t_sl_l) ) )
+
+def learn_howtorep_w_mult_trajs():
+  ns = 6
+  s_len, a_len = ns, ns
   nn_len = 10
-  straj_training = False
-  scher = DeepScher(s_len, a_len, nn_len, straj_training)
+  scher = PolicyGradScher(s_len, a_len, nn_len, straj_training=False)
   
   N, T = 10, 1000
   
-  def sample_traj(T, act_max=False, sching_m=None):
-    # reward = lambda sl : 1/sl
-    def reward(sl):
-      # if sl < 12:
-      #   sl = 1
-      return 100/sl # 101 - sl
-    
-    env = simpy.Environment()
-    # ar=0.3, n=3
-    # ar=0.6, n=6
-    jg = JG(env, ar=0.6, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
-    mq = LearningHowtoRep(env, num_server, scher, T, act_max, sching_m)
-    jg.out = mq
-    jg.init()
-    env.run() # until=50000
-    
-    t_s_l, t_a_l, t_r_l, t_sl_l = np.zeros((T, s_len)), np.zeros((T, 1)), np.zeros((T, 1)), np.zeros((T, 1))
-    for t in range(T):
-      jinfo_m = mq.jid_info_m[t+1]
-      # print("t= {}, jinfo_m= {}".format(t, jinfo_m) )
-      t_s_l[t, :] = jinfo_m['s']
-      t_a_l[t, :] = jinfo_m['a']
-      t_r_l[t, :] = reward(jinfo_m['sl'] )
-      t_sl_l[t, :] = jinfo_m['sl']
-    return t_s_l, t_a_l, t_r_l, t_sl_l
-    
-  def evaluate(T, sching_m=None):
-    _, t_a_l, t_r_l, t_sl_l = sample_traj(T, False, sching_m)
-    # print("t_a_l= {}".format(t_a_l) )
-    print("avg a= {}, avg sl= {}".format(np.mean(t_a_l), np.mean(t_sl_l) ) )
-  # 
   print("BEFORE training")
   sching_m = {'rep-to-idle': 0}
   print("Eval with sching_m= {}".format(sching_m) )
   for _ in range(3):
-    evaluate(T, sching_m)
+    evaluate(scher, ns, T, sching_m)
   
-  for n in range(1, num_server+1):
+  for n in range(1, ns+1):
     sching_m = {'n': n}
     print("Eval with sching_m= {}".format(sching_m) )
     for _ in range(3):
-      evaluate(T, sching_m)
+      evaluate(scher, ns, T, sching_m)
   # print("Eval before training:")
   # for _ in range(3):
   #   evaluate(T)
@@ -148,7 +142,7 @@ def learning_howtorep_w_mult_trajs():
     print("i= {}".format(i) )
     n_t_s_l, n_t_a_l, n_t_r_l, n_t_sl_l = np.zeros((N, T, s_len)), np.zeros((N, T, 1)), np.zeros((N, T, 1)), np.zeros((N, T, 1))
     for n in range(N):
-      s_l, a_l, r_l, sl_l = sample_traj(T)
+      s_l, a_l, r_l, sl_l = sample_traj(scher, ns, T)
       n_t_s_l[n, :] = s_l
       n_t_a_l[n, :] = a_l
       n_t_r_l[n, :] = r_l
@@ -157,30 +151,30 @@ def learning_howtorep_w_mult_trajs():
     scher.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
     # if i % 1 == 0:
     #   print("eval:")
-    #   evaluate(T)
+    #   evaluate(scher, ns, T)
     if i % 5:
       continue
     for j in range(20):
       for _ in range(3):
         if j == 0:
-          s = [0]*num_server
+          s = [0]*ns
         else:
-          s = np.random.randint(j*5, size=num_server)
+          s = np.random.randint(j*5, size=ns)
           # sum_s = sum(s)
           # s = s if sum_s == 0 else s/sum_s
         a = scher.get_random_action(s)
         print("s= {}, a= {}".format(s, a) )
   print("AFTER training")
-  evaluate(T=40000)
+  evaluate(scher, ns, T=40000)
   
   sching_m = {'rep-to-idle': 0}
   print("Eval with sching_m= {}".format(sching_m) )
-  evaluate(T, sching_m)
+  evaluate(scher, ns, T, sching_m)
   
-  for n in range(1, num_server+1):
+  for n in range(1, ns+1):
     sching_m = {'n': n}
     print("Eval with sching_m= {}".format(sching_m) )
-    evaluate(T, sching_m)
+    evaluate(scher, ns, T, sching_m)
   
 if __name__ == "__main__":
-  learning_howtorep_w_mult_trajs()
+  learn_howtorep_w_mult_trajs()

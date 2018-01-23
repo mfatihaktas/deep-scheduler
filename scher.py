@@ -2,6 +2,15 @@ import math, time, random
 import numpy as np
 import tensorflow as tf
 
+def discount_rewards(t_r_l, gamma):
+  T = t_r_l.shape[0]
+  t_dr_l = np.zeros((T, 1))
+  radd = 0
+  for t in range(T-1, -1, -1):
+    radd = t_r_l[t, 0] + radd * gamma
+    t_dr_l[t, 0] = radd
+  return t_dr_l
+
 class ValueEster(object):
   def __init__(self, s_len, nn_len, straj_training):
     self.s_len = s_len
@@ -91,7 +100,7 @@ class ValueEster(object):
       return self.sess.run(self.v,
                            feed_dict={self.s_ph: n_t_s_l} )
 
-class DeepScher(object):
+class PolicyGradScher(object):
   def __init__(self, s_len, a_len, nn_len=10, straj_training=False):
     self.s_len = s_len
     self.a_len = a_len
@@ -101,9 +110,19 @@ class DeepScher(object):
     self.v_ester = ValueEster(s_len, nn_len, straj_training)
     self.gamma = 0.99
     self.init()
+    
+    self.saver = tf.train.Saver()
   
   def __repr__(self):
-    return "DeepScher[s_len= {}, a_len= {}]".format(self.s_len, self.a_len)
+    return "PolicyGradScher[s_len= {}, a_len= {}]".format(self.s_len, self.a_len)
+  
+  def save(self, step):
+    save_path = self.saver.save(self.sess, 'log/policy_grad', global_step=step)
+    # print("saved scher to save_path= {}".format(save_path) )
+  
+  def restore(self, step):
+    self.saver.restore(self.sess, 'log/policy_grad-{}'.format(step) )
+    # print("restored scher to step= {}".format(step) )
   
   def init(self):
     if self.straj_training:
@@ -187,15 +206,6 @@ class DeepScher(object):
                                        self.v_ph: t_v_l[:-1] } )
     # print("sh= {}".format(sh) )
   
-  def discount_rewards(self, t_r_l):
-    T = t_r_l.shape[0]
-    t_dr_l = np.zeros((T, 1))
-    radd = 0
-    for t in range(T-1, -1, -1):
-      radd = t_r_l[t, 0] + radd * self.gamma
-      t_dr_l[t, 0] = radd
-    return t_dr_l
-  
   def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
     # All trajectories use the same policy
     N = len(n_t_s_l)
@@ -206,7 +216,7 @@ class DeepScher(object):
     # Policy gradient
     n_t_q_l = np.zeros((N, T, 1))
     for n in range(N):
-      n_t_q_l[n] = self.discount_rewards(n_t_r_l[n] )
+      n_t_q_l[n] = discount_rewards(n_t_r_l[n], self.gamma)
     # print("n_t_q_l= {}".format(n_t_q_l) )
     # print("n_t_q_l.shape= {}".format(n_t_q_l.shape) )
     
@@ -222,13 +232,13 @@ class DeepScher(object):
                                       self.a_ph: n_t_a_l,
                                       self.q_ph: n_t_q_l,
                                       self.v_ph: n_t_v_l} )
-    print("DeepScher:: loss= {}".format(loss) )
+    print("PolicyGradScher:: loss= {}".format(loss) )
     # '''
     '''
     # Policy gradient by getting baseline values from actor-critic
     n_t_q_l = np.zeros((N, T, 1))
     for n in range(N):
-      n_t_q_l[n] = self.discount_rewards(n_t_r_l[n] )
+      n_t_q_l[n] = discount_rewards(n_t_r_l[n], self.gamma)
     
     # for n in range(N):
     #   self.v_ester.train_w_single_traj(n_t_s_l[n], n_t_r_l[n] )
@@ -248,7 +258,7 @@ class DeepScher(object):
                                        self.a_ph: n_t_a_l,
                                        self.q_ph: n_t_q_l,
                                        self.v_ph: n_t_v_l} )
-    print("DeepScher:: loss= {}".format(loss) )
+    print("PolicyGradScher:: loss= {}".format(loss) )
     '''
   
   def get_random_action(self, s):
@@ -277,10 +287,84 @@ class DeepScher(object):
     # print("a_dist= {}".format(a_dist) )
     return np.argmax(a_dist)  
 
+class QLearningScher(object):
+  def __init__(self, s_len, a_len, nn_len=10):
+    self.s_len = s_len
+    self.a_len = a_len
+    self.nn_len = nn_len
+    
+    self.gamma = 0.99
+    self.eps = 0.1
+    self.init()
+    
+  def __repr__(self):
+    return "QLearningScher[s_len= {}, a_len= {}]".format(self.s_len, self.a_len)
+  
+  def init(self):
+    # N x T x s_len
+    self.s_ph = tf.placeholder(tf.float32, shape=(None, None, self.s_len) )
+    hidden1 = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu)
+    hidden2 = tf.contrib.layers.fully_connected(hidden1, self.nn_len, activation_fn=tf.nn.relu)
+    self.Qa_ph = tf.contrib.layers.fully_connected(hidden2, self.a_len, activation_fn=None)
+    
+    self.a_ph = tf.placeholder(tf.int32, shape=(None, None, 1), name="a_ph")
+    self.targetq_ph = tf.placeholder(tf.float32, shape=(None, None, 1), name="q_ph")
+    
+    sh = tf.shape(self.Qa_ph)
+    N, T = sh[0], sh[1]
+    indices = tf.range(0, N*T)*sh[2] + tf.reshape(self.a_ph, [-1] )
+    self.resp_outputs = tf.reshape(tf.gather(tf.reshape(self.Qa_ph, [-1] ), indices), (sh[0], sh[1], 1) )
+    self.loss = tf.losses.mean_squared_error(self.resp_outputs, self.targetq_ph)
+    
+    self.optimizer = tf.train.AdamOptimizer(0.01)
+    self.train_op = self.optimizer.minimize(self.loss)
+    
+    self.sess = tf.Session()
+    self.sess.run(tf.global_variables_initializer() )
+  
+  def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
+    N = len(n_t_s_l)
+    T = len(n_t_s_l[0] )
+    
+    # n_t_q_l = self.sess.run(self.Qa_ph,
+    #                         feed_dict={self.s_ph: n_t_s_l} )
+    # n_t_targetq_l = np.zeros((N, T, 1))
+    # for n in range(N):
+    #   for t in range(T):
+    #     if t < T-1:
+    #       n_t_targetq_l[n, t, 0] = n_t_r_l[n, t, 0] + self.gamma*max(n_t_q_l[n, t+1, :] )
+    #     else:
+    #       n_t_targetq_l[n, t, 0] = n_t_r_l[n, t, 0]
+    
+    n_t_targetq_l = np.zeros((N, T, 1))
+    for n in range(N):
+      n_t_targetq_l[n] = discount_rewards(n_t_r_l[n], self.gamma)
+    
+    loss, _ = self.sess.run([self.loss, self.train_op],
+                            feed_dict={self.s_ph: n_t_s_l,
+                                       self.a_ph: n_t_a_l,
+                                       self.targetq_ph: n_t_targetq_l} )
+    print("QLearningScher:: loss= {}".format(loss) )
+    # self.eps *= 0.95
+  
+  def get_random_action(self, s):
+    if random.uniform(0, 1) < self.eps:
+      return np.random.randint(self.a_len, size=1)[0]
+    else:
+      qa_l = self.sess.run(self.Qa_ph,
+                           feed_dict={self.s_ph: [[s]] } )
+      return np.argmax(qa_l)
+  
+  def get_max_action(self, s):
+    qa_l = self.sess.run(self.Qa_ph,
+                         feed_dict={self.s_ph: [[s]] } )
+    return np.argmax(qa_l)
+  
 def test():
   s_len, a_len, nn_len = 3, 3, 10
-  straj_training = True # False
-  scher = DeepScher(s_len, a_len, nn_len, straj_training)
+  straj_training = False
+  scher = PolicyGradScher(s_len, a_len, nn_len, straj_training)
+  # scher = QLearningScher(s_len, a_len, nn_len)
   
   def state():
     s = np.random.randint(10, size=s_len)
@@ -328,7 +412,7 @@ def test():
         evaluate()
   
   def train_w_mult_trajs():
-    N, T = 100, 10
+    N, T = 10, 100
     def gen_N_traj():
       n_t_s_l, n_t_a_l, n_t_r_l = np.zeros((N, T, s_len)), np.zeros((N, T, 1)), np.zeros((N, T, 1))
       for n in range(N):
