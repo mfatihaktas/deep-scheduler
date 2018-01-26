@@ -41,29 +41,21 @@ def test():
     n_t_r_l = n_t_r_l.reshape((N, T))
     print("rank= {}, 2nd returned to master n_t_r_l= \n{}".format(rank, n_t_r_l) )
 
-def learn_shortestq_wmpi():
-  comm = MPI.COMM_WORLD
-  size = comm.Get_size()
-  rank = comm.Get_rank()
-  print("rank= {}, size= {}".format(rank, size) )
-  # comm.Barrier()
-  sys.stdout.flush()
-  
-  ns = 3
-  s_len, a_len, nn_len = ns, ns, 10
-  scher = PolicyGradScher(s_len, a_len, nn_len, straj_training=False)
+def learn_shortestq_wmpi(rank, ns, ar):
+  s_len, a_len, nn_len = ns, ns, 2*ns
+  scher = PolicyGradScher(s_len, a_len, nn_len, straj_training=False, save_name=save_name('log', 'shortestq', ns, ar) )
   N, T = 20, 1000 # 10, 1000
   
   if rank == 0:
     # '''
     print("Eval before training:")
     for _ in range(3):
-      evaluate(scher, ns, T)
+      evaluate(scher, ns, ar, T)
     print("Eval with jshortestq:")
     for _ in range(3):
-      evaluate(scher, ns, T, sching='jshortestq')
+      evaluate(scher, ns, ar, T, sching='jshortestq')
     
-    for i in range(100*100):
+    for i in range(100):
       scher.save(i)
       n_t_s_l, n_t_a_l, n_t_r_l, n_t_sl_l = np.zeros((N, T, s_len)), np.zeros((N, T, 1)), np.zeros((N, T, 1)), np.zeros((N, T, 1))
       for n in range(N):
@@ -103,10 +95,10 @@ def learn_shortestq_wmpi():
       scher.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
       if i % 10 == 0:
         print("Eval:")
-        evaluate(scher, ns, 4*T)
+        evaluate(scher, ns, ar, 4*T)
     print("Eval after learning:")
     sys.stdout.flush()
-    evaluate(scher, ns, T=40000)
+    evaluate(scher, ns, ar, T=40000)
     
     for p in range(1, size):
       sim_step = np.array([-1], dtype='i')
@@ -134,4 +126,11 @@ def learn_shortestq_wmpi():
   
 if __name__ == "__main__":
   # test()
-  learn_shortestq_wmpi()
+  comm = MPI.COMM_WORLD
+  size = comm.Get_size()
+  rank = comm.Get_rank()
+  print("rank= {}, size= {}".format(rank, size) )
+  # comm.Barrier()
+  sys.stdout.flush()
+  
+  learn_shortestq_wmpi(rank, ns=3, ar=0.5)

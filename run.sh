@@ -4,8 +4,7 @@ echo $1 $2 $3
 PYTHON=python3
 PKILL=/usr/bin/pkill
 
-rm -r __pycache__
-rm log/*
+# rm -r __pycache__
 if [ $1 = 'i' ]; then
   source ~/tensorflow/bin/activate
 elif [ $1 = 't' ]; then
@@ -19,7 +18,9 @@ elif [ $1 = 's' ]; then
 elif [ $1 = 'r' ]; then
   $PYTHON learn_howtorep.py
 elif [ $1 = 'e' ]; then
-  $PYTHON exp.py
+  $PYTHON howtorep_exp.py
+elif [ $1 = 'p' ]; then
+  $PYTHON profile_scher.py
 else
   echo "Arg did not match!"
 fi

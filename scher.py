@@ -101,27 +101,28 @@ class ValueEster(object):
                            feed_dict={self.s_ph: n_t_s_l} )
 
 class PolicyGradScher(object):
-  def __init__(self, s_len, a_len, nn_len=10, straj_training=False):
+  def __init__(self, s_len, a_len, nn_len=10, straj_training=False, save_name='log/policy_grad'):
     self.s_len = s_len
     self.a_len = a_len
     self.nn_len = nn_len
     self.straj_training = straj_training
+    self.save_name = save_name
     
     self.v_ester = ValueEster(s_len, nn_len, straj_training)
     self.gamma = 0.99
     self.init()
     
-    self.saver = tf.train.Saver()
+    self.saver = tf.train.Saver(max_to_keep=1)
   
   def __repr__(self):
     return "PolicyGradScher[s_len= {}, a_len= {}]".format(self.s_len, self.a_len)
   
   def save(self, step):
-    save_path = self.saver.save(self.sess, 'log/policy_grad', global_step=step)
+    save_path = self.saver.save(self.sess, self.save_name, global_step=step)
     # print("saved scher to save_path= {}".format(save_path) )
   
   def restore(self, step):
-    self.saver.restore(self.sess, 'log/policy_grad-{}'.format(step) )
+    self.saver.restore(self.sess, '{}-{}'.format(self.save_name, step) )
     # print("restored scher to step= {}".format(step) )
   
   def init(self):
@@ -260,6 +261,11 @@ class PolicyGradScher(object):
                                        self.v_ph: n_t_v_l} )
     print("PolicyGradScher:: loss= {}".format(loss) )
     '''
+  
+  def get_action_dist(self, s):
+    a_probs = self.sess.run(self.a_probs,
+                            feed_dict={self.s_ph: [[s]] } )
+    return np.array(a_probs[0][0] )
   
   def get_random_action(self, s):
     # print("s= {}".format(s) )

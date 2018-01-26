@@ -60,11 +60,11 @@ class MultiQ(object):
     if self.num_jcompleted > self.max_numj:
       self.env.exit()
 
-def sample_traj(scher, ns, T, sching=None, act_max=False):
+def sample_traj(scher, ns, ar, T, sching=None, act_max=False):
   reward = lambda sl : 1/sl
   
   env = simpy.Environment()
-  jg = JG(env, ar=0.5, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
+  jg = JG(env, ar, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
   mq = MultiQ(env, ns, T, scher, sching, act_max)
   jg.out = mq
   jg.init()
@@ -80,9 +80,9 @@ def sample_traj(scher, ns, T, sching=None, act_max=False):
   return t_s_l, t_a_l, t_r_l, t_sl_l
   # return np.random.rand(T, s_len), np.random.rand(T, 1), np.random.rand(T, 1), np.random.rand(T, 1)
 
-def evaluate(scher, ns, T, sching=None):
+def evaluate(scher, ns, ar, T, sching=None):
   num_shortest_found = 0
-  t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(scher, ns, T, sching, act_max=True)
+  t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(scher, ns, ar, T, sching, act_max=True)
   for t in range(T):
     s, a = t_s_l[t], int(t_a_l[t][0] )
     if s[a] - s.min() < 0.1:
@@ -91,6 +91,7 @@ def evaluate(scher, ns, T, sching=None):
 
 def learn_shortestq():
   ns = 3
+  ar = 0.5
   s_len, a_len, nn_len = ns, ns, 10
   scher = PolicyGradScher(s_len, a_len, nn_len, straj_training=False)
   
@@ -98,14 +99,14 @@ def learn_shortestq():
   
   print("Eval before training:")
   for _ in range(3):
-    evaluate(scher, ns, T)
+    evaluate(scher, ns, ar, T)
   print("Eval with jshortestq:")
   for _ in range(3):
-    evaluate(scher, ns, T, sching='jshortestq')
+    evaluate(scher, ns, ar, T, sching='jshortestq')
   for i in range(100*100):
     n_t_s_l, n_t_a_l, n_t_r_l, n_t_sl_l = np.zeros((N, T, s_len)), np.zeros((N, T, 1)), np.zeros((N, T, 1)), np.zeros((N, T, 1))
     for n in range(N):
-      t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(scher, ns, T)
+      t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(scher, ns, ar, T)
       n_t_s_l[n, :] = t_s_l
       n_t_a_l[n, :] = t_a_l
       n_t_r_l[n, :] = t_r_l
@@ -122,9 +123,9 @@ def learn_shortestq():
     scher.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
     scher.save(i)
     if i % 5 == 0:
-      evaluate(scher, ns, 4*T)
+      evaluate(scher, ns, ar, 4*T)
   print("Eval after learning:")
-  evaluate(scher, ns, T=40000)
+  evaluate(scher, ns, ar, T=40000)
 
 if __name__ == "__main__":
   learn_shortestq()

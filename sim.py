@@ -46,10 +46,11 @@ class JG(object): # Job Generator
         return
       
 class Task(object):
-  def __init__(self, jid, k, size, remaining=None):
+  def __init__(self, jid, k, size, type_=None, remaining=None):
     self.jid = jid
     self.k = k
     self.size = size
+    self.type_ = type_
     self.remaining = remaining
     
     self.prev_hop_id = None
@@ -174,11 +175,12 @@ class PSQ(object): # Process Sharing Queue
           self.t_l.remove(t)
 
 class FCFS(object):
-  def __init__(self, _id, env, slowdown_dist, out=None, out_c=None):
+  def __init__(self, _id, env, slowdown_dist, out=None, out_c=None, L=None):
     self._id = _id
     self.env = env
     self.slowdown_dist = slowdown_dist
     self.out, self.out_c = out, out_c
+    self.L = L
     
     self.t_l = []
     self.t_inserv = None
@@ -205,6 +207,16 @@ class FCFS(object):
         self.got_busy = None
         # sim_log(DEBUG, self.env, self, "got busy!", None)
       self.t_inserv = self.t_l.pop(0)
+      if self.L is not None and self.t_inserv.type_ == 'r':
+        # Pessimistic cancellation of redundant task
+        # min_t = self.slowdown_dist.l_l * self.t_inserv.size
+        # max_t = self.slowdown_dist.u_l * self.t_inserv.size
+        # if (max_t - min_t) < min_t*(self.length() - 1):
+        #   self.t_inserv = None
+        #   continue
+        if self.length() > self.L:
+          self.t_inserv = None
+          continue
       
       self.cancel = self.env.event()
       clk_start_time = self.env.now
