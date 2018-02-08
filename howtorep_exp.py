@@ -20,11 +20,10 @@ class MultiQ_wRep(object):
     L = sching_m['L'] if 'L' in sching_m else None
     self.q_l = [FCFS(i, env, sl_dist, out=self.jq, out_c=self.jq, L=L) for i in range(self.n) ]
     
-    self.jid_info_m = {}
-    
     self.store = simpy.Store(env)
     self.action = env.process(self.run() )
     
+    self.jid_info_m = {}
     self.num_jcompleted = 0
     self.jsl_l = []
     self.d_numj_l = [0 for _ in range(self.d) ]

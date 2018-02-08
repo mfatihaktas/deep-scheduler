@@ -24,7 +24,8 @@ elif [ $1 = 'w' ]; then
 elif [ $1 = 'p' ]; then
   $PYTHON profile_scher.py
 elif [ $1 = 'm' ]; then
-  $PYTHON mg1_wred.py
+  # $PYTHON mg1_wred.py
+  $PYTHON mgs_wred.py
 else
   echo "Arg did not match!"
 fi

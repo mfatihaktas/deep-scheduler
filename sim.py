@@ -58,7 +58,7 @@ class Task(object):
     self.ent_time = None
   
   def __repr__(self):
-    return "Task[jid= {}, k= {}, size= {}, remaining= {}]".format(self.jid, self.k, self.size, self.remaining)
+    return "Task[jid= {}, k= {}, size= {}]".format(self.jid, self.k, self.size)
   
   def deep_copy(self):
     t = Task(self.jid, self.k, self.size, self.remaining)
