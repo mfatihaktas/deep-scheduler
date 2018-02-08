@@ -11,7 +11,7 @@ class Job(object):
     self.prev_hop_id = None
   
   def __repr__(self):
-    return "Job[id= {}, k= {}, n= {}]".format(self._id, self.k, self.n)
+    return "Job[id= {}]".format(self._id)
   
   def deep_copy(self):
     j = Job(self._id, self.k, self.tsize, self.n)

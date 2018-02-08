@@ -408,7 +408,7 @@ def binomial(n, k):
   return scipy.special.binom(n, k)
 
 def moment_ith(X, i):
-  return mpmath.quad(lambda x: i*x**(i-1) * (1 - X.cdf(x) ), [0, 10000*10] ) # mpmath.inf
+  return float(mpmath.quad(lambda x: i*x**(i-1) * (1 - X.cdf(x) ), [0, 10000*10] ) ) # mpmath.inf
 
 # Order stats
 def cdf_n_k(X, n, k, x): # Pr{X_n:k < x}
