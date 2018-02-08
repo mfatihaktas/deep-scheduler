@@ -102,7 +102,7 @@ class TPareto(): # Truncated
     self.a = a
   
   def __str__(self):
-    return "Pareto(l= {}, u= {}, a= {})".format(self.l, self.u, self.a)
+    return "TPareto(l= {}, u= {}, a= {})".format(self.l, self.u, self.a)
   
   def cdf(self, x):
     if x < self.l: return 0
@@ -199,36 +199,54 @@ class Dolly(RV):
   # Kristen et al. A Better Model for Job Redundancy: Decoupling Server Slowdown and Job Size
   def __init__(self):
     RV.__init__(self, l_l=1, u_l=12)
+    
+    self.v = numpy.arange(1, 13)
+    self.p = [0.23, 0.14, 0.09, 0.03, 0.08, 0.1, 0.04, 0.14, 0.12, 0.021, 0.007, 0.002]
+    self.dist = scipy.stats.rv_discrete(name='dolly', values=(self.v, self.p) )
   
   def __str__(self):
-    return "Dolly"
+    return "Dolly[{}, {}]".format(self.l_l, self.u_l)
+  
+  def pdf(self, x):
+    return self.dist.pmf(x) if (x >= self.l_l and x <= self.u_l) else 0
+  
+  def cdf(self, x):
+    if x < self.l_l:
+      return 0
+    elif x > self.u_l:
+      return 1
+    return float(self.dist.cdf(x) )
+  
+  def gen_sample(self):
+    return random.randint(self.l_l, self.u_l)
   
   def gen_sample(self):
     u = random.uniform(0, 1)
-    if u <= 0.23: return 1 + u/100
-    u -= 0.23
-    if u <= 0.14: return 2 + u/100
-    u -= 0.14
-    if u <= 0.09: return 3 + u/100
-    u -= 0.09
-    if u <= 0.03: return 4 + u/100
-    u -= 0.03
-    if u <= 0.08: return 5 + u/100
-    u -= 0.08
-    if u <= 0.1: return 6 + u/100
-    u -= 0.1
-    if u <= 0.04: return 7 + u/100
-    u -= 0.04
-    if u <= 0.14: return 8 + u/100
-    u -= 0.14
-    if u <= 0.12: return 9 + u/100
-    u -= 0.12
-    if u <= 0.021: return 10 + u/100
-    u -= 0.021
-    if u <= 0.007: return 11 + u/100
-    u -= 0.007
-    if u <= 0.002: return 12 + u/100
-    return 12 + u/100 # for safety
+    # if u <= 0.23: return 1 + u/100
+    # u -= 0.23
+    # if u <= 0.14: return 2 + u/100
+    # u -= 0.14
+    # if u <= 0.09: return 3 + u/100
+    # u -= 0.09
+    # if u <= 0.03: return 4 + u/100
+    # u -= 0.03
+    # if u <= 0.08: return 5 + u/100
+    # u -= 0.08
+    # if u <= 0.1: return 6 + u/100
+    # u -= 0.1
+    # if u <= 0.04: return 7 + u/100
+    # u -= 0.04
+    # if u <= 0.14: return 8 + u/100
+    # u -= 0.14
+    # if u <= 0.12: return 9 + u/100
+    # u -= 0.12
+    # if u <= 0.021: return 10 + u/100
+    # u -= 0.021
+    # if u <= 0.007: return 11 + u/100
+    # u -= 0.007
+    # if u <= 0.002: return 12 + u/100
+    # return 12 + u/100 # for safety
+    return self.dist.rvs() + u/100
 
 class Bern(RV):
   def __init__(self, L, U, p):
@@ -265,6 +283,11 @@ class Bern(RV):
 class DUniform(): # Discrete
   def __init__(self, lb, ub):
     RV.__init__(self, l_l=lb, u_l=ub)
+    
+    self.v = numpy.arange(self.l_l, self.u_l+1)
+    w_l = [1 for v in self.v]
+    self.p = [w/sum(w_l) for w in w_l]
+    self.dist = scipy.stats.rv_discrete(name='duniform', values=(self.v, self.p) )
   
   def __str__(self):
     return "DUniform[{}, {}]".format(self.l_l, self.u_l)
@@ -273,10 +296,14 @@ class DUniform(): # Discrete
     return (self.u_l + self.l_l)/2
   
   def pdf(self, x):
-    return float(1/(self.u_l - self.l_l + 1) )
+    return self.dist.pmf(x)
+  
+  def cdf(self, x):
+    return self.dist.cdf(x)
   
   def gen_sample(self):
-    return random.randint(self.l_l, self.u_l)
+    # return random.randint(self.l_l, self.u_l)
+    return self.dist.rvs()
 
 class BoundedZipf():
   def __init__(self, lb, ub, a=1):
@@ -353,5 +380,70 @@ class Gamma():
   def gen_sample(self):
     return self.dist.rvs(size=1)
 
+class X_n_k():
+  def __init__(self, X, n, k):
+    RV.__init__(self, l_l=X.l_l, u_l=X.u_l)
+    self.X, self.n, self.k = X, n, k
+  
+  def __str__(self):
+    return "{}_{{}:{}}".format(X, self.n, self.k)
+  
+  def cdf(self, x):
+    return cdf_n_k(self.X, self.n, self.k, x)
+  
+  def gen_sample(self):
+    return gen_orderstat_sample(self.X, self.n, self.k)
+
+def binomial(n, k):
+  # if n == k:
+  #   return 1
+  # elif k == 1:
+  #   return n
+  # elif k == 0:
+  #   return 1
+  # elif k > n:
+  #   return 0
+  # else:
+  #   return math.factorial(n)/math.factorial(k)/math.factorial(n-k)
+  return scipy.special.binom(n, k)
+
+def moment_ith(X, i):
+  return mpmath.quad(lambda x: i*x**(i-1) * (1 - X.cdf(x) ), [0, 10000*10] ) # mpmath.inf
+
+# Order stats
+def cdf_n_k(X, n, k, x): # Pr{X_n:k < x}
+  cdf = 0
+  for i in range(k, n+1):
+    cdf += binomial(n, i) * X.cdf(x)**i * X.tail(x)**(n-i)
+  return cdf
+
+def moment_ith_n_k(X, i, n, k): # E[X_n:k]
+  return mpmath.quad(lambda x: i*x**(i-1) * (1 - cdf_n_k(X, n, k, x) ), [0, 10000*10] )
+
+def gen_orderstat_sample(X, n, k):
+  # print("s_l= {}".format(s_l) )
+  return sorted([X.gen_sample() for _ in range(n) ] )[k-1]
+
+def H(n):
+  if n == 0:
+    return 0
+  sum_ = 0
+  for i in range(1, n+1):
+    sum_ += float(1/i)
+  return sum_
+
+def fact(n):
+  return math.factorial(n)
+
 if __name__ == "__main__":
-  plot_gensample_check()
+  # plot_gensample_check()
+  D = Dolly()
+  # print("Dolly sample= {}".format(D.gen_sample() ) )
+  x_l, cdf_l = [], []
+  for x in numpy.linspace(0, 20, 100):
+    x_l.append(x)
+    cdf_l.append(D.cdf(x) )
+  plot.plot(x_l, cdf_l, label=r'CDF of Dolly', marker=next(marker), linestyle=':', mew=2)
+  plot.legend()
+  plot.savefig("plot_dolly_cdf.pdf")
+  plot.gcf().clear()

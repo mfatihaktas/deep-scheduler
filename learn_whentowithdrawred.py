@@ -1,4 +1,3 @@
-import pprint
 import numpy as np
 
 from patch import *
@@ -6,8 +5,8 @@ from rvs import *
 from sim import *
 from scher import PolicyGradScher
 
-class MultiQ_wRep(object):
-  def __init__(self, env, n, max_numj, sching_m, scher, act_max=False):
+class MultiQ_Reptod(object):
+  def __init__(self, env, n, max_numj, sching_m, scher=None, act_max=False):
     self.env = env
     self.n = n
     self.max_numj = max_numj
@@ -15,10 +14,13 @@ class MultiQ_wRep(object):
     self.scher = scher
     self.act_max = act_max
     
+    self.d = self.sching_m['d']
+    
     self.jq = JQ(env, list(range(self.n) ), self)
-    # self.q_l = [PSQ(i, env, h=4, out=self.jq) for i in range(self.n) ]
-    slowdown_dist = Dolly() # TPareto(1, 20, 1) # Dolly() # DUniform(1, 1)
-    self.q_l = [FCFS(i, env, slowdown_dist, out=self.jq) for i in range(self.n) ]
+    
+    L = sching_m['L'] if 'L' in sching_m else None
+    slowdown_dist = Exp(1) # Exp(1, D=1) # Dolly() # TPareto(1, 200, 1) # DUniform(1, 1)
+    self.q_l = [FCFS(i, env, slowdown_dist, out=self.jq, out_c=self.jq, L=L) for i in range(self.n) ]
     
     self.jid_info_m = {}
     
@@ -29,42 +31,51 @@ class MultiQ_wRep(object):
     self.jsl_l = []
   
   def __repr__(self):
-    return "MultiQ_wRep[n= {}]".format(self.n)
+    return "MultiQ_Reptod[n= {}]".format(self.n)
   
   def get_rand_d(self):
-    # return np.array([q.length() for q in self.q_l] )
-    i_l = random.sample(range(self.n), self.sching_m['d'] )
-    ql_i_l = sorted([(self.q_l[i].length(), i) for i in i_l] )
-    i_l = [ql_i[1] for ql_i in ql_i_l]
+    qi_l = random.sample(range(self.n), self.d)
+    ql_i_l = sorted([(self.q_l[i].length(), i) for i in qi_l] )
+    qi_l = [ql_i[1] for ql_i in ql_i_l]
     ql_l = [ql_i[0] for ql_i in ql_i_l]
-    return i_l, ql_l
-  
-  # def get_sorted_qids(self):
-  #   t_l = sorted([(q.length(), q._id) for q in self.q_l] )
-  #   return [t[1] for t in t_l]
-  # def sample_qids(self, n):
-  #   # return random.sample(range(self.n), n)
-  #   return self.get_sorted_qids()[0:n]
+    # ql_l = [self.q_l[i].length() for i in qi_l]
+    return qi_l, ql_l
   
   def run(self):
     while True:
       j = (yield self.store.get() )
       
-      i_l, ql_l = self.get_rand_d()
+      qi_l, ql_l = self.get_rand_d()
       s = ql_l
-      if 'rep-to-d' in self.sching_m:
-        toi_l = i_l
-      elif 'rep-to-d-ifidle' in self.sching_m:
+      if 'reptod' in self.sching_m:
+        toi_l = qi_l
+      elif 'reptod-ifidle' in self.sching_m:
         i = 0
         while i < len(ql_l) and ql_l[i] == 0: i += 1
-        toi_l = i_l[:i+1]
-      elif 'rep-to-d-wlearning' in self.sching_m:
+        toi_l = qi_l[:i+1]
+      elif 'reptod-withdraw' in self.sching_m:
+        toi_l = qi_l
+      elif 'reptod-withdraw-wlearning' in self.sching_m:
         a = self.scher.get_random_action(s) if not self.act_max else self.scher.get_max_action(s)
-        toi_l = i_l[:a+1]
+        toi_l = qi_l
+      if 'a' not in locals():
+        a = 0
       
-      a = len(toi_l) - 1
-      for i in toi_l:
-        self.q_l[i].put(Task(j._id, j.k, j.tsize) )
+      if 'reptod-withdraw' in self.sching_m:
+        for _, i in enumerate(toi_l):
+          if _ == 0:
+            self.q_l[i].put(Task(j._id, j.k, j.tsize) )
+          else:
+            self.q_l[i].put(Task(j._id, j.k, j.tsize, type_='r') )
+      elif 'reptod-withdraw-wlearning' in self.sching_m:
+        for _, i in enumerate(toi_l):
+          if _ == 0:
+            self.q_l[i].put(Task(j._id, j.k, j.tsize) )
+          else:
+            self.q_l[i].put(Task(j._id, j.k, j.tsize, type_='r', L=a) )
+      else:
+        for i in toi_l:
+          self.q_l[i].put(Task(j._id, j.k, j.tsize) )
       self.jid_info_m[j._id] = {'ent': self.env.now, 'ts': j.tsize, 'qid_l': toi_l, 's': s, 'a': a}
   
   def put(self, j):
@@ -86,13 +97,12 @@ class MultiQ_wRep(object):
     if self.num_jcompleted > self.max_numj:
       self.env.exit()
 
-def sample_traj(ns, ar, T, sching_m, scher, act_max=False):
+def sample_traj(ns, ar, T, sching_m, scher):
   reward = lambda sl : 100/sl
   
   env = simpy.Environment()
-  # DUniform(1, 1)
-  jg = JG(env, ar, k_dist=DUniform(1, 1), tsize_dist=TPareto(1, 20, 1.05), max_sent=T)
-  mq = MultiQ_wRep(env, ns, T, sching_m, scher, act_max)
+  jg = JG(env, ar, k_dist=DUniform(1, 1), tsize_dist=DUniform(1, 1), max_sent=T)
+  mq = MultiQ_Reptod(env, ns, T, sching_m, scher)
   jg.out = mq
   jg.init()
   env.run()
@@ -100,7 +110,6 @@ def sample_traj(ns, ar, T, sching_m, scher, act_max=False):
   t_s_l, t_a_l, t_r_l, t_sl_l = np.zeros((T, sching_m['d'])), np.zeros((T, 1)), np.zeros((T, 1)), np.zeros((T, 1))
   for t in range(T):
     jinfo_m = mq.jid_info_m[t+1]
-    # print("t= {}, jinfo_m= {}".format(t, jinfo_m) )
     t_s_l[t, :] = jinfo_m['s']
     t_a_l[t, :] = jinfo_m['a']
     t_r_l[t, :] = reward(jinfo_m['sl'] )
@@ -111,35 +120,28 @@ def evaluate(ns, ar, T, sching_m, scher):
   _, t_a_l, t_r_l, t_sl_l = sample_traj(ns, ar, T, sching_m, scher)
   print("avg a= {}, avg sl= {}".format(np.mean(t_a_l), np.mean(t_sl_l) ) )
 
-def learn_howtorep_w_mult_trajs():
-  # ns, ar = 6, 0.6
-  ns, d, ar = 10, 3, 1
+def learn_whentowithdraw():
+  ns, d, ar = 10, 3, 2 # 10
   print("ns= {}, d= {}, ar= {}".format(ns, d, ar) )
-  s_len, a_len = d, d # ns, ns
+  s_len, a_len = d, 5
   nn_len = 10
-  scher = PolicyGradScher(s_len, a_len, nn_len, straj_training=False)
+  scher = PolicyGradScher(s_len, a_len, nn_len)
   
   N, T = 10, 1000
   
   print("BEFORE training")
-  sching_m = {'rep-to-d-ifidle': 0, 'd': d}
+  sching_m = {'reptod-ifidle': 0, 'd': d}
   print("Eval with sching_m= {}".format(sching_m) )
   for _ in range(3):
     evaluate(ns, ar, T, sching_m, scher)
   
-  sching_m = {'rep-to-d': 0, 'd': d}
+  sching_m = {'reptod-withdraw': 0, 'd': d, 'L': 0}
   print("Eval with sching_m= {}".format(sching_m) )
   for _ in range(3):
     evaluate(ns, ar, T, sching_m, scher)
   
-  # for d_ in range(1, ns+1):
-  #   sching_m = {'rep-to-d': 0, 'd': d_}
-  #   print("Eval with sching_m= {}".format(sching_m) )
-  #   for _ in range(3):
-  #     evaluate(ns, ar, T, sching_m, scher)
-  
-  sching_m = {'rep-to-d-wlearning': 0, 'd': d}
-  for i in range(100*10):
+  sching_m = {'reptod-withdraw-wlearning': 0, 'd': d}
+  for i in range(25):
     print("i= {}".format(i) )
     n_t_s_l, n_t_a_l, n_t_r_l, n_t_sl_l = np.zeros((N, T, s_len)), np.zeros((N, T, 1)), np.zeros((N, T, 1)), np.zeros((N, T, 1))
     for n in range(N):
@@ -154,30 +156,29 @@ def learn_howtorep_w_mult_trajs():
     #   print("eval:")
     #   evaluate(ns, ar, T, sching_m, scher)
     
-    # if i % 5:
-    #   continue
-    # for j in range(20):
-    #   for _ in range(3):
-    #     if j == 0:
-    #       s = [0]*ns
-    #     else:
-    #       s = np.random.randint(j*5, size=ns)
-    #       # sum_s = sum(s)
-    #       # s = s if sum_s == 0 else s/sum_s
-    #     a = scher.get_random_action(s)
-    #     print("s= {}, a= {}".format(s, a) )
+    if i % 5:
+      continue
+    for j in range(20):
+      for _ in range(3):
+        s = np.random.randint(j*5+1, size=s_len)
+        a = scher.get_max_action(s) # scher.get_random_action(s)
+        print("s= {}, a= {}".format(s, a) )
   print("AFTER training")
-  T_ = 40*T
-  evaluate(ns, ar, T_, sching_m, scher)
-  
-  sching_m = {'rep-to-d-ifidle': 0, 'd': d}
+  T_ = 20*T
+  sching_m = {'reptod-withdraw-wlearning': 0, 'd': d}
   print("Eval with sching_m= {}".format(sching_m) )
-  evaluate(ns, ar, T_, sching_m, scher)
-  
-  for d_ in range(1, ns+1):
-    sching_m = {'rep-to-d': 0, 'd': d_}
-    print("Eval with sching_m= {}".format(sching_m) )
+  for _ in range(3):
     evaluate(ns, ar, T_, sching_m, scher)
+  
+  sching_m = {'reptod-ifidle': 0, 'd': d}
+  print("Eval with sching_m= {}".format(sching_m) )
+  for _ in range(3):
+    evaluate(ns, ar, T, sching_m, scher)
+  
+  sching_m = {'reptod-withdraw': 0, 'd': d, 'L': 0}
+  print("Eval with sching_m= {}".format(sching_m) )
+  for _ in range(3):
+    evaluate(ns, ar, T, sching_m, scher)
 
 if __name__ == "__main__":
-  learn_howtorep_w_mult_trajs()
+  learn_whentowithdraw()

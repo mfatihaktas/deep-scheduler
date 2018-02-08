@@ -19,8 +19,12 @@ elif [ $1 = 'r' ]; then
   $PYTHON learn_howtorep.py
 elif [ $1 = 'e' ]; then
   $PYTHON howtorep_exp.py
+elif [ $1 = 'w' ]; then
+  $PYTHON learn_whentowithdrawred.py
 elif [ $1 = 'p' ]; then
   $PYTHON profile_scher.py
+elif [ $1 = 'm' ]; then
+  $PYTHON mg1_wred.py
 else
   echo "Arg did not match!"
 fi

@@ -46,11 +46,12 @@ class JG(object): # Job Generator
         return
       
 class Task(object):
-  def __init__(self, jid, k, size, type_=None, remaining=None):
+  def __init__(self, jid, k, size, type_=None, L=None, remaining=None):
     self.jid = jid
     self.k = k
     self.size = size
     self.type_ = type_
+    self.L = L
     self.remaining = remaining
     
     self.prev_hop_id = None
@@ -197,7 +198,9 @@ class FCFS(object):
     return "FCFS[_id= {}]".format(self._id)
   
   def length(self):
-    return len(self.t_l) + (self.t_inserv is not None)
+    # return len(self.t_l) + (self.t_inserv is not None)
+    return sum([t.type_ != 'r' for t in self.t_l] ) + (self.t_inserv is not None and self.t_inserv.type_ != 'r')
+    # return sum([t.size for t in self.t_l if t.type_ != 'r'] ) + (self.t_inserv.size if (self.t_inserv is not None and self.t_inserv.type_ != 'r') else 0)
   
   def serv_run(self):
     while True:
@@ -207,16 +210,18 @@ class FCFS(object):
         self.got_busy = None
         # sim_log(DEBUG, self.env, self, "got busy!", None)
       self.t_inserv = self.t_l.pop(0)
-      if self.L is not None and self.t_inserv.type_ == 'r':
-        # Pessimistic cancellation of redundant task
-        # min_t = self.slowdown_dist.l_l * self.t_inserv.size
-        # max_t = self.slowdown_dist.u_l * self.t_inserv.size
-        # if (max_t - min_t) < min_t*(self.length() - 1):
-        #   self.t_inserv = None
-        #   continue
-        if self.length() > self.L:
-          self.t_inserv = None
-          continue
+      if self.t_inserv.type_ == 'r':
+        if self.L is not None:
+          if (self.length() - 1) > self.L:
+            self.t_inserv = None
+            continue
+          else:
+            if self.out_c is not None:
+              self.out_c.put_c({'m': 'r', 'jid': self.t_inserv.jid} )
+        elif self.L is None:
+          if (self.length() - 1) > self.t_inserv.L:
+            self.t_inserv = None
+            continue
       
       self.cancel = self.env.event()
       clk_start_time = self.env.now
@@ -227,6 +232,7 @@ class FCFS(object):
       if self.cancel_flag:
         # sim_log(DEBUG, self.env, self, "cancelled clock on ", self.t_inserv)
         self.cancel_flag = False
+        # yield self.env.timeout(1)
       else:
         # sim_log(DEBUG, self.env, self, "serv done in {}s on ".format(self.env.now-clk_start_time), self.t_inserv)
         lt = self.env.now - self.t_inserv.ent_time
@@ -247,6 +253,9 @@ class FCFS(object):
     self.t_l.append(t) # .deep_copy()
     if self.got_busy is not None and _l == 0:
       self.got_busy.succeed()
+    elif _l == 1 and self.t_inserv.type_ == 'r' and t.type_ != 'r':
+      self.cancel_flag = True
+      self.cancel.succeed()
   
   def put_c(self, m):
     sim_log(DEBUG, self.env, self, "recved", m)
@@ -271,6 +280,8 @@ class JQ(object):
     
     self.store = simpy.Store(env)
     self.action = env.process(self.run() )
+    
+    self.jid_r_m = {}
     
   def __repr__(self):
     return "JQ[in_qid_l= {}]".format(self.in_qid_l)
@@ -300,3 +311,11 @@ class JQ(object):
   def put(self, t):
     sim_log(DEBUG, self.env, self, "recved", t)
     return self.store.put(t)
+  
+  def put_c(self, m):
+    sim_log(DEBUG, self.env, self, "recved", m)
+    if m['m'] == 'r':
+      jid = m['jid']
+      if jid not in self.jid_r_m:
+        self.jid_r_m[jid] = 0
+      self.jid_r_m[jid] += 1

@@ -16,8 +16,8 @@ WARNING = 2
 ERROR = 3
 
 # DEBUG_LEVEL = INFO
-# DEBUG_LEVEL = WARNING
-DEBUG_LEVEL = ERROR
+DEBUG_LEVEL = WARNING
+# DEBUG_LEVEL = ERROR
 
 debug_level__string_map = {INFO: "INFO", DEBUG: "DEBUG", WARNING: "WARNING", ERROR: "ERROR"}
 
@@ -52,4 +52,3 @@ def alog(log):
 
 def save_name(folder_name, prob_name, ns, d, ar):
   return "{}/{}_ns{}_d{}_ar{}".format(folder_name, prob_name, ns, d, ar)
-

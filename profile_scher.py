@@ -4,14 +4,13 @@ from learn_howtorep import *
 
 def plot_probrep_d2():
   ns, d = 10, 2
-  # ar = 1.225
-  ar = 1.9 # 2.5 # 1.3 # 0.85
+  ar = 0.115 # 0.30500000000000005 # 0.4
   s_len, a_len, nn_len = d, d, 10
   
   scher = PolicyGradScher(s_len, a_len, nn_len, save_name=save_name('saved', 'howtorep', ns, d, ar) )
   scher.restore(99)
   
-  max_l = 100
+  max_l = 25
   l1_l2_grid = numpy.zeros((max_l, max_l))
   for l1 in range(max_l):
     for l2 in range(max_l):

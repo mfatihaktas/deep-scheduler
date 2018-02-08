@@ -5,7 +5,9 @@ from mpi4py import MPI
 from learn_howtorep import *
 
 def learn_multiple(rank, ns, d):
-  for ar in np.linspace(0.1, 2.5, 5):
+  # for ar in np.linspace(0.1, 2.5, 5):
+  # for ar in np.linspace(0.02, 0.4, 5):
+  for ar in np.linspace(0.1, 0.4, 5):
     learn_howtorep_wmpi(rank, ns, d, ar)
 
 def eval_(ns, d, ar, T, scher):
@@ -29,7 +31,7 @@ def learn_howtorep_wmpi(rank, ns, d, ar):
   s_len, a_len = d, d
   nn_len = 10
   scher = PolicyGradScher(s_len, a_len, nn_len, save_name=save_name('log', 'howtorep', ns, d, ar) )
-  N, T = 20, 1000*2
+  N, T = 20, 1000*1
   alog("starting; rank= {}, ar= {}, ns= {}".format(rank, ar, ns) )
   
   if rank == 0:
