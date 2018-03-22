@@ -17,6 +17,7 @@ def mmn_ENq(n, ar, mu):
   return ENq
 
 def mmn_ET(n, ar, mu):
+  ro = ar/mu
   EN = mmn_ENq(n, ar, mu) + ro
   return EN/ar
 
@@ -25,5 +26,31 @@ def mgn_ET(n, ar, V):
   ro = ar*EV
   cvar_V = moment_ith(V, 2)/EV**2 - 1
   ENq = (1 + cvar_V)/2 * mmn_ENq(n, ar, 1/EV)
+  EN = ENq + ro
+  return EN/ar
+
+def mgn_rep_ET(n, ar, V):
+  EV = moment_ith(V, 1)
+  # return 1/(n/EV - ar)
+  # p_l = [ar**(-i) for i in range(n) ]
+  
+  ar_ub = n/EV
+  # p_l = [(ar*1/(ar_ub - ar) )**(n-i) for i in range(1, n+1) ]
+  f, l = 1/(ar_ub - ar), 1/ar
+  a = (l/f)**(1/(n-1))
+  p_l = [f*a**i for i in range(n) ]
+  s = sum(p_l)
+  p_l = [p/s for p in p_l]
+  print("p_l= {}".format(p_l) )
+  
+  EG, EG2 = 0, 0
+  for i in range(1, n+1):
+    Gi = X_n_k(V, i, 1)
+    EG += p_l[i-1]*moment_ith(Gi, 1)
+    EG2 += p_l[i-1]*moment_ith(Gi, 2)
+  
+  ro = ar*EG
+  cvar_G = EG2/EG**2 - 1
+  ENq = (1 + cvar_G)/2 * mmn_ENq(n, ar, 1/EG)
   EN = ENq + ro
   return EN/ar

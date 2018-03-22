@@ -32,10 +32,6 @@ class Server(object):
   def run(self):
     while 1:
       self.t_inserv = (yield self.store.get() )
-      
-      if self.length() > 1:
-        sim_log(ERROR, self.env, self, "length= {}".format(self.length() ), self.t_inserv)
-      
       self.cancel = self.env.event()
       clk_start_time = self.env.now
       st = self.t_inserv.size * (self.S.gen_sample() + random.randint(1, 10)/1000)
@@ -48,6 +44,12 @@ class Server(object):
         sim_log(DEBUG, self.env, self, "serv done in {}s on ".format(self.env.now-clk_start_time), self.t_inserv)
         self.out_c.put_c({'qid': self._id, 'jid': self.t_inserv.jid} )
       self.t_inserv = None
+      # if self.length() > 1:
+      #   sim_log(ERROR, self.env, self, "length= {}".format(self.length() ), self.t_inserv)
+      #   # print("store= ".format(["{}".format(t) for t in self.store.items] ) )
+      #   # print("len(store.items)= {}, store= ".format(len(self.store.items), self.store) )
+      #   nt = (yield self.store.get() )
+      #   print("nt= {}, len(store.items)= {}".format(nt, len(self.store.items) ) )
   
   def put(self, t):
     sim_log(DEBUG, self.env, self, "recved", t)
@@ -55,6 +57,7 @@ class Server(object):
     if self.t_inserv is not None and self.t_inserv.type_ == 'r':
       self.cancel_flag = True
       self.cancel.succeed()
+      # self.t_inserv = None
   
   def put_c(self, m):
     sim_log(DEBUG, self.env, self, "recved", m)
@@ -72,7 +75,7 @@ class MGn(object):
     self.max_numj = max_numj
     
     self.s_l = [Server(i, env, S, out_c=self) for i in range(self.n) ]
-    self.sbusyf_l = [0]*n
+    # self.sbusyf_l = [0]*n
     self.wait_for_frees = None
     
     self.store = simpy.Store(env)
@@ -86,21 +89,25 @@ class MGn(object):
     return "MGn[n= {}]".format(self.n)
   
   def length(self):
-    return sum([1 for f in self.sbusyf_l if f > 0] ) + len(self.store.items)
+    # return sum([1 for f in self.sbusyf_l if f > 0] ) + len(self.store.items)
+    return sum([1 for s in self.s_l if s.length() != 0 and s.t_inserv.type_ != 'r'] ) \
+           + len(self.store.items)
   
   def free_sid(self):
     if self.sching == 'no-rep':
-      i = 0
-      while i < self.n and self.sbusyf_l[i] == 1: i += 1
-      return [i] if i < self.n else []
+      # i = 0
+      # while i < self.n and self.sbusyf_l[i] == 1: i += 1
+      # return [i] if i < self.n else []
+      return [i for i, s in enumerate(self.s_l) if s.length() == 0]
     elif self.sching == 'rep':
-      l0 = [i for i, f in enumerate(self.sbusyf_l) if f == 0]
-      l2 = [i for i, f in enumerate(self.sbusyf_l) if f == 2]
-      # print("l0= {}, l2= {}".format(l0, l2) )
+      # l0 = [i for i, f in enumerate(self.sbusyf_l) if f == 0]
+      # l2 = [i for i, f in enumerate(self.sbusyf_l) if f == 2]
+      l0 = [i for i, s in enumerate(self.s_l) if s.length() == 0]
+      lr = [i for i, s in enumerate(self.s_l) if s.length() != 0 and s.t_inserv.type_ == 'r']
       if len(l0) != 0:
         return l0
-      elif len(l2) != 0:
-        return [l2[0]]
+      elif len(lr) != 0:
+        return [lr[0]]
       else:
         return []
   
@@ -115,13 +122,13 @@ class MGn(object):
         self.wait_for_frees = None
         toi_l = self.free_sid()
       
-      print("toi_l= {}".format(toi_l) )
+      # print("toi_l= {}".format(toi_l) )
       self.jid_info_m[j._id]['sid_l'] = toi_l
-      self.sbusyf_l[toi_l[0] ] = 1
+      # self.sbusyf_l[toi_l[0] ] = 1
       self.s_l[toi_l[0] ].put(Task(j._id, j.k, j.tsize) )
-      if self.sching == 'rep':
+      if self.sching == 'rep' and len(self.store.items) == 0:
         for i in toi_l[1:]:
-          self.sbusyf_l[i] = 2
+          # self.sbusyf_l[i] = 2
           self.s_l[i].put(Task(j._id, j.k, j.tsize, 'r') )
   
   def put(self, j):
@@ -134,12 +141,12 @@ class MGn(object):
     sim_log(DEBUG, self.env, self, "recved", m)
     jid, qid = m['jid'], m['qid']
     self.jid_info_m[jid]['t'] = self.env.now - self.jid_info_m[jid]['ent']
-    self.sbusyf_l[qid] = 0
+    # self.sbusyf_l[qid] = 0
     if self.sching == 'rep':
       sid_l = self.jid_info_m[jid]['sid_l']
       for i in sid_l:
         if i != qid:
-          self.sbusyf_l[i] = 0
+          # self.sbusyf_l[i] = 0
           self.s_l[i].put_c({'m': 'cancel', 'jid': jid} )
     
     self.num_jcompleted += 1
@@ -148,6 +155,7 @@ class MGn(object):
       self.env.exit()
     
     if self.wait_for_frees is not None:
+      # print("freed up res; m= {}".format(m) )
       self.wait_for_frees.succeed()
   
 def sim_mgn(nf, ar, n, sching, ts_dist, S, max_numj):
@@ -184,29 +192,31 @@ def sim_mgn(nf, ar, n, sching, ts_dist, S, max_numj):
 def plot_mgn():
   n = 4
   ts_dist = DUniform(1, 1)
-  S = Pareto(1, 5) # Exp(mu)
-  mu = 1/moment_ith(S, 1)
+  S = Exp(1) # Pareto(1, 5)
+  mu = 1 # 1/moment_ith(S, 1)
   
   V = S
-  max_numj = 100 # 30000
+  max_numj = 30000
   log(WARNING, "n= {}, ts_dist= {}, S= {}".format(n, ts_dist, S) )
   
   nf = 1
-  # for ar in np.linspace(0.05, 0.9*n*mu, 5):
-  for ar in np.linspace(1, 0.9*n*mu, 1):
+  for ar in np.linspace(0.05, 0.9*n*mu, 5):
+  # for ar in np.linspace(1, 0.9*n*mu, 1):
     print("\nar= {}".format(ar) )
-    sching = 'no-rep'
-    print("sching= {}".format(sching) )
-    ET = sim_mgn(nf, ar, n, sching, ts_dist, S, max_numj)
-    print("ET= {}".format(ET) )
-    ETm = mgn_ET(n, ar, V)
-    print("ETm= {}".format(ETm) )
+    # sching = 'no-rep'
+    # print("sching= {}".format(sching) )
+    # ET = sim_mgn(nf, ar, n, sching, ts_dist, S, max_numj)
+    # print("ET= {}".format(ET) )
+    # ETm = mmn_ET(n, ar, mu) # mgn_ET(n, ar, V)
+    # print("ETm= {}".format(ETm) )
     
     sching = 'rep'
     print("sching= {}".format(sching) )
-    ET = sim_mgn(nf, ar, n, sching, ts_dist, S, max_numj)
-    print("ET= {}".format(ET) )
-    
+    # ET = sim_mgn(nf, ar, n, sching, ts_dist, S, max_numj)
+    # print("ET= {}".format(ET) )
+    ETm = mgn_rep_ET(n, ar, V)
+    print("ETm= {}".format(ETm) )
+  
 
 if __name__ == "__main__":
   plot_mgn()

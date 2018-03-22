@@ -108,8 +108,8 @@ class PolicyGradScher(object):
     self.straj_training = straj_training
     self.save_name = save_name
     
-    self.v_ester = ValueEster(s_len, nn_len, straj_training)
-    self.gamma = 0.99
+    # self.v_ester = ValueEster(s_len, nn_len, straj_training)
+    self.gamma = 0.9 # 0.99
     self.init()
     
     self.saver = tf.train.Saver(max_to_keep=1)
@@ -182,11 +182,9 @@ class PolicyGradScher(object):
       N, T = sh[0], sh[1]
       indices = tf.range(0, N*T)*sh[2] + tf.reshape(self.a_ph, [-1] )
       self.resp_outputs = tf.reshape(tf.gather(tf.reshape(self.a_probs, [-1] ), indices), (sh[0], sh[1], 1) )
-      # self.loss = -tf.reduce_mean(tf.log(self.resp_outputs)*(self.q_ph - self.v_ph) )
       self.loss = -tf.reduce_mean(tf.reduce_sum(tf.log(self.resp_outputs)*(self.q_ph - self.v_ph), axis=1), axis=0)
     
-    # self.optimizer = tf.train.GradientDescentOptimizer(0.01)
-    self.optimizer = tf.train.AdamOptimizer(0.01)
+    self.optimizer = tf.train.AdamOptimizer(0.01) # tf.train.GradientDescentOptimizer(0.01)
     self.train_op = self.optimizer.minimize(self.loss)
     
     self.sess = tf.Session()

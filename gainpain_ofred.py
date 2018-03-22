@@ -3,6 +3,7 @@ import numpy as np
 from patch import *
 from rvs import *
 
+"""
 def sim_gain(V_rv, n, k, num_srun):
   g = 0
   for _ in range(num_srun):
@@ -39,11 +40,6 @@ def Ecost_model(T_rv, X_rv):
 def EJ_model(T_rv, X_rv): # X ~ Exp
   return 1 + moment_ith(T_rv, 1)/moment_ith(X_rv, 1)
 
-# def EJ2_model(T_rv, X_rv): # X ~ Exp
-#   EJ = EJ_model(T_rv, X_rv)
-#   VJ = 
-#   return VJ + EJ**2
-
 def EJ2_model(T_rv, X_rv): # X ~ Exp
   ET, ET2 = moment_ith(T_rv, 1), moment_ith(T_rv, 2)
   # VT = moment_ith(T_rv, 2) - ET**2
@@ -67,43 +63,6 @@ def EC_model_VPareto(X_rv, V_rv, m, d):
   ar = X_rv.mu
   ET, ET2 = s*a/(a-1), s**2*a/(a-2)
   return m*ET + ar*ET2/2
-
-def deneme():
-  X = Exp(1)
-  V = Pareto(1, 2.1)
-  def compare(c, m=0):
-    # V ~ Pareto
-    s, a = V.loc, c*V.a
-    ETm, ET2m = s*a/(a-1), (s**2) * a/(a-2)
-    T = X_n_k(V, c, 1)
-    ET_numeric, ET2_numeric = moment_ith(T, 1), moment_ith(T, 2)
-    print("\nc= {}".format(c) )
-    print("ETm= {}".format(ETm) )
-    print("ET_numeric= {}".format(ET_numeric) )
-    print("ET2m= {}".format(ET2m) )
-    print("ET2_numeric= {}".format(ET2_numeric) )
-    
-    # V ~ Pareto(s, a)
-    d, ar = c, X.mu*(c-1)
-    
-    EXm = 1/ar
-    X_ = X_n_k(X, c-1, 1)
-    EX_numeric = moment_ith(X_, 1)
-    print("EXm= {}".format(EXm) )
-    print("EX_numeric= {}".format(EX_numeric) )
-    
-    s, a = V.loc, V.a
-    # ECm = m*s*d*a/(d*a-1) + ar*s**2*d*a/(d*a-2)
-    ECm = m*ETm + ar*ET2m/2
-    
-    # EG = s*a/(a-1) - s*d*a/(d*a-1)
-    EC_numeric = EC_model(X, V, m, c)
-    print("ECm= {}".format(ECm) )
-    print("EC_numeric= {}".format(EC_numeric) )
-  
-  compare(c=2)
-  compare(c=3)
-  compare(c=4)
 
 def EP_model(X_rv, V_rv, m, c):
   return EC_model(X_rv, V_rv, m, c)
@@ -202,9 +161,21 @@ def plot_randwalk():
   plot.savefig("plot_randwalk.pdf")
   plot.gcf().clear()
   log(WARNING, "done.")
+"""
 
-if __name__ == "__main__":
-  # plot_cost()
-  # plot_randwalk()
-  plot_gain_pain()
-  # deneme()
+def plot_EG_vs_EP():
+  S = Dolly()
+  ES, ES2 = S.moment(1), S.moment(2)
+  
+  c = 1
+  Smin = X_n_k(S, c+1, 1)
+  ESmin, ESmin2 = Smin.moment(1), Smin.moment(2)
+  
+  def EG(l0, j):
+    return (l0 + 1)*j*(ES - ESmin) + ar/2*j**2 * (ES2 - ESmin2)
+  
+  def EP(j):
+    return c*ar/2*j**2 * ESmin2 # + sum(l1c)*j*ESmin
+  
+  
+

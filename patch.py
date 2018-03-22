@@ -15,8 +15,8 @@ DEBUG = 1
 WARNING = 2
 ERROR = 3
 
-DEBUG_LEVEL = INFO
-# DEBUG_LEVEL = WARNING
+# DEBUG_LEVEL = INFO
+DEBUG_LEVEL = WARNING
 # DEBUG_LEVEL = ERROR
 
 debug_level__string_map = {INFO: "INFO", DEBUG: "DEBUG", WARNING: "WARNING", ERROR: "ERROR"}
@@ -51,4 +51,4 @@ def alog(log):
   print("{}:: {}".format(inspect.stack()[1][3], log) )
 
 def save_name(folder_name, prob_name, ns, d, ar):
-  return "{}/{}_ns{}_d{}_ar{}".format(folder_name, prob_name, ns, d, ar)
+  return "{}/{}_ns{}_d{}_ar{}".format(folder_name, prob_name, ns, d, '%.2f' % ar)

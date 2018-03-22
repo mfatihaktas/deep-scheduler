@@ -33,6 +33,10 @@ class MultiQ_wRep(object):
   
   def get_rand_d(self):
     qi_l = random.sample(range(self.n), self.d)
+    return qi_l, None
+  
+  def get_sortedrand_d(self):
+    qi_l = random.sample(range(self.n), self.d)
     ql_i_l = sorted([(self.q_l[i].length(), i) for i in qi_l] )
     qi_l = [ql_i[1] for ql_i in ql_i_l]
     ql_l = [ql_i[0] for ql_i in ql_i_l]
@@ -43,14 +47,14 @@ class MultiQ_wRep(object):
     while True:
       j = (yield self.store.get() )
       
-      qi_l, ql_l = self.get_rand_d()
+      qi_l, ql_l = self.get_sortedrand_d()
       s = ql_l
       if 'reptod' in self.sching_m:
         toi_l = qi_l
       elif 'reptod-ifidle' in self.sching_m:
         i = 0
         while i < len(ql_l) and ql_l[i] == 0: i += 1
-        toi_l = qi_l[:i+1]
+        toi_l = qi_l[:i] if i > 0 else qi_l[:1]
         # idleqi_l = [qi_l[j] for j, ql in enumerate(ql_l) if ql == 0]
         # if len(idleqi_l):
         #   toi_l = idleqi_l
@@ -58,7 +62,7 @@ class MultiQ_wRep(object):
         #   toi_l = [qi_l[random.randint(0, self.d-1) ] ]
         
         # for i in toi_l:
-        #   self.q_l[i].put(Task(j._id, j.k, j.tsize) )
+        #   self.q_l[i].put(Task(j._id, j.k, j.size) )
       elif 'reptod-withdraw' in self.sching_m:
         toi_l = qi_l
         # idleqi_l = [qi_l[j] for j, ql in enumerate(ql_l) if ql == 0]
@@ -68,9 +72,11 @@ class MultiQ_wRep(object):
         # else:
         #   actualqi = qi_l.pop(random.randint(0, self.d-1) )
         
-        # self.q_l[actualqi].put(Task(j._id, j.k, j.tsize) )
+        # self.q_l[actualqi].put(Task(j._id, j.k, j.size) )
         # for i in qi_l:
-        #   self.q_l[i].put(Task(j._id, j.k, j.tsize, type_='r') )
+        #   self.q_l[i].put(Task(j._id, j.k, j.size, type_='r') )
+      elif 'reptod-wcancel' in self.sching_m:
+        toi_l, _ = self.get_rand_d()
       # elif 'reptogod-withdraw' in self.sching_m:
       #   ng = self.n/self.d
       #   g = random.randint(0, ng-1)
@@ -81,16 +87,16 @@ class MultiQ_wRep(object):
       #   toi_l = qi_l
       a = len(toi_l) - 1
       self.d_numj_l[a] += 1
-      if 'reptod-withdraw' in self.sching_m: #  or ('reptogod-withdraw' in self.sching_m):
+      if 'reptod-withdraw' in self.sching_m or 'reptod-wcancel' in self.sching_m: #  or ('reptogod-withdraw' in self.sching_m):
         for _, i in enumerate(toi_l):
           if _ == 0:
-            self.q_l[i].put(Task(j._id, j.k, j.tsize) )
+            self.q_l[i].put(Task(j._id, j.k, j.size) )
           else:
-            self.q_l[i].put(Task(j._id, j.k, j.tsize, type_='r') )
+            self.q_l[i].put(Task(j._id, j.k, j.size, type_='r') )
       else:
         for i in toi_l:
-          self.q_l[i].put(Task(j._id, j.k, j.tsize) )
-      self.jid_info_m[j._id] = {'ent': self.env.now, 'ts': j.tsize, 'qid_l': toi_l, 's': s, 'a': a}
+          self.q_l[i].put(Task(j._id, j.k, j.size) )
+      self.jid_info_m[j._id] = {'ent': self.env.now, 'ts': j.size, 'qid_l': toi_l, 's': s, 'a': a}
   
   def put(self, j):
     sim_log(DEBUG, self.env, self, "recved", j)
@@ -100,6 +106,7 @@ class MultiQ_wRep(object):
     sim_log(DEBUG, self.env, self, "recved", m)
     jid = m['jid']
     jinfo = self.jid_info_m[jid]
+    self.jid_info_m[jid]['T'] = self.env.now - jinfo['ent']
     self.jid_info_m[jid]['sl'] = (self.env.now - jinfo['ent'] )/jinfo['ts']
     
     for i in jinfo['qid_l']:
@@ -111,19 +118,11 @@ class MultiQ_wRep(object):
     if self.num_jcompleted > self.max_numj:
       self.env.exit()
 
-def avg_sl_model(ar, ns, r_freqj_l):
-  # Assuming mu = 1
-  ar = ar/ns
-  EV = sum([f*1/(r+1) for r, f in enumerate(r_freqj_l) ] )
-  EV2 = sum([f*2/(r+1)**2 for r, f in enumerate(r_freqj_l) ] )
-  
-  return EV + ar*EV2/2/(1 - ar*EV)
-
 def sim_sl(nf, ar, ns, T, sching_m, ts_dist, sl_dist):
-  sl, sl2, sl_model = 0, 0, 0
+  sl, sl2 = 0, 0
   for _ in range(nf):
     env = simpy.Environment()
-    jg = JG(env, ar, k_dist=DUniform(1, 1), tsize_dist=ts_dist, max_sent=T)
+    jg = JG(env, ar, k_dist=DUniform(1, 1), size_dist=ts_dist, max_sent=T)
     mq = MultiQ_wRep(env, ns, T, sching_m, sl_dist)
     jg.out = mq
     jg.init()
@@ -141,16 +140,15 @@ def sim_sl(nf, ar, ns, T, sching_m, ts_dist, sl_dist):
       print("r_freqj_l= {}".format(r_freqj_l) )
       d_freqj_l = [nj/T for nj in mq.d_numj_l]
       print("d_freqj_l= {}".format(d_freqj_l) )
-      # sl_model += avg_sl_model(ar, ns, r_freqj_l)
       
       sl2 += sl**2
-  return sl/nf, sl2/nf # sl_model/nf
+  return sl/nf, sl2/nf
 
 def plot_reptod_ifidle_vs_withdraw():
   ns, d = 12, 4
   T = 30000
-  ts_dist = TPareto(1, 10**10, 1.1) # TPareto(1, 200, 1) # TPareto(1, 10, 1), DUniform(1, 1)
-  sl_dist = Dolly() # TPareto(1, 20, 1) # TPareto(1, 20, 1) # Exp(1) # Exp(1, D=1) # TPareto(1, 200, 1) # DUniform(1, 1)
+  ts_dist = TPareto(1, 10**10, 1.1) # TPareto(1, 10, 1), DUniform(1, 1)
+  sl_dist = Dolly() # TPareto(1, 20, 1) # Exp(1) # Exp(1, D=1) # DUniform(1, 1)
   alog("ns= {}, d= {}, T= {}, ts_dist= {}, sl_dist= {}".format(ns, d, T, ts_dist, sl_dist) )
   
   ar_l = []
@@ -183,8 +181,8 @@ def plot_reptod_ifidle_vs_withdraw():
   plot.plot(ar_l, Esl_withdraw_l, label='reptod-withdraw', color=next(dark_color), marker=next(marker), linestyle=':', mew=2)
   # plot.plot(ar_l, sl_god_withdraw_l, label='reptod-god-withdraw', color=next(dark_color), marker=next(marker), linestyle=':', mew=2)
   plot.title(r'$n= {}$, $d= {}$'.format(ns, d) )
-  plot.xlabel(r'$\lambda$', fontsize=14)
-  plot.ylabel(r'E[Sl]', fontsize=14)
+  plot.xlabel(r'$\lambda$', fonsize=14)
+  plot.ylabel(r'E[Sl]', fonsize=14)
   plot.legend()
   plot.savefig("Esl_reptod_ifidle_vs_withdraw.pdf")
   plot.gcf().clear()
@@ -192,8 +190,8 @@ def plot_reptod_ifidle_vs_withdraw():
   plot.plot(ar_l, Vsl_ifidle_l, label='reptod-ifidle', color=next(dark_color), marker=next(marker), linestyle=':', mew=2)
   plot.plot(ar_l, Vsl_withdraw_l, label='reptod-withdraw', color=next(dark_color), marker=next(marker), linestyle=':', mew=2)
   plot.title(r'$n= {}$, $d= {}$'.format(ns, d) )
-  plot.xlabel(r'$\lambda$', fontsize=14)
-  plot.ylabel(r'Var[Sl]', fontsize=14)
+  plot.xlabel(r'$\lambda$', fonsize=14)
+  plot.ylabel(r'Var[Sl]', fonsize=14)
   plot.legend()
   plot.savefig("Vsl_reptod_ifidle_vs_withdraw.pdf")
   plot.gcf().clear()
