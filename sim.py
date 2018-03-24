@@ -59,31 +59,48 @@ class JG(object): # Job Generator
       self.action = self.env.process(self.run_poisson() )
     elif self.type_ == 'selfsimilar':
       self.action = self.env.process(self.run_selfsimilar() )
+    elif self.type_ == 'typical':
+      self.action = self.env.process(self.run_typical() )
+  
+  def run_typical(self):
+    # load interval: (portion of time, portion of jobs)
+    tfrac_njfrac__l = [(0.3, 0.1), (0.1, 0.2), (0.2, 0.4), (0.1, 0.2), (0.3, 0.1) ]
+    t = self.ntosend*1/self.ar
+    
+    arepoch_l = [0]
+    tsofar = 0
+    for tfrac, njfrac in tfrac_njfrac__l:
+      arepoch_l += sorted(np.random.uniform(tsofar, tsofar + t*tfrac, int(njfrac*self.ntosend) ).tolist() )
+      tsofar += t*tfrac
+    
+    for i in range(1, self.ntosend+1):
+      yield self.env.timeout(arepoch_l[i] - arepoch_l[i-1] )
+      self.nsent += 1
+      self.out.put(Job(self.nsent, self.k_dist.gen_sample(), self.size_dist.gen_sample() ) )
+    return
   
   def run_poisson(self):
     while 1:
       # yield self.env.timeout(random.expovariate(self.ar) )
       yield self.env.timeout(1/self.ar)
+      self.nsent += 1
       self.out.put(Job(self.nsent, self.k_dist.gen_sample(), self.size_dist.gen_sample() ) )
       
-      self.nsent += 1
       if self.nsent >= self.ntosend:
         return
   
   def run_selfsimilar(self):
     stime = Pareto(1, 1.2)
     arepoch_l = [0]
-    for i in range(self.ntosend - 1):
+    for i in range(self.ntosend):
       arepoch_l.append(arepoch_l[-1] + random.expovariate(self.ar) )
     arepoch_l = sorted([e + stime.gen_sample() for e in arepoch_l] )
     
-    for i in range(1, self.ntosend):
+    for i in range(1, self.ntosend+1):
       yield self.env.timeout(arepoch_l[i] - arepoch_l[i-1] )
-      self.out.put(Job(self.nsent, self.k_dist.gen_sample(), self.size_dist.gen_sample() ) )
-      
       self.nsent += 1
-      if self.nsent >= self.ntosend:
-        return
+      self.out.put(Job(self.nsent, self.k_dist.gen_sample(), self.size_dist.gen_sample() ) )
+    return
 
 class FCFS(object):
   def __init__(self, _id, env, sl_dist, out=None, out_c=None, L=None):

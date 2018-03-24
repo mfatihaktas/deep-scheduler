@@ -25,7 +25,6 @@ class MultiQ_wRep(object):
     self.action = env.process(self.run() )
     
     self.num_jcompleted = 0
-    self.jsl_l = []
     
     self.sysload = 0
   
@@ -47,28 +46,26 @@ class MultiQ_wRep(object):
       j = (yield self.store.get() )
       
       i_l, ql_l = self.get_sorted_d()
-      s = ql_l + [j.size] if self.sching_m['s_len'] == len(ql_l) + 1 else ql_l
+      s = ql_l if self.sching_m['s_len'] == len(ql_l) else ql_l + [j.size] 
       # s = ql_l + [self.sysload] if self.sching_m['s_len'] == len(ql_l) + 1 else ql_l
-      if 'reptod' in self.sching_m or 'reptod-wcancel' in self.sching_m:
+      scher_name = self.sching_m['name']
+      if scher_name == 'reptod' or scher_name == 'reptod-wcancel':
         toi_l = i_l
-      elif 'norep' in self.sching_m:
+      elif scher_name == 'norep':
         toi_l = i_l[:1]
-      elif 'reptod-ifidle' in self.sching_m:
+      elif scher_name == 'reptod-ifidle' or scher_name == 'reptod-ifidle-wcancel':
         i = 0
         while i < len(ql_l) and ql_l[i] == 0: i += 1
         toi_l = i_l[:i] if i > 0 else i_l[:1]
-      elif 'reptod-wlearning' in self.sching_m:
+      elif scher_name == 'reptod-wlearning':
         a = self.scher.get_random_action(s) if not self.act_max else self.scher.get_max_action(s)
-        # toi_l = i_l[:a+1]
-        toi_l = i_l if a > 0 else i_l[:1] # Rep to all d or no rep
+        toi_l = i_l if a > 0 else i_l[:1]
       
-      a = (len(toi_l) > 1) # len(toi_l) - 1
-      if 'reptod-wcancel' in self.sching_m:
-        for _, i in enumerate(toi_l):
-          if _ == 0:
-            self.q_l[i].put(Task(j._id, j.k, j.size) )
-          else:
-            self.q_l[i].put(Task(j._id, j.k, j.size, type_='r') )
+      a = (len(toi_l) > 1)
+      if scher_name == 'reptod-wcancel' or scher_name == 'reptod-ifidle-wcancel':
+        self.q_l[toi_l[0]].put(Task(j._id, j.k, j.size) )
+        for i in toi_l[1:]:
+          self.q_l[i].put(Task(j._id, j.k, j.size, type_='r') )
       else:
         for i in toi_l:
           self.q_l[i].put(Task(j._id, j.k, j.size) )
@@ -89,17 +86,16 @@ class MultiQ_wRep(object):
       if i not in m['deped_from']:
         self.q_l[i].put_c({'m': 'cancel', 'jid': jid} )
     
-    self.jsl_l.append(t)
     self.num_jcompleted += 1
     if self.num_jcompleted > self.max_numj:
       self.env.exit()
 
-def sample_traj(ns, sching_m, scher, J, S, ar, T, act_max=False):
-  reward = lambda sl : 100/sl
+def sample_traj(ns, sching_m, scher, J, S, ar, T, jg_type='poisson'):
+  reward = lambda sl : 1/sl # 100 - sl
   
   env = simpy.Environment()
-  jg = JG(env, ar, k_dist=DUniform(1, 1), size_dist=J, max_sent=T)
-  mq = MultiQ_wRep(env, ns, T, sching_m, scher, S, act_max)
+  jg = JG(env, ar, DUniform(1, 1), J, T, jg_type)
+  mq = MultiQ_wRep(env, ns, T, sching_m, scher, S)
   jg.out = mq
   jg.init()
   env.run()
@@ -139,10 +135,11 @@ def sim(ns, sching_m, scher, J, S, ar, T, act_max=False, jg_type='poisson'):
   jg.init()
   env.run()
   
-  sl_l = [mq.jid_info_m[t+1]['sl'] for t in range(T) ]
+  # sl_l = [mq.jid_info_m[t+1]['sl'] for t in range(T) ]
+  Esl = np.mean([mq.jid_info_m[t+1]['sl'] for t in range(T) ] )
   ET = np.mean([mq.jid_info_m[t+1]['T'] for t in range(T) ] )
-  print("Esl= {}, ET= {}".format(np.mean(sl_l), ET) )
-  return sl_l
+  print("Esl= {}, ET= {}".format(Esl, ET) )
+  return Esl
 
 ns, d = 5, 2
 J = HyperExp([0.8, 0.2], [1, 0.1] ) # TPareto(1, 10**10, 1.1)

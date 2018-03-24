@@ -2,14 +2,26 @@ import math, time, random
 import numpy as np
 import tensorflow as tf
 
-def discount_rewards(t_r_l, gamma):
+def rewards_to_qvals(t_r_l, gamma):
   T = t_r_l.shape[0]
-  t_dr_l = np.zeros((T, 1))
-  radd = 0
-  for t in range(T-1, -1, -1):
-    radd = t_r_l[t, 0] + radd * gamma
-    t_dr_l[t, 0] = radd
-  return t_dr_l
+  # reward = average of all following rewards
+  # for t in range(T):
+  #   t_r_l[t, 0] = np.mean(t_r_l[t:, 0])
+  for t in range(T):
+    w_l, r_l = [], []
+    for i, r in enumerate(t_r_l[t:, 0] ):
+      w_l.append(gamma**i)
+      r_l.append(gamma**i * r)
+    t_r_l[t, 0] = sum(r_l)/sum(w_l)
+  return t_r_l
+  
+  # reward = discounted sum of all following rewards
+  # t_dr_l = np.zeros((T, 1))
+  # radd = 0
+  # for t in range(T-1, -1, -1):
+  #   radd = t_r_l[t, 0] + radd * gamma
+  #   t_dr_l[t, 0] = radd
+  # return t_dr_l
 
 class ValueEster(object):
   def __init__(self, s_len, nn_len, straj_training):
@@ -215,9 +227,10 @@ class PolicyGradScher(object):
     # Policy gradient
     n_t_q_l = np.zeros((N, T, 1))
     for n in range(N):
-      n_t_q_l[n] = discount_rewards(n_t_r_l[n], self.gamma)
+      n_t_q_l[n] = rewards_to_qvals(n_t_r_l[n], self.gamma)
     # print("n_t_q_l= {}".format(n_t_q_l) )
     # print("n_t_q_l.shape= {}".format(n_t_q_l.shape) )
+    print("avg q= {}".format(np.mean(n_t_q_l) ) )
     
     t_avgr_l = np.array([np.mean(n_t_q_l[:, t, 0] ) for t in range(T) ] ).reshape((T, 1))
     n_t_v_l = np.zeros((N, T, 1))
@@ -237,7 +250,7 @@ class PolicyGradScher(object):
     # Policy gradient by getting baseline values from actor-critic
     n_t_q_l = np.zeros((N, T, 1))
     for n in range(N):
-      n_t_q_l[n] = discount_rewards(n_t_r_l[n], self.gamma)
+      n_t_q_l[n] = rewards_to_qvals(n_t_r_l[n], self.gamma)
     
     # for n in range(N):
     #   self.v_ester.train_w_single_traj(n_t_s_l[n], n_t_r_l[n] )
@@ -342,7 +355,7 @@ class QLearningScher(object):
     
     n_t_targetq_l = np.zeros((N, T, 1))
     for n in range(N):
-      n_t_targetq_l[n] = discount_rewards(n_t_r_l[n], self.gamma)
+      n_t_targetq_l[n] = rewards_to_qvals(n_t_r_l[n], self.gamma)
     
     loss, _ = self.sess.run([self.loss, self.train_op],
                             feed_dict={self.s_ph: n_t_s_l,

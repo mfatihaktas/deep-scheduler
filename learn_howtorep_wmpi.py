@@ -5,67 +5,95 @@ from mpi4py import MPI
 from learn_howtorep import *
 from reptod_wcancel import ar_ub_reptod_wcancel
 
-ns, d = 10, 4
+ns, d = 10, 2
 J = TPareto(1, 10**4, 1.1) # Exp(0.1) # HyperExp([0.8, 0.2], [1, 0.1] ) # Exp(0.05, D=1)
-S = TPareto(1, 100, 1.2) # Dolly() # Bern(1, 20, 0.2)
+S = Dolly() # TPareto(1, 100, 1.2) # Bern(1, 20, 0.2)
 N, T = 20, ns*5000 # ns*2500
+L = 100
 wjsize = False # True
 wsysload = False # True
 
 s_len = d+1 if wjsize or wsysload else d
 a_len, nn_len = 2, 10
 ar_ub = ar_ub_reptod_wcancel(ns, J, S)
-ar_l = [ar for ar in np.linspace(ar_ub/10, 2*ar_ub/3, 5) ] # [ar for ar in np.linspace(1.75*ar_ub/3, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(ar_ub/3, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(ar_ub/4, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(0.01, ar_ub/2, 5) ]
+ar_l = [ar for ar in np.linspace(0.01, 1.75*ar_ub/3, 10) ] # [ar for ar in np.linspace(ar_ub/3, 1.5*ar_ub/3, 3) ] # [ar for ar in np.linspace(1.75*ar_ub/3, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(ar_ub/10, 2*ar_ub/3, 5) ] # [ar for ar in np.linspace(ar_ub/3, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(ar_ub/4, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(0.01, ar_ub/2, 5) ]
 
-L = 100
+act_max = False # True
+jg_type = 'poisson' # 'selfsimilar'
 
-act_max = True
-jg_type = 'selfsimilar' # 'poisson'
+sching_m_l = [{'name': 'norep', 'd': d, 's_len': d},
+              {'name': 'reptod', 'd': d, 's_len': d},
+              {'name': 'reptod-ifidle', 'd': d, 's_len': d},
+              {'name': 'reptod-ifidle-wcancel', 'd': d, 's_len': d},
+              # {'name': 'reptod-wlearning', 'd': d, 's_len': s_len},
+              {'name': 'reptod-wcancel', 'd': d, 's_len': d} ]
+
+def plot_eval_wmpi(rank, scher, T):
+  if rank == 0:
+    sching__Esl_l_l = [[] for _ in sching_m_l]
+    for ar in ar_l:
+      sching_Esl_l = eval_wmpi(rank, scher, ar, T)
+      for s, Esl in enumerate(sching_Esl_l):
+        sching__Esl_l_l[s].append(Esl)
+    
+    for s, sching_m in enumerate(sching_m_l):
+      plot.plot(ar_l, sching__Esl_l_l[s], label=sching_m['name'], color=next(dark_color), marker=next(marker), linestyle=':')
+    plot.legend()
+    plot.xlabel(r'$\lambda$', fontsize=13)
+    plot.ylabel(r'Average slowdown', fontsize=13)
+    plot.savefig("plot_eval_wmpi.png")
+    plot.gcf().clear()
+  else:
+    for ar in ar_l:
+      eval_wmpi(rank, scher, ar, T)
+  log(WARNING, "done; rank= {}".format(rank) )
 
 def eval_wmpi(rank, scher, ar, T):
   alog("starting; rank= {}, ar= {}, T= {}".format(rank, ar, T) )
   sys.stdout.flush()
   
-  # {'reptod-wlearning': 0, 'd': d, 's_len': s_len},
-  sching_m_l = [{'norep': 0, 'd': d, 's_len': d, 'name': 'norep'},
-                {'reptod': 0, 'd': d, 's_len': d, 'name': 'reptod'},
-                {'reptod-ifidle': 0, 'd': d, 's_len': d, 'name': 'reptod-ifidle'},
-                {'reptod-wcancel': 0, 'd': d, 's_len': d, 'name': 'reptod-wcancel'} ]
   if rank == 0:
+    sching_Esl_l = []
     for i, sching_m in enumerate(sching_m_l):
       for n in range(N):
         p = n % (size-1) + 1
         eval_i = np.array([i], dtype='i')
         comm.Send([eval_i, MPI.INT], dest=p)
       
-      cum_sl_l = []
+      Esl_l = []
+      # cum_sl_l = []
       for n in range(N):
         p = n % (size-1) + 1
         
-        sl_l = np.empty(T, dtype=np.float64)
-        comm.Recv(sl_l, source=p)
-        cum_sl_l += sl_l.tolist()
+        Esl = np.empty(1, dtype=np.float64)
+        comm.Recv(Esl, source=p)
+        Esl_l.append(Esl)
+        # sl_l = np.empty(T, dtype=np.float64)
+        # comm.Recv(sl_l, source=p)
+        # cum_sl_l += sl_l.tolist()
       print("Eval with sching_m= {}".format(sching_m) )
-      print("Esl= {}".format(np.mean(cum_sl_l) ) )
+      Esl = np.mean(Esl_l)
+      print("Esl= {}".format(Esl) )
+      sching_Esl_l.append(Esl)
       print("\n\n")
       sys.stdout.flush()
       
-      x_l = numpy.sort(cum_sl_l)[::-1]
-      y_l = numpy.arange(x_l.size)/x_l.size
-      plot.xscale('log')
-      plot.yscale('log')
-      plot.step(x_l, y_l, label=sching_m['name'], color=next(dark_color), marker=next(marker), linestyle=':')
-    plot.legend()
-    plot.xlabel(r'Slowdown', fontsize=13)
-    plot.ylabel(r'Tail distribution', fontsize=13)
-    plot.savefig("sltail_ar{0:.2f}.png".format(ar) )
-    plot.gcf().clear()
-    
+      # x_l = numpy.sort(cum_sl_l)[::-1]
+      # y_l = numpy.arange(x_l.size)/x_l.size
+      # plot.step(x_l, y_l, label=sching_m['name'], color=next(dark_color), marker=next(marker), linestyle=':')
+    # plot.xscale('log')
+    # plot.yscale('log')
+    # plot.legend()
+    # plot.xlabel(r'Slowdown', fontsize=13)
+    # plot.ylabel(r'Tail distribution', fontsize=13)
+    # plot.savefig("sltail_ar{0:.2f}.png".format(ar) )
+    # plot.gcf().clear()
     
     for p in range(1, size):
       eval_i = np.array([-1], dtype='i')
       comm.Send([eval_i, MPI.INT], dest=p)
       print("Sent req eval_i= {} to p= {}".format(eval_i, p) )
+    return sching_Esl_l
   else:
     while True:
       eval_i = np.empty(1, dtype='i')
@@ -73,8 +101,9 @@ def eval_wmpi(rank, scher, ar, T):
       if eval_i == -1:
         return
       
-      sl_l = sim(ns, sching_m_l[eval_i], scher, J, S, ar, T, act_max, jg_type)
-      comm.Send([np.array(sl_l), MPI.FLOAT], dest=0)
+      Esl = sim(ns, sching_m_l[eval_i], scher, J, S, ar, T, act_max, jg_type)
+      Esl = np.array([Esl], dtype=np.float64)
+      comm.Send([Esl, MPI.FLOAT], dest=0)
       sys.stdout.flush()
 
 def learn_howtorep_wmpi(rank, ar):
@@ -116,7 +145,7 @@ def learn_howtorep_wmpi(rank, ar):
       print("Sent req sim_step= {} to p= {}".format(sim_step, p) )
     sys.stdout.flush()
   else:
-    sching_m = {'reptod-wlearning': 0, 'd': d, 's_len': s_len}
+    sching_m = {'name': 'reptod-wlearning', 'd': d, 's_len': s_len}
     while True:
       sim_step = np.empty(1, dtype='i')
       comm.Recv([sim_step, MPI.INT], source=0)
@@ -124,7 +153,7 @@ def learn_howtorep_wmpi(rank, ar):
         break
       
       scher.restore(sim_step[0] )
-      t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(ns, sching_m, scher, J, S, ar, T)
+      t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(ns, sching_m, scher, J, S, ar, T, jg_type)
       comm.Send([t_s_l.flatten(), MPI.FLOAT], dest=0)
       comm.Send([t_a_l.flatten(), MPI.FLOAT], dest=0)
       comm.Send([t_r_l.flatten(), MPI.FLOAT], dest=0)
@@ -141,6 +170,9 @@ if __name__ == "__main__":
   sys.stdout.flush()
   
   alog("rank= {}, ns= {}, d= {}, J= {}, S= {}, wjsize= {}, N= {}, T= {}".format(rank, ns, d, J, S, wjsize, N, T) )
-  for ar in ar_l:
-    scher = None # learn_howtorep_wmpi(rank, ar)
-    eval_wmpi(rank, scher, ar, 10000*ns)
+  # for ar in ar_l:
+  #   scher = learn_howtorep_wmpi(rank, ar)
+  #   eval_wmpi(rank, scher, ar, 10000*ns)
+  
+  scher = None
+  plot_eval_wmpi(rank, scher, 20000*ns)
