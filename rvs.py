@@ -263,6 +263,9 @@ class Dolly(RV):
   def __str__(self):
     return "Dolly[{}, {}]".format(self.l_l, self.u_l)
   
+  def tolatex(self):
+    return "Dolly"
+  
   def pdf(self, x):
     return self.dist.pmf(x) if (x >= self.l_l and x <= self.u_l) else 0
   

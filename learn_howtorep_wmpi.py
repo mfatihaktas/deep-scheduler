@@ -6,9 +6,9 @@ from learn_howtorep import *
 from reptod_wcancel import ar_ub_reptod_wcancel
 
 ns, d = 10, 2
-J = TPareto(1, 10**4, 1.1) # Exp(0.1) # HyperExp([0.8, 0.2], [1, 0.1] ) # Exp(0.05, D=1)
+J = Exp(0.05, D=1) # TPareto(1, 10**4, 1.1) # HyperExp([0.8, 0.2], [1, 0.1] )
 S = Dolly() # TPareto(1, 100, 1.2) # Bern(1, 20, 0.2)
-N, T = 20, ns*5000 # ns*2500
+N, T = 20, ns*1000 # ns*2500
 L = 100
 wjsize = False # True
 wsysload = False # True
@@ -16,17 +16,23 @@ wsysload = False # True
 s_len = d+1 if wjsize or wsysload else d
 a_len, nn_len = 2, 10
 ar_ub = ar_ub_reptod_wcancel(ns, J, S)
-ar_l = [ar for ar in np.linspace(0.01, 1.75*ar_ub/3, 10) ] # [ar for ar in np.linspace(ar_ub/3, 1.5*ar_ub/3, 3) ] # [ar for ar in np.linspace(1.75*ar_ub/3, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(ar_ub/10, 2*ar_ub/3, 5) ] # [ar for ar in np.linspace(ar_ub/3, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(ar_ub/4, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(0.01, ar_ub/2, 5) ]
+ar_ub = 2.95*ar_ub/3
+ar_l = np.linspace(ar_ub, ar_ub, 1) # [ar for ar in np.linspace(1.75*ar_ub/3, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(ar_ub/10, 2*ar_ub/3, 5) ] # [ar for ar in np.linspace(ar_ub/3, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(ar_ub/4, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(0.01, ar_ub/2, 5) ]
+
+# ns, d = 10, 2
+# J = Exp(0.05, D=1)
+# ar_ub = 2.95*ar_ub/3
+# ar_l = [*np.linspace(0.01, 0.9*ar_ub, 4, endpoint=False), *np.linspace(0.9*ar_ub, ar_ub, 4) ]
 
 act_max = False # True
 jg_type = 'poisson' # 'selfsimilar'
 
 sching_m_l = [{'name': 'norep', 'd': d, 's_len': d},
               {'name': 'reptod', 'd': d, 's_len': d},
-              {'name': 'reptod-ifidle', 'd': d, 's_len': d},
-              {'name': 'reptod-ifidle-wcancel', 'd': d, 's_len': d},
-              # {'name': 'reptod-wlearning', 'd': d, 's_len': s_len},
-              {'name': 'reptod-wcancel', 'd': d, 's_len': d} ]
+              # {'name': 'reptod-ifidle', 'd': d, 's_len': d},
+              # {'name': 'reptod-ifidle-wcancel', 'd': d, 's_len': d},
+              # {'name': 'reptod-wcancel', 'd': d, 's_len': d},
+              {'name': 'reptod-wlearning', 'd': d, 's_len': s_len} ]
 
 def plot_eval_wmpi(rank, scher, T):
   if rank == 0:
@@ -41,6 +47,7 @@ def plot_eval_wmpi(rank, scher, T):
     plot.legend()
     plot.xlabel(r'$\lambda$', fontsize=13)
     plot.ylabel(r'Average slowdown', fontsize=13)
+    plot.title(r'$n= {}$, $d= {}$, $J \sim {}$, $S \sim {}$'.format(ns, d, J.tolatex(), S.tolatex() ) )
     plot.savefig("plot_eval_wmpi.png")
     plot.gcf().clear()
   else:
@@ -74,7 +81,7 @@ def eval_wmpi(rank, scher, ar, T):
       print("Eval with sching_m= {}".format(sching_m) )
       Esl = np.mean(Esl_l)
       print("Esl= {}".format(Esl) )
-      sching_Esl_l.append(Esl)
+      sching_Esl_l.append(Esl if Esl < 200 else None)
       print("\n\n")
       sys.stdout.flush()
       
@@ -144,6 +151,8 @@ def learn_howtorep_wmpi(rank, ar):
       comm.Send([sim_step, MPI.INT], dest=p)
       print("Sent req sim_step= {} to p= {}".format(sim_step, p) )
     sys.stdout.flush()
+    scher.save(L)
+    return scher
   else:
     sching_m = {'name': 'reptod-wlearning', 'd': d, 's_len': s_len}
     while True:
@@ -159,7 +168,8 @@ def learn_howtorep_wmpi(rank, ar):
       comm.Send([t_r_l.flatten(), MPI.FLOAT], dest=0)
       comm.Send([t_sl_l.flatten(), MPI.FLOAT], dest=0)
       sys.stdout.flush()
-  return scher
+    scher.restore(L)
+    return scher
 
 if __name__ == "__main__":
   comm = MPI.COMM_WORLD
@@ -170,9 +180,9 @@ if __name__ == "__main__":
   sys.stdout.flush()
   
   alog("rank= {}, ns= {}, d= {}, J= {}, S= {}, wjsize= {}, N= {}, T= {}".format(rank, ns, d, J, S, wjsize, N, T) )
-  # for ar in ar_l:
-  #   scher = learn_howtorep_wmpi(rank, ar)
-  #   eval_wmpi(rank, scher, ar, 10000*ns)
+  for ar in ar_l:
+    scher = learn_howtorep_wmpi(rank, ar)
+    eval_wmpi(rank, scher, ar, 10000*ns)
   
-  scher = None
-  plot_eval_wmpi(rank, scher, 20000*ns)
+  # scher = None
+  # plot_eval_wmpi(rank, scher, int(1*10000*ns) )
