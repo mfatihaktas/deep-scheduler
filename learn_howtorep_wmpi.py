@@ -1,48 +1,63 @@
 import sys
 import numpy as np
 from mpi4py import MPI
+from rvs import *
 
-from learn_howtorep import *
-from reptod_wcancel import ar_ub_reptod_wcancel
+def ar_ub_reptod_wcancel(ns, J, S):
+  EJ, ES = J.mean(), S.mean()
+  return ns/EJ/ES
 
 ns, d = 10, 2
-J = Exp(0.05, D=1) # TPareto(1, 10**4, 1.1) # HyperExp([0.8, 0.2], [1, 0.1] )
+J = TPareto(1, 10**4, 1.1) # Exp(0.05, D=1) # HyperExp([0.8, 0.2], [1, 0.1] )
 S = Dolly() # TPareto(1, 100, 1.2) # Bern(1, 20, 0.2)
-N, T = 20, ns*1000 # ns*2500
-L = 100
-wjsize = False # True
+N, T = 20, ns*2000 # ns*2500
+L = 40
+wjsize = True
 wsysload = False # True
 
 s_len = d+1 if wjsize or wsysload else d
-a_len, nn_len = 2, 10
+a_len, nn_len = 2, 20
 ar_ub = ar_ub_reptod_wcancel(ns, J, S)
-ar_ub = 2.95*ar_ub/3
-ar_l = np.linspace(ar_ub, ar_ub, 1) # [ar for ar in np.linspace(1.75*ar_ub/3, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(ar_ub/10, 2*ar_ub/3, 5) ] # [ar for ar in np.linspace(ar_ub/3, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(ar_ub/4, 2*ar_ub/3, 3) ] # [ar for ar in np.linspace(0.01, ar_ub/2, 5) ]
+ar_ub = 0.8*2*ar_ub/3
+ar_l = [ar_ub/2] # [*np.linspace(0.005, 0.8*ar_ub, 4, endpoint=False), *np.linspace(0.8*ar_ub, ar_ub, 4) ]
+
+# ns, d = 10, 2
+# J = TPareto(1, 10**4, 1.1)
+# ar_ub = 0.8*2.95*ar_ub/3
+# ar_l = [*np.linspace(0.01, 0.8*ar_ub, 4, endpoint=False), *np.linspace(0.8*ar_ub, ar_ub, 4) ]
 
 # ns, d = 10, 2
 # J = Exp(0.05, D=1)
 # ar_ub = 2.95*ar_ub/3
 # ar_l = [*np.linspace(0.01, 0.9*ar_ub, 4, endpoint=False), *np.linspace(0.9*ar_ub, ar_ub, 4) ]
 
+from scher import PolicyGradScher
+from learn_howtorep import MultiQ_wRep, sample_traj, sim
+
 act_max = False # True
 jg_type = 'poisson' # 'selfsimilar'
 
+DONOTLEARN = False # True
 sching_m_l = [{'name': 'norep', 'd': d, 's_len': d},
               {'name': 'reptod', 'd': d, 's_len': d},
-              # {'name': 'reptod-ifidle', 'd': d, 's_len': d},
-              # {'name': 'reptod-ifidle-wcancel', 'd': d, 's_len': d},
-              # {'name': 'reptod-wcancel', 'd': d, 's_len': d},
-              {'name': 'reptod-wlearning', 'd': d, 's_len': s_len} ]
+              {'name': 'reptod-ifidle', 'd': d, 's_len': d},
+              {'name': 'reptod-ifidle-wcancel', 'd': d, 's_len': d},
+              {'name': 'reptod-wcancel', 'd': d, 's_len': d} ]
 
-def plot_eval_wmpi(rank, scher, T):
+if not DONOTLEARN:
+  sching_m_l.append({'name': 'reptod-wlearning', 'd': d, 's_len': s_len} )
+
+def plot_eval_wmpi(rank, T):
   if rank == 0:
     sching__Esl_l_l = [[] for _ in sching_m_l]
     for ar in ar_l:
+      scher = learn_howtorep_wmpi(rank, ar) if not DONOTLEARN else None
       sching_Esl_l = eval_wmpi(rank, scher, ar, T)
       for s, Esl in enumerate(sching_Esl_l):
         sching__Esl_l_l[s].append(Esl)
     
     for s, sching_m in enumerate(sching_m_l):
+      print("scher= {}".format(sching_m['name'] ) )
       plot.plot(ar_l, sching__Esl_l_l[s], label=sching_m['name'], color=next(dark_color), marker=next(marker), linestyle=':')
     plot.legend()
     plot.xlabel(r'$\lambda$', fontsize=13)
@@ -52,6 +67,7 @@ def plot_eval_wmpi(rank, scher, T):
     plot.gcf().clear()
   else:
     for ar in ar_l:
+      scher = learn_howtorep_wmpi(rank, ar) if not DONOTLEARN else None
       eval_wmpi(rank, scher, ar, T)
   log(WARNING, "done; rank= {}".format(rank) )
 
@@ -116,6 +132,7 @@ def eval_wmpi(rank, scher, ar, T):
 def learn_howtorep_wmpi(rank, ar):
   alog("starting; rank= {}, ar= {}".format(rank, ar) )
   scher = PolicyGradScher(s_len, a_len, nn_len, save_name=save_name('log', 'howtorep', ns, d, ar) )
+  alog("starting; rank= {}, scher= {}".format(rank, scher) )
   
   if rank == 0:
     for i in range(L):
@@ -144,14 +161,12 @@ def learn_howtorep_wmpi(rank, ar):
       alog("i= {}, avg a= {}, avg sl= {}".format(i, np.mean(n_t_a_l), np.mean(n_t_sl_l) ) )
       scher.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
       sys.stdout.flush()
-    # eval_(scher, ar, 50000)
-    
+    scher.save(L)
     for p in range(1, size):
       sim_step = np.array([-1], dtype='i')
       comm.Send([sim_step, MPI.INT], dest=p)
       print("Sent req sim_step= {} to p= {}".format(sim_step, p) )
     sys.stdout.flush()
-    scher.save(L)
     return scher
   else:
     sching_m = {'name': 'reptod-wlearning', 'd': d, 's_len': s_len}
@@ -180,9 +195,8 @@ if __name__ == "__main__":
   sys.stdout.flush()
   
   alog("rank= {}, ns= {}, d= {}, J= {}, S= {}, wjsize= {}, N= {}, T= {}".format(rank, ns, d, J, S, wjsize, N, T) )
-  for ar in ar_l:
-    scher = learn_howtorep_wmpi(rank, ar)
-    eval_wmpi(rank, scher, ar, 10000*ns)
+  # for ar in ar_l:
+  #   scher = learn_howtorep_wmpi(rank, ar)
+  #   eval_wmpi(rank, scher, ar, 10000*ns)
   
-  # scher = None
-  # plot_eval_wmpi(rank, scher, int(1*10000*ns) )
+  plot_eval_wmpi(rank, 20000*ns)

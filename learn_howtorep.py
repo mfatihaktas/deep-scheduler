@@ -6,7 +6,7 @@ from rvs import *
 from sim import *
 from scher import PolicyGradScher
 from reptod_wcancel import ar_ub_reptod_wcancel
-from profile_scher import plot_scher
+# from profile_scher import plot_scher # causing an import loop
 
 class MultiQ_wRep(object):
   def __init__(self, env, n, max_numj, sching_m, scher, S, act_max=False):
@@ -48,21 +48,21 @@ class MultiQ_wRep(object):
       i_l, ql_l = self.get_sorted_d()
       s = ql_l if self.sching_m['s_len'] == len(ql_l) else ql_l + [j.size] 
       # s = ql_l + [self.sysload] if self.sching_m['s_len'] == len(ql_l) + 1 else ql_l
-      scher_name = self.sching_m['name']
-      if scher_name == 'reptod' or scher_name == 'reptod-wcancel':
+      sname = self.sching_m['name']
+      if sname == 'reptod' or sname == 'reptod-wcancel':
         toi_l = i_l
-      elif scher_name == 'norep':
+      elif sname == 'norep':
         toi_l = i_l[:1]
-      elif scher_name == 'reptod-ifidle' or scher_name == 'reptod-ifidle-wcancel':
+      elif sname == 'reptod-ifidle' or sname == 'reptod-ifidle-wcancel':
         i = 0
         while i < len(ql_l) and ql_l[i] == 0: i += 1
         toi_l = i_l[:i] if i > 0 else i_l[:1]
-      elif scher_name == 'reptod-wlearning':
+      elif sname == 'reptod-wlearning':
         a = self.scher.get_random_action(s) if not self.act_max else self.scher.get_max_action(s)
         toi_l = i_l if a > 0 else i_l[:1]
       
       a = (len(toi_l) > 1)
-      if scher_name == 'reptod-wcancel' or scher_name == 'reptod-ifidle-wcancel':
+      if sname == 'reptod-wcancel' or sname == 'reptod-ifidle-wcancel':
         self.q_l[toi_l[0]].put(Task(j._id, j.k, j.size) )
         for i in toi_l[1:]:
           self.q_l[i].put(Task(j._id, j.k, j.size, type_='r') )
@@ -91,7 +91,12 @@ class MultiQ_wRep(object):
       self.env.exit()
 
 def sample_traj(ns, sching_m, scher, J, S, ar, T, jg_type='poisson'):
-  reward = lambda sl : 1/sl # 100 - sl
+  # pi = math.pi
+  # s = 10*pi
+  # def complex_r(sl):
+  #   if sl > 99: return -500
+  #   else: return 10*math.tan(-(sl - (1 - pi/2*s) )/s)
+  reward = lambda sl: -(sl - 1)**(1.1) # (50 - sl) # 1/sl
   
   env = simpy.Environment()
   jg = JG(env, ar, DUniform(1, 1), J, T, jg_type)

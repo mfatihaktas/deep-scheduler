@@ -1,6 +1,8 @@
 from rvs import *
 from patch import *
 
+from learn_howtorep import MultiQ_wRep, sample_traj, sim
+
 def rep_wcancel():
   def Pr_Tgt(V, X, c, t):
     Pr_V_l_X = mpmath.quad(lambda x: V.cdf(x)*X.pdf(x), [0, 10000*10] )
@@ -88,8 +90,6 @@ def waitingtime_repwcancel():
   # for ar in numpy.linspace(0.05, 1/EV-0.05, 10):
   for ar in numpy.linspace(0.0001, 1/EV-0.05, 10):
     solvefor_War(ar)
-
-
 
 if __name__ == "__main__":
   # waitingtime_repwcancel()

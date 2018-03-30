@@ -7,47 +7,51 @@ import numpy as np
 
 from scher import PolicyGradScher
 from patch import *
-from learn_howtorep_wmpi import ns, d, J, S, wjsize, s_len, a_len, nn_len, ar_l
+import learn_howtorep_wmpi as lhw
 
-def plot_probrep_d2(ar):
-  scher = PolicyGradScher(s_len, a_len, nn_len, save_name=save_name('saved', 'howtorep', ns, d, ar) )
-  scher.restore(99)
-  
-  max_l = 25
-  grid = numpy.zeros((max_l, max_l))
-  for l1 in range(max_l):
-    for l2 in range(l1, max_l):
-      p = scher.get_action_dist([l1, l2] )
-      grid[l1, l2] = p[1]
-  # print("grid= \n{}".format(grid) )
-  # extent = [0.5, n+0.5, 0.5, n+0.5]
-  # img = plot.imshow(grid, cmap='gray_r', extent=extent, origin='lower')
-  img = plot.imshow(grid, cmap='gray_r', origin='lower')
-  plot.colorbar(img, cmap='gray_r')
-  
-  plot.title(r'$n= {}$, $d= {}$, $\lambda= {}$'.format(ns, d, ar) )
-  # plot.xticks(range(max_l), fontsize=12)
-  plot.xlabel(r'$l_1$', fontsize=14)
-  # plot.yticks(range(max_l), fontsize=12)
-  plot.ylabel(r'$l_2$', fontsize=14)
-  
-  plot.legend()
-  plot.savefig("plot_ar_{}.pdf".format(ar) )
-  plot.gcf().clear()
+# ar_l = [*np.linspace(0.01, 0.9*lhw.ar_ub, 4, endpoint=False), *np.linspace(0.9*lhw.ar_ub, lhw.ar_ub, 4) ]
+ar_l = [0.17]
+
+def plot_probrep():
+  for ar in ar_l: # lhw.ar_l
+    scher = PolicyGradScher(lhw.s_len, lhw.a_len, lhw.nn_len, save_name=save_name('saved', 'howtorep', lhw.ns, lhw.d, ar) )
+    scher.restore(lhw.L)
+    
+    max_l = int(lhw.L/2)
+    grid = np.zeros((max_l, max_l))
+    for l1 in range(max_l):
+      for l2 in range(l1, max_l):
+        p = scher.get_action_dist([l1, l2] )
+        grid[l1, l2] = p[1]
+    # print("grid= \n{}".format(grid) )
+    # extent = [0.5, n+0.5, 0.5, n+0.5]
+    # img = plot.imshow(grid, cmap='gray_r', extent=extent, origin='lower')
+    img = plot.imshow(grid, cmap='gray_r', origin='lower')
+    plot.colorbar(img, cmap='gray_r')
+    plot.title(r'$n= {}$, $d= {}$, $\lambda= {}$'.format(lhw.ns, lhw.d, "{0:.2f}".format(ar) ) + "\n" + '$J \sim {}$, $S \sim {}$'.format(lhw.J.tolatex(), lhw.S.tolatex() ) )
+    # plot.xticks(range(max_l), fontsize=12)
+    plot.xlabel(r'$l_1$', fontsize=14)
+    # plot.yticks(range(max_l), fontsize=12)
+    plot.ylabel(r'$l_2$', fontsize=14)
+    
+    plot.legend()
+    plot.savefig("plot_probrep_ar{0:.2f}.png".format(ar) )
+    log(WARNING, "done; ar= {}".format(ar) )
+    plot.gcf().clear()
   log(WARNING, "done.")
 
 def plot_probrep_wrt_jsize(ar):
   scher = PolicyGradScher(s_len, a_len, nn_len, save_name=save_name('saved', 'howtorep', ns, d, ar) )
-  scher.restore(99)
+  scher.restore(lhw.L)
   
   js_l, probrep_l = [], []
-  for js in np.linspace(J.l_l, J.u_l, 100):
+  for js in np.linspace(lhw.J.l_l, lhw.u_l, 100):
     js_l.append(js)
-    p = scher.get_action_dist([0]*d + [js] )
+    p = scher.get_action_dist([0]*lhw.d + [js] )
     probrep_l.append(p[1] )
   plot.plot(js_l, probrep_l, color=next(dark_color), marker=next(marker), linestyle=':', mew=2)
   
-  plot.title(r'$J= {}$'.format(J) )
+  plot.title(r'$J= {}$'.format(lhw.J) )
   plot.xlabel('Job size', fontsize=14)
   plot.ylabel('Prob of rep', fontsize=14)
   plot.legend()
@@ -83,6 +87,4 @@ def plot_scher(i, scher, J):
   log(WARNING, "done; i= {}.".format(i) )
 
 if __name__ == "__main__":
-  # plot_probrep_d2()
-  for ar in ar_l:
-    plot_probrep_wrt_jsize(ar)
+  plot_probrep()

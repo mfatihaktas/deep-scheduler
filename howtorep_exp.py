@@ -49,50 +49,30 @@ class MultiQ_wRep(object):
       
       qi_l, ql_l = self.get_sortedrand_d()
       s = ql_l
-      if 'reptod' in self.sching_m:
+      sname = self.sching_m['name']
+      if sname == 'reptod':
         toi_l = qi_l
-      elif 'reptod-ifidle' in self.sching_m:
-        i = 0
-        while i < len(ql_l) and ql_l[i] == 0: i += 1
-        toi_l = qi_l[:i] if i > 0 else qi_l[:1]
-        # idleqi_l = [qi_l[j] for j, ql in enumerate(ql_l) if ql == 0]
-        # if len(idleqi_l):
-        #   toi_l = idleqi_l
+      elif sname == 'reptod-ifidle' or sname == 'reptod-ifidle-wcancel':
+        # i = 0
+        # while i < len(ql_l) and ql_l[i] == 0: i += 1
+        # if i > 0:
+        #   toi_l = qi_l[:i]
         # else:
         #   toi_l = [qi_l[random.randint(0, self.d-1) ] ]
         
-        # for i in toi_l:
-        #   self.q_l[i].put(Task(j._id, j.k, j.size) )
-      elif 'reptod-withdraw' in self.sching_m:
-        toi_l = qi_l
-        # idleqi_l = [qi_l[j] for j, ql in enumerate(ql_l) if ql == 0]
-        # if len(idleqi_l):
-        #   actualqi = idleqi_l.pop()
-        #   qi_l.remove(actualqi)
-        # else:
-        #   actualqi = qi_l.pop(random.randint(0, self.d-1) )
-        
-        # self.q_l[actualqi].put(Task(j._id, j.k, j.size) )
-        # for i in qi_l:
-        #   self.q_l[i].put(Task(j._id, j.k, j.size, type_='r') )
+        qi_l, ql_l = self.get_rand_d()
+        toi_l = [qi_l[0] ]
+        toi_l += [qi_l[i] for i, l in enumerate(ql_l[1:] ) if l == 0]
       elif 'reptod-wcancel' in self.sching_m:
-        toi_l, _ = self.get_rand_d()
-      # elif 'reptogod-withdraw' in self.sching_m:
-      #   ng = self.n/self.d
-      #   g = random.randint(0, ng-1)
-      #   qi_l = list(range(g*self.d, (g+1)*self.d) )
-      #   ql_i_l = sorted([(self.q_l[i].length(), i) for i in qi_l] )
-      #   qi_l = [ql_i[1] for ql_i in ql_i_l]
-      #   # ql_l = [ql_i[0] for ql_i in ql_i_l]
-      #   toi_l = qi_l
-      a = len(toi_l) - 1
+        qi_l, ql_l = self.get_rand_d()
+        
+      
+      a = (len(toi_l) > 1)
       self.d_numj_l[a] += 1
-      if 'reptod-withdraw' in self.sching_m or 'reptod-wcancel' in self.sching_m: #  or ('reptogod-withdraw' in self.sching_m):
-        for _, i in enumerate(toi_l):
-          if _ == 0:
-            self.q_l[i].put(Task(j._id, j.k, j.size) )
-          else:
-            self.q_l[i].put(Task(j._id, j.k, j.size, type_='r') )
+      if sname == 'reptod-wcancel' or sname == 'reptod-ifidle-wcancel':
+        self.q_l[toi_l[0]].put(Task(j._id, j.k, j.size) )
+        for i in toi_l[1:]:
+          self.q_l[i].put(Task(j._id, j.k, j.size, type_='r') )
       else:
         for i in toi_l:
           self.q_l[i].put(Task(j._id, j.k, j.size) )

@@ -7,13 +7,23 @@ def rewards_to_qvals(t_r_l, gamma):
   # reward = average of all following rewards
   # for t in range(T):
   #   t_r_l[t, 0] = np.mean(t_r_l[t:, 0])
-  for t in range(T):
-    w_l, r_l = [], []
-    for i, r in enumerate(t_r_l[t:, 0] ):
-      w_l.append(gamma**i)
-      r_l.append(gamma**i * r)
-    t_r_l[t, 0] = sum(r_l)/sum(w_l)
-  return t_r_l
+  
+  # for t in range(T):
+  #   cumw, cumr = 0, 0
+  #   for i, r in enumerate(t_r_l[t:, 0] ):
+  #     cumw += gamma**i
+  #     cumr += gamma**i * r
+  #   t_r_l[t, 0] = cumr/cumw
+  # return t_r_l
+  
+  t_dr_l = np.zeros((T, 1))
+  cumw, cumr = 0, 0
+  for t in range(T-1, -1, -1):
+    cumr = t_r_l[t, 0] + gamma*cumr
+    # cumw = 1 + gamma*cumw
+    # t_dr_l[t, 0] = cumr/cumw
+    t_dr_l[t, 0] = cumr
+  return t_dr_l
   
   # reward = discounted sum of all following rewards
   # t_dr_l = np.zeros((T, 1))
@@ -121,13 +131,13 @@ class PolicyGradScher(object):
     self.save_name = save_name
     
     # self.v_ester = ValueEster(s_len, nn_len, straj_training)
-    self.gamma = 0.99
+    self.gamma = 0.9 # 1 # 0.99
     self.init()
     
     self.saver = tf.train.Saver(max_to_keep=1)
   
   def __repr__(self):
-    return "PolicyGradScher[s_len= {}, a_len= {}]".format(self.s_len, self.a_len)
+    return "PolicyGradScher[s_len= {}, a_len= {}, nn_len= {}, gamma= {}]".format(self.s_len, self.a_len, self.nn_len, self.gamma)
   
   def save(self, step):
     save_path = self.saver.save(self.sess, self.save_name, global_step=step)
@@ -225,14 +235,17 @@ class PolicyGradScher(object):
     # print("n_t_a_l.shape= {}".format(n_t_a_l.shape) )
     # '''
     # Policy gradient
+    # print("avg r= {}".format(np.mean(n_t_r_l) ) )
     n_t_q_l = np.zeros((N, T, 1))
     for n in range(N):
       n_t_q_l[n] = rewards_to_qvals(n_t_r_l[n], self.gamma)
     # print("n_t_q_l= {}".format(n_t_q_l) )
     # print("n_t_q_l.shape= {}".format(n_t_q_l.shape) )
-    print("avg q= {}".format(np.mean(n_t_q_l) ) )
+    print("PolicyGradScher:: avg q= {}".format(np.mean(n_t_q_l) ) )
     
-    t_avgr_l = np.array([np.mean(n_t_q_l[:, t, 0] ) for t in range(T) ] ).reshape((T, 1))
+    # t_avgr_l = np.array([np.mean(n_t_q_l[:, t, 0] ) for t in range(T) ] ).reshape((T, 1))
+    m = np.mean(n_t_q_l)
+    t_avgr_l = np.array([m for t in range(T) ] ).reshape((T, 1))
     n_t_v_l = np.zeros((N, T, 1))
     for n in range(N):
       n_t_v_l[n] = t_avgr_l
@@ -244,7 +257,7 @@ class PolicyGradScher(object):
                                       self.a_ph: n_t_a_l,
                                       self.q_ph: n_t_q_l,
                                       self.v_ph: n_t_v_l} )
-    print("PolicyGradScher:: loss= {}".format(loss) )
+    # print("PolicyGradScher:: loss= {}".format(loss) )
     # '''
     '''
     # Policy gradient by getting baseline values from actor-critic

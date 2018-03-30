@@ -98,7 +98,9 @@ class Pareto(RV):
     self.a = a
   
   def __str__(self):
-    # return "Pareto(loc= {}, a= {})".format(self.loc, self.a)
+    return "Pareto(loc= {}, a= {})".format(self.loc, self.a)
+  
+  def tolatex(self):
     return r'Pareto(\min= {}, \alpha= {})'.format(self.loc, self.a)
   
   def tail(self, x):
@@ -147,7 +149,9 @@ class TPareto(): # Truncated
     self.a = a
   
   def __str__(self):
-    # return "TPareto(l= {}, u= {}, a= {})".format(self.l, self.u, self.a)
+    return "TPareto(l= {}, u= {}, a= {})".format(self.l, self.u, self.a)
+  
+  def tolatex(self):
     return r'TPareto(\min= {}, \max= {}, \alpha= {})'.format(self.l, self.u, self.a)
   
   def pdf(self, x):
@@ -445,7 +449,30 @@ class BoundedZipf():
   def gen_sample(self):
     return self.dist.rvs(size=1)
 
-class NegBinomial():
+class Binom():
+  def __init__(self, n, p):
+    RV.__init__(self, l_l=0, u_l=n)
+    self.n = n
+    self.p = p
+    
+    self.dist = scipy.stats.nbinom(n, p)
+  
+  def __str__(self):
+    return "Binom[n= {}, p= {}]".format(self.n, self.p)
+  
+  def pdf(self, x):
+    return self.dist.pdf(x)
+  
+  def cdf(self, x):
+    return self.dist.cdf(x)
+  
+  def tail(self, x):
+    return 1 - self.cdf(x)
+  
+  def gen_sample(self):
+    return self.dist.rvs(size=1)
+
+class NegBinom():
   def __init__(self, num_succ, p):
     RV.__init__(self, l_l=num_succ, u_l=float("Inf") )
     self.p = p

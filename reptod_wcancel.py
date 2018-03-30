@@ -4,7 +4,6 @@ from patch import *
 from rvs import *
 from howtorep_exp import *
 
-# #########################################  Deprecated  ######################################### #
 # #############################################  Model  ########################################## #
 ET_MAX = 10000
 
@@ -117,13 +116,58 @@ def ETlb_reptotwo_wcancel(ns, ar, J, S): # B ~ J*S if Ts > X else J
   ET = EB + ar*EB2/2/(1 - ar*EB)
   return ET if ET < ET_MAX else None
 
+# ##################################  Reptod-ifidle-wcancel  ##################################### #
+def ET_reptod_ifle_wcancel(ns, d, J, S, ar):
+  ar_ = ar/ns
+  
+  def Pr_Ssec_g_s(s):
+    return 1 - scipy.integrate.quad(lambda v: S.pdf(v)*math.exp(-ar_*v), 0, s)[0]
+  # def Pr_Sr_g_s(r, s):
+  #   return S.tail(s) * Pr_Ssec_g_s(s)**r
+  # def ESr_i(r, i):
+  #   return scipy.integrate.quad(lambda s: i*s**(i-1) * Pr_Sr_g_s(r, s), 0, np.inf)[0]
+  
+  def Pr_Sd_g_s(ro, s):
+    return S.tail(s) * (Pr_Ssec_g_s(s)*(1-ro) + ro)**(d-1)
+  def ESdi(ro, i):
+    return scipy.integrate.quad(lambda s: i*s**(i-1) * Pr_Sd_g_s(ro, s), 0, np.inf)[0]
+  
+  eq = lambda ro: ro - ar_*ESdi(ro, 1)
+  ro = scipy.optimize.brentq(eq, 0.0001, 1)
+  alog("ar= {}, ro= {}".format(ar, ro) )
+  
+  EB = J.mean()*ESdi(ro, 1)
+  EB2 = J.moment(2)*ESdi(ro, 2)
+  ET = EB + ar_*EB2/2/(1 - ar_*EB)
+  return ro, ET
+
+def plot_reptod_ifle_wcancel():
+  ns, d = 10, 2
+  J = DUniform(1, 1)
+  S = Exp(0.1)
+  T = 50000
+  
+  EB = J.mean()*S.mean()
+  ar_ub = ns/EB
+  
+  nf = 1
+  sching_m = {'name': 'reptod-ifidle-wcancel', 'd': d, 's_len': d}
+  for ar in np.linspace(0.01, ar_ub, 5):
+    rosim, ETsim, EDsim = sim_reptod(nf, ns, sching_m, J, S, ar, T, jg_type='poisson')
+    print("rosim= {}, ETsim= {}, EDsim= {}".format(rosim, ETsim, EDsim) )
+    
+    ro, ET = ET_reptod_ifle_wcancel(ns, d, J, S, ar)
+    print("ro= {}, ET= {}".format(ro, ET) )
+    print("\n\n")
+  
+
 # #############################################  Sim  ############################################ #
-def sim_reptod(nf, ns, sching_m, J, S, T, ar):
+def sim_reptod(nf, ns, sching_m, J, S, ar, T, jg_type='poisson'):
   ro, ET, ET2, ED = 0, 0, 0, 0
   for _ in range(nf):
     env = simpy.Environment()
-    jg = JG(env, ar, DUniform(1, 1), J, T)
-    mq = MultiQ_wRep(env, ns, T, sching_m, S)
+    jg = JG(env, ar, DUniform(1, 1), J, T, jg_type)
+    mq = MultiQ_wRep(env, ns, T, sching_m, None, S)
     jg.out = mq
     jg.init()
     env.run()
@@ -135,20 +179,17 @@ def sim_reptod(nf, ns, sching_m, J, S, T, ar):
       r_numj_l[0] = T - sum(r_numj_l)
       r_freqj_l = [nj/T for nj in r_numj_l]
       print("r_freqj_l= {}".format(r_freqj_l) )
-      d_freqj_l = [nj/T for nj in mq.d_numj_l]
-      print("d_freqj_l= {}".format(d_freqj_l) )
     ro += np.mean([mq.q_l[i].busy_t/env.now for i in range(ns) ] )
     ET += np.mean([np.mean(mq.q_l[i].lt_l) for i in range(ns) ] )
     ED += np.mean([mq.jid_info_m[t+1]['T'] for t in range(T) ] )
-    
     # ET2 += ET**2
   return ro/nf, ET/nf, ED/nf # , ET2/nf
 
 def plot_reptod_wcancel():
-  ns = 5 # 100 # 5
+  ns = 10
   T = 50000
-  J = HyperExp([0.8, 0.2], [1, 0.01] ) # Exp(0.1) # TPareto(1, 1000*10, 1.1) # TPareto(1, 10**10, 1.1)
-  S = DUniform(1, 1) # Bern(1, 27, 0.2) # Dolly() # TPareto(1, 12, 3)
+  J = DUniform(1, 1) # HyperExp([0.8, 0.2], [1, 0.01] ) # TPareto(1, 1000*10, 1.1) # TPareto(1, 10**10, 1.1)
+  S = Exp(0.1) # DUniform(1, 1) # Bern(1, 27, 0.2) # Dolly() # TPareto(1, 12, 3)
   
   ar_ub = 0.9*ar_ub_reptod_wcancel(ns, J, S)
   alog("ns= {}, T= {}, J= {}, S= {}, ar_ub= {}".format(ns, T, J, S, ar_ub) )
@@ -161,7 +202,7 @@ def plot_reptod_wcancel():
     pass
   
   nf = 1
-  def compare():
+  def compare(d):
     for ar in [*np.linspace(0.05, 0.8*ar_ub, 5, endpoint=False), *np.linspace(0.8*ar_ub, ar_ub, 5, endpoint=False) ]:
       print("\n> ar= {}".format(ar) )
       
@@ -169,15 +210,15 @@ def plot_reptod_wcancel():
       # ro_sim, ET_sim, ED_sim = sim_reptod(nf, ns, sching_m, J, S, T, ar)
       # print("sching_m= {}, \nED_sim= {}".format(sching_m, ED_sim) )
       
-      sching_m = {'reptod': 0, 'd': 2}
+      sching_m = {'name':'reptod', 'd': d, 's_len': d}
       ro_sim, ET_sim, ED_sim = sim_reptod(nf, ns, sching_m, J, S, T, ar)
       print("sching_m= {}, \nED_sim= {}".format(sching_m, ED_sim) )
       
-      sching_m = {'reptod-ifidle': 0, 'd': 2}
+      sching_m = {'name': 'reptod-ifidle', 'd': d, 's_len': d}
       ro_sim, ET_sim, ED_sim = sim_reptod(nf, ns, sching_m, J, S, T, ar)
       print("sching_m= {}, \nED_sim= {}".format(sching_m, ED_sim) )
       
-      sching_m = {'reptod-wcancel': 0, 'd': 2}
+      sching_m = {'name': 'reptod-wcancel', 'd': d, 's_len': d}
       ro_sim, ET_sim, ED_sim = sim_reptod(nf, ns, sching_m, J, S, T, ar)
       print("sching_m= {}, \nED_sim= {}".format(sching_m, ED_sim) )
       
@@ -226,4 +267,5 @@ def plot_reptod_wcancel():
   log(WARNING, "done.")
 
 if __name__ == "__main__":
-  plot_reptod_wcancel()
+  # plot_reptod_wcancel()
+  plot_reptod_ifle_wcancel()
