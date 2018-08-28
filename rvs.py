@@ -137,6 +137,9 @@ class Pareto(RV):
     else:
       return self.a*self.loc**2 / (self.a-1)**2/(self.a-2)
   
+  def moment(self, i):
+    return moment_ith(i, self)
+  
   def gen_sample(self):
     return ((numpy.random.pareto(self.a, 1) + 1)*self.loc)[0]
     # return pareto.ppf(numpy.random.uniform(0, 1), b=self.a, scale=self.loc)
@@ -520,7 +523,7 @@ class X_n_k():
     return "{}_{{}:{}}".format(X, self.n, self.k)
   
   def pdf(self, x):
-    return self.n*self.X.pdf(x) * binomial(self.n-1, self.k-1) * self.X.cdf(x)**(self.k-1) * self.X.tail(x)**(self.n-self.k)
+    return self.n*self.X.pdf(x) * binom(self.n-1, self.k-1) * self.X.cdf(x)**(self.k-1) * self.X.tail(x)**(self.n-self.k)
   
   def cdf(self, x):
     return cdf_n_k(self.X, self.n, self.k, x)
@@ -534,7 +537,7 @@ class X_n_k():
   def gen_sample(self):
     return gen_orderstat_sample(self.X, self.n, self.k)
 
-def binomial(n, k):
+def binom(n, k):
   # if n == k:
   #   return 1
   # elif k == 1:
@@ -555,7 +558,7 @@ def moment_ith(i, X):
 def cdf_n_k(X, n, k, x): # Pr{X_n:k < x}
   cdf = 0
   for i in range(k, n+1):
-    cdf += binomial(n, i) * X.cdf(x)**i * X.tail(x)**(n-i)
+    cdf += binom(n, i) * X.cdf(x)**i * X.tail(x)**(n-i)
   return cdf
 
 def moment_ith_n_k(X, i, n, k): # E[X_n:k]

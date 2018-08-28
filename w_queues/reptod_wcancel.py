@@ -117,44 +117,139 @@ def ETlb_reptotwo_wcancel(ns, ar, J, S): # B ~ J*S if Ts > X else J
   return ET if ET < ET_MAX else None
 
 # ##################################  Reptod-ifidle-wcancel  ##################################### #
-def ET_reptod_ifle_wcancel(ns, d, J, S, ar):
-  ar_ = ar/ns
+def ET_reptod_ifidle(ns, d, J, S, ar):
+  def EB1_mth(m):
+    return J.moment(m)*S.moment(m)
   
-  def Pr_Ssec_g_s(s):
-    return 1 - scipy.integrate.quad(lambda v: S.pdf(v)*math.exp(-ar_*v), 0, s)[0]
-  # def Pr_Sr_g_s(r, s):
-  #   return S.tail(s) * Pr_Ssec_g_s(s)**r
-  # def ESr_i(r, i):
-  #   return scipy.integrate.quad(lambda s: i*s**(i-1) * Pr_Sr_g_s(r, s), 0, np.inf)[0]
+  ar_toidleq = ar/ns*d
+  def Pr_Si1_g_s(i, s):
+    return S.tail(s)**i
+  def ESi1_mth(i, m):
+    return scipy.integrate.quad(lambda s: m*s**(m-1) * Pr_Si1_g_s(i, s), 0, np.inf)[0]
+  def EBi1_mth(i, m):
+    return J.moment(m)*ESi1_mth(i, m)
   
-  def Pr_Sd_g_s(ro, s):
-    return S.tail(s) * (Pr_Ssec_g_s(s)*(1-ro) + ro)**(d-1)
-  def ESdi(ro, i):
-    return scipy.integrate.quad(lambda s: i*s**(i-1) * Pr_Sd_g_s(ro, s), 0, np.inf)[0]
+  Pr_jobfindsidle = lambda ro: 1 - ro**d
+  def ET_given_jobfindsidle(ro):
+    return sum([EBi1_mth(i, 1) * (1-ro)**i * ro**(d-i) * binom(d, i) / (1 - ro**d) for i in range(1, d+1) ] )
   
-  eq = lambda ro: ro - ar_*ESdi(ro, 1)
+  ar_mg1efs = lambda ro: ar/ns *ro**(d-1)
+  def ESe_mth(ro, m):
+    return ro**(d-1) * S.moment(m) \
+           + sum([ESi1_mth(i, m) * binom(d-1, i-1)*(1-ro)**(i-1)*ro**(d-i) for i in range(2, d+1) ] )
+  def EBe_mth(ro, m):
+    return J.moment(m)*ESe_mth(ro, m)
+  
+  def ET_given_jobfindsnoidle(ro):
+    ar_ = ar_mg1efs(ro)
+    EB1, EB12 = EB1_mth(1), EB1_mth(2)
+    EBe, EBe2 = EBe_mth(ro, 1), EBe_mth(ro, 2)
+    return EB1 + ar_*EB12/2/(1 - ar_*EB1) + ar_*(EBe2 - EB12)/2/(1 - ar_*(EB1 - EBe) )
+  
+  Elengthofbusyperiod = lambda ro: EBe_mth(ro, 1)/(1 - ar_mg1efs(ro)*EB1_mth(1) )
+  eq = lambda ro: ro - Elengthofbusyperiod(ro)/(Elengthofbusyperiod(ro) + 1/ar_toidleq)
   ro = scipy.optimize.brentq(eq, 0.0001, 1)
-  alog("ar= {}, ro= {}".format(ar, ro) )
+  alog("ro= {}".format(ro) )
+  alog("naive ro= {}".format(ar/ns*EB1_mth(1) ) )
   
-  EB = J.mean()*ESdi(ro, 1)
-  EB2 = J.moment(2)*ESdi(ro, 2)
-  ET = EB + ar_*EB2/2/(1 - ar_*EB)
-  return ro, ET
+  ET = Pr_jobfindsidle(ro)*ET_given_jobfindsidle(ro) + \
+       (1 - Pr_jobfindsidle(ro))*ET_given_jobfindsnoidle(ro)
+  alog("ET= {}".format(ET) )
 
-def plot_reptod_ifle_wcancel():
+def plot_reptod_ifidle():
+  ns, d = 100, 2
+  J = HyperExp([0.9, 0.1], [1, 0.01] ) # TPareto(1, 10**4, 1.1) # Exp(1) # DUniform(1, 1)
+  S = Bern(1, 10, 0.1) # Exp(1) # Pareto(1, 2)
+  T = ns*4000 # 10000
+  alog("ns= {}, d= {}, J= {}, S= {}, T= {}".format(ns, d, J, S, T) )
+  
+  EJ, ES = J.mean(), S.mean()
+  EB = EJ*ES
+  print("EJ= {}, ES= {}, EB= {}".format(EJ, ES, EB) )
+  ar_ub = 0.99*ns/EB
+  nf = 1
+  for ar in np.linspace(0.01, ar_ub, 7):
+    print("> ar= {}".format(ar) )
+    
+    sching_m = {'name': 'reptod-ifidle', 'd': d, 's_len': d}
+    rosim, ETsim, EDsim = sim_reptod(nf, ns, sching_m, J, S, ar, T, jg_type='poisson')
+    print("sching_m= {}".format(sching_m) )
+    print("rosim= {}, ETsim= {}, EDsim= {}".format(rosim, ETsim, EDsim) )
+    ET_reptod_ifidle(ns, d, J, S, ar)
+    print("\n")
+    
+    # sching_m = {'name': 'reptod-ifidle-wcancel', 'd': d, 's_len': d, 'L': 0}
+    # rosim, ETsim, EDsim = sim_reptod(nf, ns, sching_m, J, S, ar, T, jg_type='poisson')
+    # print("sching_m= {}".format(sching_m) )
+    # print("rosim= {}, ETsim= {}, EDsim= {}".format(rosim, ETsim, EDsim) )
+    # ET_reptod_ifle_wcancel(ns, d, J, S, ar)
+    # print("\n\n")
+
+# ###############################  Reptod-ifidle-wcancel  ############################### #
+def ET_reptod_ifle_wcancel(ns, d, J, S, ar):
+  def EB1_mth(m):
+    return J.moment(m)*S.moment(m)
+  
+  ar_toidleq = lambda ro: sum([ar/ns*d/(1+i) * binom(d-1, i)*(1-ro)**i*ro**(d-1-i) for i in range(d) ] )
+  def Pr_Sred_g_s(ro, s):
+    return 1 - scipy.integrate.quad(lambda v: S.pdf(v)*math.exp(-ar_toidleq(ro)*v), 0, s)[0]
+  def Pr_Si1_g_s(ro, i, s):
+    return S.tail(s) * Pr_Sred_g_s(ro, s)**(i-1)
+  def ESi1_mth(ro, i, m):
+    return scipy.integrate.quad(lambda s: m*s**(m-1) * Pr_Si1_g_s(ro, i, s), 0, np.inf)[0]
+  def EBi1_mth(ro, i, m):
+    return J.moment(m)*ESi1_mth(ro, i, m)
+  
+  Pr_jobfindsidle = lambda ro: 1 - ro**d
+  def ET_given_jobfindsidle(ro):
+    return sum([EBi1_mth(ro, i, 1) * (1-ro)**i * ro**(d-i) * binom(d, i) / (1 - ro**d) for i in range(1, d+1) ] )
+  
+  ar_mg1efs = lambda ro: ar/ns *ro**(d-1)
+  def ESe_mth(ro, m):
+    return ro**(d-1) * S.moment(m) \
+           + sum([ESi1_mth(ro, i, m) * binom(d-1, i-1)*(1-ro)**(i-1)*ro**(d-i) for i in range(2, d+1) ] )
+  def EBe_mth(ro, m):
+    return J.moment(m)*ESe_mth(ro, m)
+  
+  def ET_given_jobfindsnoidle(ro):
+    ar_ = ar_mg1efs(ro)
+    EB1, EB12 = EB1_mth(1), EB1_mth(2)
+    EBe, EBe2 = EBe_mth(ro, 1), EBe_mth(ro, 2)
+    return EB1 + ar_*EB12/2/(1 - ar_*EB1) + ar_*(EBe2 - EB12)/2/(1 - ar_*(EB1 - EBe) )
+  
+  Elengthofbusyperiod = lambda ro: EBe_mth(ro, 1)/(1 - ar_mg1efs(ro)*EB1_mth(1) )
+  eq = lambda ro: ro - Elengthofbusyperiod(ro)/(Elengthofbusyperiod(ro) + 1/ar_toidleq(ro) )
+  ro = scipy.optimize.brentq(eq, 0.0001, 1)
+  alog("ro= {}".format(ro) )
+  alog("naive ro= {}".format(ar/ns*EB1_mth(1) ) )
+  
+  ET = Pr_jobfindsidle(ro)*ET_given_jobfindsidle(ro) + \
+       (1 - Pr_jobfindsidle(ro))*ET_given_jobfindsnoidle(ro)
+  alog("ET= {}".format(ET) )
+
+def plot_reptod_ifidle_wcancel():
   ns, d = 10, 2
+  sching_m = {'name': 'reptod-ifidle-wcancel', 'd': d, 's_len': d, 'L': 0}
   J = DUniform(1, 1)
   S = Exp(0.1)
-  T = 50000
+  T = ns*5000 # 10000
+  alog("ns= {}, d= {}, J= {}, S= {}, T= {}".format(ns, d, J, S, T) )
   
   EB = J.mean()*S.mean()
-  ar_ub = ns/EB
+  ar_ub = 0.9*ns/EB
   
   nf = 1
-  sching_m = {'name': 'reptod-ifidle-wcancel', 'd': d, 's_len': d}
   for ar in np.linspace(0.01, ar_ub, 5):
+    print("> ar= {}".format(ar) )
     rosim, ETsim, EDsim = sim_reptod(nf, ns, sching_m, J, S, ar, T, jg_type='poisson')
+    print("sching_m= {}".format(sching_m) )
     print("rosim= {}, ETsim= {}, EDsim= {}".format(rosim, ETsim, EDsim) )
+    
+    # sching_m = {'name': 'reptod', 'd': d, 's_len': d}
+    # sching_m = {'name': 'reptod', 'd': 1, 's_len': 1}
+    # rosim, ETsim, EDsim = sim_reptod(nf, ns, sching_m, J, S, ar, T, jg_type='poisson')
+    # print("sching_m= {}".format(sching_m) )
+    # print("rosim= {}, ETsim= {}, EDsim= {}".format(rosim, ETsim, EDsim) )
     
     ro, ET = ET_reptod_ifle_wcancel(ns, d, J, S, ar)
     print("ro= {}, ET= {}".format(ro, ET) )
@@ -167,7 +262,7 @@ def sim_reptod(nf, ns, sching_m, J, S, ar, T, jg_type='poisson'):
   for _ in range(nf):
     env = simpy.Environment()
     jg = JG(env, ar, DUniform(1, 1), J, T, jg_type)
-    mq = MultiQ_wRep(env, ns, T, sching_m, None, S)
+    mq = MultiQ_wRep(env, ns, T, sching_m, S)
     jg.out = mq
     jg.init()
     env.run()
@@ -179,6 +274,10 @@ def sim_reptod(nf, ns, sching_m, J, S, ar, T, jg_type='poisson'):
       r_numj_l[0] = T - sum(r_numj_l)
       r_freqj_l = [nj/T for nj in r_numj_l]
       print("r_freqj_l= {}".format(r_freqj_l) )
+    print("avg load across servers= {}".format([mq.q_l[i].busy_t/env.now for i in range(ns) ] ) )
+    EBsim = np.mean([np.mean(mq.q_l[i].EB_l) for i in range(ns) ] )
+    print("EBsim= {}".format(EBsim) )
+    
     ro += np.mean([mq.q_l[i].busy_t/env.now for i in range(ns) ] )
     ET += np.mean([np.mean(mq.q_l[i].lt_l) for i in range(ns) ] )
     ED += np.mean([mq.jid_info_m[t+1]['T'] for t in range(T) ] )
@@ -268,4 +367,5 @@ def plot_reptod_wcancel():
 
 if __name__ == "__main__":
   # plot_reptod_wcancel()
-  plot_reptod_ifle_wcancel()
+  plot_reptod_ifidle()
+  # plot_reptod_ifidle_wcancel()

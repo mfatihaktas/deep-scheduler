@@ -33,7 +33,8 @@ class MultiQ_wRep(object):
   
   def get_rand_d(self):
     qi_l = random.sample(range(self.n), self.d)
-    return qi_l, None
+    ql_l = [self.q_l[i].length() for i in qi_l]
+    return qi_l, ql_l
   
   def get_sortedrand_d(self):
     qi_l = random.sample(range(self.n), self.d)
@@ -53,26 +54,25 @@ class MultiQ_wRep(object):
       if sname == 'reptod':
         toi_l = qi_l
       elif sname == 'reptod-ifidle' or sname == 'reptod-ifidle-wcancel':
-        # i = 0
-        # while i < len(ql_l) and ql_l[i] == 0: i += 1
-        # if i > 0:
-        #   toi_l = qi_l[:i]
-        # else:
-        #   toi_l = [qi_l[random.randint(0, self.d-1) ] ]
+        i = 0
+        while i < len(ql_l) and ql_l[i] == 0: i += 1
+        if i > 0:
+          toi_l = qi_l[:i]
+        else:
+          toi_l = random.sample(qi_l, 1)
         
-        qi_l, ql_l = self.get_rand_d()
-        toi_l = [qi_l[0] ]
-        toi_l += [qi_l[i] for i, l in enumerate(ql_l[1:] ) if l == 0]
+        # qi_l, ql_l = self.get_rand_d()
+        # toi_l = [qi_l[0] ]
+        # toi_l += [qi_l[i+1] for i, l in enumerate(ql_l[1:] ) if l == 0]
       elif 'reptod-wcancel' in self.sching_m:
         qi_l, ql_l = self.get_rand_d()
-        
       
       a = (len(toi_l) > 1)
       self.d_numj_l[a] += 1
       if sname == 'reptod-wcancel' or sname == 'reptod-ifidle-wcancel':
         self.q_l[toi_l[0]].put(Task(j._id, j.k, j.size) )
         for i in toi_l[1:]:
-          self.q_l[i].put(Task(j._id, j.k, j.size, type_='r') )
+          self.q_l[i].put(Task(j._id, j.k, j.size, type_='r', L=self.sching_m['L'] ) )
       else:
         for i in toi_l:
           self.q_l[i].put(Task(j._id, j.k, j.size) )

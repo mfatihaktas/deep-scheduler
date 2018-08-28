@@ -4,12 +4,13 @@ from rvs import Pareto
 
 # ************************  Essentials for Jobs with multiple Tasks  ***************************** # 
 class Task(object):
-  def __init__(self, jid, k, size, type_=None, L=None, remaining=None):
+  def __init__(self, jid, k, size, type_=None, L=None, st=None, remaining=None):
     self.jid = jid
     self.k = k
     self.size = size
     self.type_ = type_
     self.L = L
+    self.st = st
     self.remaining = remaining
     
     self.prev_hop_id = None
@@ -55,7 +56,9 @@ class JG(object): # Job Generator
     self.out = None
     
   def init(self):
-    if self.type_ == 'poisson':
+    if self.type_ == 'deterministic':
+      self.action = self.env.process(self.run_deterministic() )
+    elif self.type_ == 'poisson':
       self.action = self.env.process(self.run_poisson() )
     elif self.type_ == 'selfsimilar':
       self.action = self.env.process(self.run_selfsimilar() )
@@ -79,10 +82,18 @@ class JG(object): # Job Generator
       self.out.put(Job(self.nsent, self.k_dist.gen_sample(), self.size_dist.gen_sample() ) )
     return
   
+  def run_deterministic(self):
+    while 1:
+      yield self.env.timeout(1/self.ar)
+      self.nsent += 1
+      self.out.put(Job(self.nsent, self.k_dist.gen_sample(), self.size_dist.gen_sample() ) )
+      
+      if self.nsent >= self.ntosend:
+        return
+  
   def run_poisson(self):
     while 1:
-      # yield self.env.timeout(random.expovariate(self.ar) )
-      yield self.env.timeout(1/self.ar)
+      yield self.env.timeout(random.expovariate(self.ar) )
       self.nsent += 1
       self.out.put(Job(self.nsent, self.k_dist.gen_sample(), self.size_dist.gen_sample() ) )
       
@@ -117,6 +128,7 @@ class FCFS(object):
     self.cancel = None
     
     self.lt_l = []
+    self.EB_l = []
     # self.sl_l = []
     
     self.action = env.process(self.run() )
@@ -126,34 +138,23 @@ class FCFS(object):
   def __repr__(self):
     return "FCFS[id= {}]".format(self._id)
   
-  def length(self):
+  def length(self, wjsize=False):
     # return len(self.t_l) + (self.t_inserv is not None)
-    return sum([t.type_ != 'r' for t in self.t_l] ) + (self.t_inserv is not None and self.t_inserv.type_ != 'r')
-    # return sum([t.size for t in self.t_l if t.type_ != 'r'] ) + (self.t_inserv.size if (self.t_inserv is not None and self.t_inserv.type_ != 'r') else 0)
+    if wjsize:
+      return sum([t.size for t in self.t_l if t.type_ != 'r'] ) + (self.t_inserv.size if (self.t_inserv is not None and self.t_inserv.type_ != 'r') else 0)
+    else:
+      return sum([t.type_ != 'r' for t in self.t_l] ) + (self.t_inserv is not None and self.t_inserv.type_ != 'r')
   
   def run(self):
     while True:
       if len(self.t_l) == 0:
-        # idle_start_t = self.env.now
         self.got_busy = self.env.event()
         yield (self.got_busy)
         self.got_busy = None
         sim_log(DEBUG, self.env, self, "got busy!", None)
-        # self.idle_t += self.env.now - idle_start_t
       self.t_inserv = self.t_l.pop(0)
       if self.t_inserv.type_ == 'r':
-        # if self.L is not None:
-        #   if (self.length() - 1) > self.L:
-        #     self.t_inserv = None
-        #     continue
-        #   else:
-        #     if self.out_c is not None:
-        #       self.out_c.put_c({'m': 'r', 'jid': self.t_inserv.jid} )
-        # elif self.L is None:
-        #   if (self.length() - 1) > self.t_inserv.L:
-        #     self.t_inserv = None
-        #     continue
-        if self.length() > 0:
+        if self.length() > self.t_inserv.L:
           self.t_inserv = None
           continue
         elif self.out_c is not None:
@@ -162,6 +163,11 @@ class FCFS(object):
       self.cancel = self.env.event()
       clk_start_time = self.env.now
       st = self.t_inserv.size * self.sl_dist.gen_sample()
+      if self.t_inserv.type_ == 's':
+        if st > self.t_inserv.L and self.length() > 0:
+          st = self.t_inserv.L
+          self.cancel_flag = True
+        self.t_inserv.st = st
       sim_log(DEBUG, self.env, self, "starting {}s-clock on ".format(st), self.t_inserv)
       busy_start_t = self.env.now
       yield (self.cancel | self.env.timeout(st) )
@@ -172,17 +178,18 @@ class FCFS(object):
         # yield self.env.timeout(1)
       else:
         sim_log(DEBUG, self.env, self, "serv done in {}s on ".format(self.env.now-clk_start_time), self.t_inserv)
-        if self.t_inserv.type_ != 'r':
-          lt = self.env.now - self.t_inserv.ent_time
-          self.lt_l.append(lt)
-          # self.sl_l.append(lt/self.t_inserv.size)
-          self.busy_t += self.env.now - busy_start_t
       
         self.t_inserv.prev_hop_id = self._id
         if self.out is not None:
           self.out.put(self.t_inserv)
         elif self.out_c is not None:
           self.out_c.put_c({'jid': self.t_inserv.jid} )
+      if self.t_inserv is not None and self.t_inserv.type_ != 'r':
+        lt = self.env.now - self.t_inserv.ent_time
+        self.lt_l.append(lt)
+        self.EB_l.append(self.env.now - busy_start_t)
+        # self.sl_l.append(lt/self.t_inserv.size)
+        self.busy_t += self.env.now - busy_start_t
       self.t_inserv = None
   
   def put(self, t):
@@ -192,7 +199,12 @@ class FCFS(object):
     self.t_l.append(t)
     if self.got_busy is not None and _l == 0:
       self.got_busy.succeed()
-    elif _l == 1 and self.t_inserv.type_ == 'r' and t.type_ != 'r':
+    # elif self.length() > self.t_inserv.L and t.type_ != 'r' and self.t_inserv.type_ == 'r':
+    elif self.t_inserv.type_ == 'r' and self.length() > self.t_inserv.L:
+      # log(WARNING, "cancelling redundant jid= {}".format(self.t_inserv.jid) )
+      self.cancel_flag = True
+      self.cancel.succeed()
+    elif self.t_inserv.type_ == 's' and self.t_inserv.st > self.t_inserv.L:
       self.cancel_flag = True
       self.cancel.succeed()
   
