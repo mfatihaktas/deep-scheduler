@@ -22,23 +22,26 @@ def sim(sim_m, sching_m):
     print("w._id= {}, mean(w.sched_load_l)= {}".format(w._id, avg_schedload) )
     avg_schedload_l.append(avg_schedload)
   
-  ndropped = 0
+  njobs_wfate, ndropped = 0, 0
   slowdown_l = []
-  for jid, info in jid_info_m.items():
-    fate = info['fate']
-    if fate == 'dropped':
-      ndropped += 1
-    elif fate == 'finished':
-      slowdown_l.append(info['runtime']/info['expected_lifetime'] )
+  for jid, info in cl.jid_info_m.items():
+    if 'fate' in info:
+      njobs_wfate += 1
+      fate = info['fate']
+      if fate == 'dropped':
+        ndropped += 1
+      elif fate == 'finished':
+        slowdown_l.append(info['runtime']/info['expected_lifetime'] )
+  blog(ndropped=ndropped, njobs_wfate=njobs_wfate)
   
   return {
-    'drop_rate': ndropped/len(jid_info_m),
+    'drop_rate': ndropped/len(cl.jid_info_m),
     'avg_slowdown': np.mean(slowdown_l),
     'avg_utilization': np.mean(avg_schedload_l) }
 
 def plot_wrt_ar():
   sim_m = {
-    'ar': None, 'njob': 1000, 'nworker': 10, 'wcap': 10,
+    'ar': None, 'njob': 40000, 'nworker': 10, 'wcap': 10,
     'totaldemand_rv': TPareto(1, 10000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 10, 1.1),
     'k_rv': DUniform(1, 1) }

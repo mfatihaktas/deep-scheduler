@@ -18,9 +18,25 @@ class Task(object):
     self.prev_hop_id = None
     self.binding_time = None
     self.runtime = None
+    
+    self.cum_supply = 0
+    self.cum_demand = 0
   
   def __repr__(self):
     return "Task[id= {}, jid= {}, type= {}]".format(self._id, self.jid, self.type_)
+  
+  def __repr__(self):
+    return "Pod[id= {}]".format(self._id)
+  
+  def gen_demand(self):
+    d = min(self.demandperslot_rv.sample(), self.totaldemand - self.cum_demand)
+    self.cum_demand += d
+    return d
+  
+  def take_supply(self, s):
+    s_ = min(self.cum_demand - self.cum_supply, s)
+    self.cum_supply += s_
+    return s_
 
 class Job(object):
   def __init__(self, _id, k, n, demandperslot_rv, totaldemand):
@@ -205,8 +221,7 @@ class Cluster(object):
           if w._id in wsentto_id_l and w._id not in wrecvedfrom_id_l:
             w.put_c({'message': 'remove', 'jid': t.jid} )
         
-        
-        self.jid_info_m[t.jid].extend({
+        self.jid_info_m[t.jid].update({
           'fate': 'finished',
           'runtime': max([t.runtime for t in self.jid__t_l_m[t.jid] ] ) } )
         self.jid__t_l_m.pop(t.jid, None)
