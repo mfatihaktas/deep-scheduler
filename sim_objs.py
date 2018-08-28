@@ -1,5 +1,7 @@
 import math, random, simpy, pprint
+from operator import itemgetter
 
+from rvs import *
 from log_utils import *
 
 # #######################################  Task  ######################################## #
@@ -34,25 +36,24 @@ class Job(object):
     return "Job[id= {}]".format(self._id)
 
 class JobGen(object):
-  def __init__(self, env, ar, demandperslot_mean_rv, totaldemand_rv, k_rv, njobs):
+  def __init__(self, env, ar, demandperslot_mean_rv, totaldemand_rv, k_rv, njob, out, **kwargs):
     self.env = env
     self.ar = ar
+    self.demandperslot_mean_rv = demandperslot_mean_rv
+    self.totaldemand_rv = totaldemand_rv
     self.k_rv = k_rv
-    self.size_dist = size_dist
-    self.njobs = njobs
-    self.type_ = type_
+    self.njob = njob
+    self.out = out
     
     self.nsent = 0
-    self.out = None
     
-  def init(self):
     self.action = self.env.process(self.run_poisson() )
   
   def run_poisson(self):
     while 1:
       yield self.env.timeout(random.expovariate(self.ar) )
       self.nsent += 1
-      k = self.k_rv.gen_sample()
+      k = self.k_rv.sample()
       demandmean = self.demandperslot_mean_rv.sample()
       coeff_var = 0.7
       self.out.put(Job(
@@ -61,8 +62,8 @@ class JobGen(object):
         demandperslot_rv = TNormal(demandmean, demandmean*coeff_var),
         totaldemand = self.totaldemand_rv.sample() ) )
       
-      if self.nsent >= self.njobs:
-        return
+      # if self.nsent >= self.njob:
+      #   return
 
 # #########################################  Worker  ############################################# #
 class Worker(object):
@@ -75,6 +76,8 @@ class Worker(object):
     self.timeslot = 1
     self.t_l = []
     env.process(self.run() )
+    
+    self.sched_load_l = []
   
   def __repr__(self):
     return "Worker[id= {}]".format(self._id)
@@ -94,6 +97,7 @@ class Worker(object):
     while True:
       yield (self.env.timeout(self.timeslot) )
       if len(self.t_l) == 0:
+        self.sched_load_l.append(0)
         continue
       
       for p in self.t_l:
@@ -115,6 +119,8 @@ class Worker(object):
         for t in t_l_:
           total_supplytaken += t.take_supply(supply_foreach)
       
+      self.sched_load_l.append(total_supplytaken/self.cap)
+      
       # Check if a task is finished
       t_l_ = []
       for t in self.t_l:
@@ -129,7 +135,7 @@ class Worker(object):
   def put(self, t):
     t.bindingt = self.env.now
     self.t_l.append(t)
-    slog(DEBUG, self.env, self, "binded, njobs= {}".format(len(self.t_l) ), p)
+    slog(DEBUG, self.env, self, "binded, njob= {}".format(len(self.t_l) ), t)
   
   def put_c(self, m):
     slog(DEBUG, self.env, self, "received", m)
@@ -147,14 +153,14 @@ class Worker(object):
 
 # #########################################  Cluster  ############################################ #
 class Cluster(object):
-  def __init__(self, env, njobs, nworkers, wcap, scher, **kwargs):
+  def __init__(self, env, njob, nworker, wcap, scher, **kwargs):
     self.env = env
-    self.njobs = njobs
+    self.njob = njob
     self.scher = scher
     
-    self.w_l = [Worker(env, i, wcap, out_c=self) for i in range(nworkers) ]
+    self.w_l = [Worker(env, i, wcap, out_c=self) for i in range(nworker) ]
     
-    self.njobs_collected = 0
+    self.njob_collected = 0
     self.store_c = simpy.Store(env)
     self.wait_for_alljobs = env.process(self.run_c() )
     
@@ -169,10 +175,10 @@ class Cluster(object):
     a, w_l = self.scher.map_to_workers(job, self.w_l)
     if a == ACT_BIND:
       wid_l = []
-      for i, w in enumerate(1, len(w_l)+1):
-        type_ = 's' if i <= k else 'r'
-        w.put(Task(i, job._id, job.reqed, job.demandperslot_rv, job.totaldemand, job.k, type_) )
-        wid_l.apppend(w._id)
+      for i, w in enumerate(w_l):
+        type_ = 's' if i+1 <= job.k else 'r'
+        w.put(Task(i+1, job._id, job.reqed, job.demandperslot_rv, job.totaldemand, job.k, type_) )
+        wid_l.append(w._id)
       
       self.jid__t_l_m[job._id] = []
       self.jid_info_m[job._id] = {
@@ -206,8 +212,8 @@ class Cluster(object):
         self.jid__t_l_m.pop(t.jid, None)
         slog(DEBUG, self.env, self, "finished jid= {}".format(t.jid), t)
         
-        self.njobs_collected += 1 # for now counting only the finished jobs, ignoring the dropped ones
-        if self.njobs_collected >= self.njobs:
+        self.njob_collected += 1 # for now counting only the finished jobs, ignoring the dropped ones
+        if self.njob_collected >= self.njob:
           return
   
   def put_c(self, t):

@@ -1,6 +1,9 @@
-import inspect, math, mpmath, scipy, itertools
-from scipy import special
+import inspect, pprint
 
+INFO = 0
+DEBUG = 1
+WARNING = 2
+ERROR = 3
 debug_level__string_map = {INFO: "INFO", DEBUG: "DEBUG", WARNING: "WARNING", ERROR: "ERROR"}
 
 # SDEBUG_LEVEL = INFO
