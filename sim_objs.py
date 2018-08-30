@@ -1,6 +1,7 @@
 import math, random, simpy, pprint
 from operator import itemgetter
 
+from scheduler import *
 from rvs import *
 from log_utils import *
 
@@ -83,11 +84,15 @@ class JobGen(object):
 
 # #########################################  Worker  ############################################# #
 class Worker(object):
-  def __init__(self, env, _id, cap, out_c):
+  def __init__(self, env, _id, cap, out_c, func_slowdown=None):
     self.env = env
     self._id = _id
     self.cap = cap
     self.out_c = out_c
+    if func_slowdown is None:
+      self.func_slowdown = lambda _: 1
+    else:
+      self.func_slowdown = func_slowdown
     
     self.timeslot = 1
     self.t_l = []
@@ -120,22 +125,24 @@ class Worker(object):
         p.gen_demand()
       
       # CPU scheduling
+      cap_ = self.func_slowdown(self.sched_load() )*self.cap
+      
       sched_cap = self.sched_cap()
       total_supplytaken = 0
       for t in self.t_l:
-        total_supplytaken += t.take_supply(min(t.reqed, t.reqed/sched_cap*self.cap) )
+        total_supplytaken += t.take_supply(min(t.reqed, t.reqed/sched_cap*cap_) )
       
       t_l_ = self.t_l
-      while self.cap - total_supplytaken > 0.01:
+      while cap_ - total_supplytaken > 0.01:
         t_l_ = [t for t in t_l_ if t.cum_demand - t.cum_supply > 0.01]
         if len(t_l_) == 0:
           break
         
-        supply_foreach = (self.cap - total_supplytaken)/len(t_l_)
+        supply_foreach = (cap_ - total_supplytaken)/len(t_l_)
         for t in t_l_:
           total_supplytaken += t.take_supply(supply_foreach)
       
-      self.sched_load_l.append(total_supplytaken/self.cap)
+      self.sched_load_l.append(self.sched_load() )
       
       # Check if a task is finished
       t_l_ = []
@@ -169,12 +176,14 @@ class Worker(object):
 
 # #########################################  Cluster  ############################################ #
 class Cluster(object):
-  def __init__(self, env, njob, nworker, wcap, scher, **kwargs):
+  def __init__(self, env, njob, nworker, wcap, func_slowdown, mapper, scher, max_exprate=1, **kwargs):
     self.env = env
     self.njob = njob
+    self.mapper = mapper
     self.scher = scher
+    self.max_exprate = max_exprate
     
-    self.w_l = [Worker(env, i, wcap, out_c=self) for i in range(nworker) ]
+    self.w_l = [Worker(env, i, wcap, self, func_slowdown) for i in range(nworker) ]
     
     self.njob_collected = 0
     self.store_c = simpy.Store(env)
@@ -188,25 +197,33 @@ class Cluster(object):
   
   def put(self, job):
     slog(DEBUG, self.env, self, "received", job)
-    a, w_l = self.scher.map_to_workers(job, self.w_l)
-    if a == ACT_BIND:
-      wid_l = []
-      for i, w in enumerate(w_l):
-        type_ = 's' if i+1 <= job.k else 'r'
-        w.put(Task(i+1, job._id, job.reqed, job.demandperslot_rv, job.totaldemand, job.k, type_) )
-        wid_l.append(w._id)
-      
-      self.jid__t_l_m[job._id] = []
-      self.jid_info_m[job._id] = {
-        'expected_lifetime': job.totaldemand/job.demandperslot_rv.mean(),
-        'wid_l': wid_l}
-    else:
+    w_load_l = self.mapper.worker_load_l(job, self.w_l)
+    if len(w_load_l) < job.k:
       self.jid_info_m[job._id] = {'fate': 'dropped'}
+      return
+    
+    n_max = min(int(self.max_exprate*job.k), len(w_load_l) )
+    job.n, s, a = self.scher.schedule(job, [l for _, l in w_load_l[:n_max] ] )
+    
+    wid_l = []
+    for i, w in enumerate([w for w, _ in w_load_l[:job.n] ] ):
+      type_ = 's' if i+1 <= job.k else 'r'
+      w.put(Task(i+1, job._id, job.reqed, job.demandperslot_rv, job.totaldemand, job.k, type_) )
+      wid_l.append(w._id)
+    
+    self.jid__t_l_m[job._id] = []
+    self.jid_info_m[job._id] = {
+      'expected_lifetime': job.totaldemand/job.demandperslot_rv.mean(),
+      'wid_l': wid_l,
+      's': s, 'a': a}
   
   def run_c(self):
     while True:
       t = yield self.store_c.get()
-      self.jid__t_l_m[t.jid].append(t)
+      try:
+        self.jid__t_l_m[t.jid].append(t)
+      except KeyError: # may happen due to a task completion after the corresponding job finishes
+        continue
       
       t_l = self.jid__t_l_m[t.jid]
       if len(t_l) > t.k:
@@ -235,37 +252,33 @@ class Cluster(object):
     slog(DEBUG, self.env, self, "received", t)
     return self.store_c.put(t)
     
-# ########################################  Scheduler  ########################################### #
-ACT_BIND = 1
-ACT_DROP = 0
-class Scher(object):
-  def __init__(self, sching_m):
-    self.sching_m = sching_m
+# ########################################  Mapper  ########################################### #
+class Mapper(object):
+  def __init__(self, mapping_m):
+    self.mapping_m = mapping_m
     
-    if self.sching_m['type'] == 'packing':
-      self.map_to_workers = lambda p, w_l: self.map_w_packing(p, w_l)
-    elif self.sching_m['type'] == 'spreading':
-      self.map_to_workers = lambda p, w_l: self.map_w_spreading(p, w_l)
+    if self.mapping_m['type'] == 'packing':
+      self.worker_load_l = lambda p, w_l: self.worker_load_l_w_packing(p, w_l)
+    elif self.mapping_m['type'] == 'spreading':
+      self.worker_load_l = lambda p, w_l: self.worker_load_l_w_spreading(p, w_l)
   
   def __repr__(self):
-    return "Scher[sching_m=\n {}]".format(self.sching_m)
+    return "Mapper[mapping_m=\n {}]".format(self.mapping_m)
   
-  def map_w_packing(self, job, w_l):
+  def worker_load_l_w_packing(self, job, w_l):
     w_l_ = []
     for w in w_l:
       if job.reqed <= w.nonsched_cap():
         w_l_.append(w)
     if len(w_load_l) < job.n:
-      return ACT_DROP, None
-    return ACT_DROP, w_l_[:job.n]
+      return None
+    return w_l_[:job.n]
   
-  def map_w_spreading(self, job, w_l):
+  def worker_load_l_w_spreading(self, job, w_l):
     w_load_l = []
     for w in w_l:
       if job.reqed <= w.nonsched_cap():
         w_load_l.append((w, w.sched_load() ) )
-    if len(w_load_l) < job.n: # for now assuming all n need to be dispatched to separate workers
-      return ACT_DROP, None
-    
+    # for now assuming all n need to be dispatched to separate workers
     w_load_l.sort(key=itemgetter(1) )
-    return ACT_BIND, [w for w, _ in w_load_l[:job.n] ]
+    return w_load_l

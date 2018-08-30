@@ -3,18 +3,18 @@ import numpy as np
 from rvs import *
 from sim_objs import *
 
-def arrival_rate_upperbound(sim_m):
-  return sim_m['nworker']*sim_m['wcap']/sim_m['totaldemand_rv'].mean()/sim_m['k_rv'].mean()
+def arrival_rate_upperbound(sinfo_m):
+  return sinfo_m['nworker']*sinfo_m['wcap']/sinfo_m['totaldemand_rv'].mean()/sinfo_m['k_rv'].mean()
 
-def offered_load(sim_m):
-  return round(sim_m['ar']*sim_m['totaldemand_rv'].mean()*sim_m['k_rv'].mean()/sim_m['nworker']/sim_m['wcap'], 2)
+def offered_load(sinfo_m):
+  return round(sinfo_m['ar']*sinfo_m['totaldemand_rv'].mean()*sinfo_m['k_rv'].mean()/sinfo_m['nworker']/sinfo_m['wcap'], 2)
 
-def sim(sim_m, sching_m):
+def sim(sinfo_m, mapping_m):
   env = simpy.Environment()
-  cl = Cluster(env, scher=Scher(sching_m), **sim_m)
-  jg = JobGen(env, out=cl, **sim_m)
+  cl = Cluster(env, mapper=Mapper(mapping_m), scher=Scher(), **sinfo_m)
+  jg = JobGen(env, out=cl, **sinfo_m)
   env.run(until=cl.wait_for_alljobs)
-  # env.run(until=sim_m['njob']/sim_m['ar'] )
+  # env.run(until=sinfo_m['njob']/sinfo_m['ar'] )
   
   avg_schedload_l = []
   for i, w in enumerate(cl.w_l):
@@ -39,27 +39,53 @@ def sim(sim_m, sching_m):
     'avg_slowdown': np.mean(slowdown_l),
     'avg_utilization': np.mean(avg_schedload_l) }
 
-def plot_wrt_ar():
-  sim_m = {
+def slowdown(load):
+  threshold = 0.1
+  if load < threshold:
+    return 1
+  else:
+    p_max = 0.8 # probability of straggling when load is 1
+    p = p_max/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
+    # return 1-load if random.uniform(0, 1) < p else 1
+    return 0.1 if random.uniform(0, 1) < p else 1
+
+def exp():
+  sinfo_m = {
     'ar': None, 'njob': 40000, 'nworker': 10, 'wcap': 10,
     'totaldemand_rv': TPareto(1, 10000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 10, 1.1),
-    'k_rv': DUniform(1, 1) }
-  sching_m = {'type': 'spreading'}
-  blog(sim_m=sim_m, sching_m=sching_m)
+    'k_rv': DUniform(1, 1),
+    'func_slowdown': slowdown}
+  mapping_m = {'type': 'spreading'}
+  ar_ub = arrival_rate_upperbound(sinfo_m)
+  blog(ar_ub=ar_ub, sinfo_m=sinfo_m, mapping_m=mapping_m)
   
-  ar_ub = arrival_rate_upperbound(sim_m)
-  print("ar_ub= {}".format(ar_ub) )
+  def wrt_ar():
+    for ar in np.linspace(ar_ub/3, ar_ub*3/4, 3):
+      print("\nar= {}".format(ar) )
+      
+      sinfo_m['ar'] = ar
+      ol = offered_load(sinfo_m)
+      print("offered_load= {}".format(ol) )
+      
+      m = sim(sinfo_m, mapping_m)
+      blog(m=m)
   
-  for ar in np.linspace(ar_ub/3, ar_ub*3/4, 3):
+  def wrt_exprate():
+    ar = ar_ub*3/4
+    sinfo_m['ar'] = ar
     print("\nar= {}".format(ar) )
-    
-    sim_m['ar'] = ar
-    ol = offered_load(sim_m)
-    print("offered_load= {}".format(ol) )
-    
-    m = sim(sim_m, sching_m)
-    blog(m=m)
+    for max_exprate in np.linspace(1, 3, 3):
+      print("max_exprate= {}".format(max_exprate) )
+      sinfo_m['max_exprate'] = max_exprate
+      
+      m = sim(sinfo_m, mapping_m)
+      blog(m=m)
+  
+  # wrt_ar()
+  wrt_exprate()
+  
+  log(INFO, "done.")
 
 if __name__ == '__main__':
-  plot_wrt_ar()
+  exp()
