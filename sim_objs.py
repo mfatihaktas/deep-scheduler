@@ -203,7 +203,8 @@ class Cluster(object):
       return
     
     n_max = min(int(self.max_exprate*job.k), len(w_load_l) )
-    job.n, s, a = self.scher.schedule(job, [l for _, l in w_load_l[:n_max] ] )
+    s, a = self.scher.schedule(job, [l for _, l in w_load_l[:n_max] ] )
+    job.n = int(job.k*(a + 1) )
     
     wid_l = []
     for i, w in enumerate([w for w, _ in w_load_l[:job.n] ] ):

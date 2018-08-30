@@ -12,7 +12,7 @@ class Scher(object):
     pass
   
   def schedule(self, job, wload_l):
-    return len(wload_l), None, None
+    return None, len(wload_l)/job.k
 
 # ###########################################  RLScher  ########################################## #
 class RLScher(Scher):
@@ -20,26 +20,27 @@ class RLScher(Scher):
     self.sinfo_m = sinfo_m
     
     self.s_len = 6 # k, totaldemand, (load) min, max, mean, sigma
+    self.a_len = 2 # expansion rate: 1, 2
     self.N, self.T = sching_m['N'], sinfo_m['njob']
     
-    self.learner = PolicyGradLearner(s_len=self.s_len, a_len=1, nn_len=10, w_actorcritic=False)
+    self.learner = PolicyGradLearner(s_len=self.s_len, a_len=self.a_len, nn_len=10, w_actorcritic=False)
   
   def __repr__(self):
     return "RLScher[learner=\n{}]".format(self.learner)
   
-  def n(self, job, wload_l):
+  def schedule(self, job, wload_l):
     s = [job.k, job.totaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
-    r = self.learner.get_action_val(s)
-    if r < 1:
-      r = 1
-    elif r > len(wload_l):
-      r = len(wload_l)
-    return r*job.k
+    a = self.learner.get_random_action(s)
+    # if a < 1:
+    #   a = 1
+    # elif int(a*job.k) > len(wload_l):
+    #   a = len(wload_l)/job.k
+    return s, a
   
-  def train(self):
-    for i in range(45):
+  def train(self, nsteps):
+    for i in range(nsteps):
       alog(">> i= {}".format(i) )
-      n_t_s_l, n_t_a_l, n_t_r_l = np.zeros((self.N, self.T, 1)), np.zeros((self.N, self.T, 1)), np.zeros((self.N, self.T, 1))
+      n_t_s_l, n_t_a_l, n_t_r_l = np.zeros((self.N, self.T, self.s_len)), np.zeros((self.N, self.T, 1)), np.zeros((self.N, self.T, 1))
       for n in range(self.N):
         t_s_l, t_a_l, t_r_l = sample_traj(self.sinfo_m, self)
         alog("n= {}, avg_s= {}, avg_a= {}, avg_r= {}".format(n, np.mean(t_s_l), np.mean(t_a_l), np.mean(t_r_l) ) )
@@ -53,7 +54,7 @@ class RLScher(Scher):
       tp = concurrent.futures.ThreadPoolExecutor(max_workers=100)
       for i in range(1, nsteps+1):
         alog(">> i= {}".format(i) )
-        n_t_s_l, n_t_a_l, n_t_r_l = np.zeros((self.N, self.T, 1)), np.zeros((self.N, self.T, 1)), np.zeros((self.N, self.T, 1))
+        n_t_s_l, n_t_a_l, n_t_r_l = np.zeros((self.N, self.T, self.s_len)), np.zeros((self.N, self.T, 1)), np.zeros((self.N, self.T, 1))
         future_n_m = {tp.submit(sample_traj, self.sinfo_m, self): n for n in range(self.N) }
         for future in concurrent.futures.as_completed(future_n_m):
           n = future_n_m[future]
@@ -101,9 +102,9 @@ def sample_traj(sinfo_m, scher):
   t_s_l, t_a_l, t_r_l = np.zeros((T, scher.s_len)), np.zeros((T, 1)), np.zeros((T, 1))
   
   t = 0
-  for jid, jinfo_m in sorted(cl.jid_info_m.iteritems(), key=itemgetter(0) ):
-    blog(t=t, jid=jid, jinfo_m=jinfo_m)
-    if jinfo_m['fate'] == 'finished':
+  for jid, jinfo_m in sorted(cl.jid_info_m.items(), key=itemgetter(0) ):
+    # blog(t=t, jid=jid, jinfo_m=jinfo_m)
+    if 'fate' in jinfo_m and jinfo_m['fate'] == 'finished':
       t_s_l[t, :] = jinfo_m['s']
       t_a_l[t, :] = jinfo_m['a']
       t_r_l[t, :] = reward(jinfo_m['runtime']/jinfo_m['expected_lifetime'] )
@@ -118,7 +119,7 @@ def evaluate(sinfo_m, scher):
 
 if __name__ == '__main__':
   sinfo_m = {
-    'njob': 10000, 'nworker': 10, 'wcap': 10,
+    'njob': 100, 'nworker': 10, 'wcap': 10, # 10000
     'totaldemand_rv': TPareto(1, 10000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 10, 1.1),
     'k_rv': DUniform(1, 1),
@@ -133,5 +134,5 @@ if __name__ == '__main__':
   # evaluate(sinfo_m, mapping_m, scher=Scher() )
   
   print("scher= {}".format(scher) )
-  scher.train_multithreaded(40) # train()
+  scher.train_multithreaded(40) # train(40)
   evaluate(sinfo_m, mapping_m, scher)

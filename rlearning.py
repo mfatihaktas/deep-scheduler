@@ -109,9 +109,9 @@ class PolicyGradLearner(object):
     # hidden1 = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu)
     # self.a_probs = tf.contrib.layers.fully_connected(hidden1, self.a_len, activation_fn=tf.nn.softmax)
     
-    self.a_ph = tf.placeholder(tf.int32, shape=(None, None, 1), name="a_ph")
-    self.q_ph = tf.placeholder(tf.float32, shape=(None, None, 1), name="q_ph")
-    self.v_ph = tf.placeholder(tf.float32, shape=(None, None, 1), name="v_ph")
+    self.a_ph = tf.placeholder(tf.int32, shape=(None, None, 1), name='a_ph')
+    self.q_ph = tf.placeholder(tf.float32, shape=(None, None, 1), name='q_ph')
+    self.v_ph = tf.placeholder(tf.float32, shape=(None, None, 1), name='v_ph')
     
     sh = tf.shape(self.a_probs)
     N, T = sh[0], sh[1]
