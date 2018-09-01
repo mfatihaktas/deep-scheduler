@@ -23,16 +23,6 @@ ar_ub = 0.8*2*ar_ub/3
 ar_l = [*np.linspace(0.005, 0.8*ar_ub, 3, endpoint=False), *np.linspace(0.8*ar_ub, ar_ub, 3) ]
 ar_l = [ar_l[4] ]
 
-# ns, d = 10, 2
-# J = TPareto(1, 10**4, 1.1)
-# ar_ub = 0.8*2.95*ar_ub/3
-# ar_l = [*np.linspace(0.01, 0.8*ar_ub, 4, endpoint=False), *np.linspace(0.8*ar_ub, ar_ub, 4) ]
-
-# ns, d = 10, 2
-# J = Exp(0.05, D=1)
-# ar_ub = 2.95*ar_ub/3
-# ar_l = [*np.linspace(0.01, 0.9*ar_ub, 4, endpoint=False), *np.linspace(0.9*ar_ub, ar_ub, 4) ]
-
 from scher import PolicyGradScher
 from learn_howtorep import MultiQ_wRep, sample_traj, sim
 

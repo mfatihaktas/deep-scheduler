@@ -1,7 +1,7 @@
 .pdf
 .png
 log/
-saved/
+save/
 .out
 .err
 # Byte-compiled / optimized / DLL files

@@ -28,6 +28,12 @@ class RLScher(Scher):
   def __repr__(self):
     return "RLScher[learner=\n{}]".format(self.learner)
   
+  def save(self, i, save_name=None):
+    return self.learner.save(i, save_name)
+  
+  def restore(self, i, save_name=None):
+    return self.learner.restore(i, save_name)
+  
   def schedule(self, job, wload_l):
     s = [job.k, job.totaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
     a = self.learner.get_random_action(s)
@@ -42,8 +48,8 @@ class RLScher(Scher):
       alog(">> i= {}".format(i) )
       n_t_s_l, n_t_a_l, n_t_r_l = np.zeros((self.N, self.T, self.s_len)), np.zeros((self.N, self.T, 1)), np.zeros((self.N, self.T, 1))
       for n in range(self.N):
-        t_s_l, t_a_l, t_r_l = sample_traj(self.sinfo_m, self)
-        alog("n= {}, avg_s= {}, avg_a= {}, avg_r= {}".format(n, np.mean(t_s_l), np.mean(t_a_l), np.mean(t_r_l) ) )
+        t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(self.sinfo_m, self)
+        alog("n= {}, avg_a= {}, avg_r= {}, avg_sl= {}".format(n, np.mean(t_a_l), np.mean(t_r_l), np.mean(t_sl_l) ) )
         n_t_s_l[n], n_t_a_l[n], n_t_r_l[n] = t_s_l, t_a_l, t_r_l
       self.learner.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
   
@@ -59,10 +65,10 @@ class RLScher(Scher):
         for future in concurrent.futures.as_completed(future_n_m):
           n = future_n_m[future]
           try:
-            t_s_l, t_a_l, t_r_l = future.result()
+            t_s_l, t_a_l, t_r_l, t_sl_l = future.result()
           except Exception as exc:
             log(ERROR, "exception;", exc=exc)
-          alog("n= {}, avg_s= {}, avg_a= {}, avg_r= {}".format(n, np.mean(t_s_l), np.mean(t_a_l), np.mean(t_r_l) ) )
+          alog("n= {}, avg_a= {}, avg_r= {}, avg_sl= {}".format(n, np.mean(t_a_l), np.mean(t_r_l), np.mean(t_sl_l) ) )
           n_t_s_l[n], n_t_a_l[n], n_t_r_l[n] = t_s_l, t_a_l, t_r_l
         self.learner.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
         self.learner.save(i)
@@ -88,18 +94,17 @@ class RLScher(Scher):
     log(WARNING, "done.")
 
 # ############################################  utils  ########################################### #
-mapping_m = {'type': 'spreading'}
 def sample_traj(sinfo_m, scher):
   def reward(slowdown):
     return 1/slowdown
   
   env = simpy.Environment()
-  cl = Cluster(env, mapper=Mapper(mapping_m), scher=scher, **sinfo_m)
+  cl = Cluster(env, mapper=Mapper({'type': 'spreading'}), scher=scher, **sinfo_m)
   jg = JobGen(env, out=cl, **sinfo_m)
   env.run(until=cl.wait_for_alljobs)
   
   T = sinfo_m['njob']
-  t_s_l, t_a_l, t_r_l = np.zeros((T, scher.s_len)), np.zeros((T, 1)), np.zeros((T, 1))
+  t_s_l, t_a_l, t_r_l, t_sl_l = np.zeros((T, scher.s_len)), np.zeros((T, 1)), np.zeros((T, 1)), np.zeros((T, 1))
   
   t = 0
   for jid, jinfo_m in sorted(cl.jid_info_m.items(), key=itemgetter(0) ):
@@ -107,19 +112,21 @@ def sample_traj(sinfo_m, scher):
     if 'fate' in jinfo_m and jinfo_m['fate'] == 'finished':
       t_s_l[t, :] = jinfo_m['s']
       t_a_l[t, :] = jinfo_m['a']
-      t_r_l[t, :] = reward(jinfo_m['runtime']/jinfo_m['expected_lifetime'] )
+      sl = jinfo_m['runtime']/jinfo_m['expected_lifetime']
+      t_r_l[t, :] = reward(sl)
+      t_sl_l[t, :] = sl
       t += 1
-  return t_s_l, t_a_l, t_r_l
+  return t_s_l, t_a_l, t_r_l, t_sl_l
 
 def evaluate(sinfo_m, scher):
   alog("scher= {}".format(scher) )
   for _ in range(3):
-    t_s_l, t_a_l, t_r_l = sample_traj(sinfo_m, mapping_m, scher)
+    t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(sinfo_m, scher)
     print("avg_s= {}, avg_a= {}, avg_r= {}".format(np.mean(t_s_l), np.mean(t_a_l), np.mean(t_r_l) ) )
 
 if __name__ == '__main__':
   sinfo_m = {
-    'njob': 100, 'nworker': 10, 'wcap': 10, # 10000
+    'njob': 10000, 'nworker': 10, 'wcap': 10, # 10000
     'totaldemand_rv': TPareto(1, 10000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 10, 1.1),
     'k_rv': DUniform(1, 1),
@@ -127,12 +134,12 @@ if __name__ == '__main__':
   ar_ub = arrival_rate_upperbound(sinfo_m)
   sinfo_m['ar'] = 3/4*ar_ub
   sching_m = {'N': 10}
-  blog(sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
+  blog(sinfo_m=sinfo_m, sching_m=sching_m)
   
   scher = RLScher(sinfo_m, sching_m)
   # sinfo_m['max_exprate'] = max_exprate
-  # evaluate(sinfo_m, mapping_m, scher=Scher() )
+  # evaluate(sinfo_m, scher=Scher() )
   
   print("scher= {}".format(scher) )
   scher.train_multithreaded(40) # train(40)
-  evaluate(sinfo_m, mapping_m, scher)
+  evaluate(sinfo_m, scher)

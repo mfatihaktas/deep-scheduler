@@ -70,7 +70,7 @@ class VEster(object): # Value Estimator
 
 # ####################################  Policy Gradient Learner  ################################# #
 class PolicyGradLearner(object):
-  def __init__(self, s_len, a_len, nn_len=10, w_actorcritic=False, save_dir='save'):
+  def __init__(self, s_len, a_len, nn_len=10, w_actorcritic=False):
     self.s_len = s_len
     self.a_len = a_len
     self.nn_len = nn_len
@@ -80,21 +80,23 @@ class PolicyGradLearner(object):
     self.gamma = 0.99 # 0.8
     self.init()
     
-    self.save_name = '{}/PolicyGradLearner_gamma{}_slen{}_alen{}_nnlen{}_wactorcritic{}'.format(save_dir, self.gamma, s_len, a_len, nn_len, w_actorcritic)
+    self.save_name = 'save/PolicyGradLearner_gamma{}_slen{}_alen{}_nnlen{}_wactorcritic{}'.format(self.gamma, s_len, a_len, nn_len, w_actorcritic)
     self.saver = tf.train.Saver(max_to_keep=5)
   
   def __repr__(self):
     return "PolicyGradLearner[s_len= {}, a_len= {}, nn_len= {}, gamma= {}, w_actorcritic= {}]".format(self.s_len, self.a_len, self.nn_len, self.gamma, self.w_actorcritic)
   
-  def save(self, step):
-    save_path = self.saver.save(self.sess, self.save_name, global_step=step)
+  def save(self, step, save_name=None):
+    save_name = self.save_name if save_name is None else save_name
+    save_path = self.saver.save(self.sess, save_name, global_step=step)
     log(WARNING, "saved; ", save_path=save_path)
   
-  def restore(self, step):
+  def restore(self, step, save_name=None):
+    save_name = self.save_name if save_name is None else save_name
     try:
       save_path = '{}-{}'.format(self.save_name, step)
       self.saver.restore(self.sess, save_path)
-      log(WARNING, "restored; ", save_path=save_path)
+      # log(WARNING, "restored; ", save_path=save_path)
       return True
     except:
       return False
