@@ -28,8 +28,8 @@ def slog(dlevel, env, caller, action, affected, **kwargs):
     for k, v in kwargs.items():
       print("  {}: {}".format(k, pprint.pformat(v) ) )
 
-# DEBUG_LEVEL = INFO
-DEBUG_LEVEL = WARNING
+DEBUG_LEVEL = INFO
+# DEBUG_LEVEL = WARNING
 # DEBUG_LEVEL = ERROR
 
 def log(dlevel, log, **kwargs):

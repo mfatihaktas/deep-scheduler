@@ -40,7 +40,7 @@ def sim(sinfo_m, mapping_m):
     'avg_utilization': np.mean(avg_schedload_l) }
 
 def slowdown(load):
-  threshold = 0.1
+  threshold = 0.3
   if load < threshold:
     return 1
   else:

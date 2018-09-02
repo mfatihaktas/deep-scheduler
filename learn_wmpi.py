@@ -1,14 +1,15 @@
 import sys
 import numpy as np
 from mpi4py import MPI
-from rvs import *
 
+from rvs import *
 from scheduler import *
 
 def learn_wmpi(rank):
   scher = RLScher(sinfo_m, sching_m)
   N, T, s_len = scher.N, scher.T, scher.s_len
   log(INFO, "starting;", rank=rank, scher=scher)
+  sys.stdout.flush()
   
   if rank == 0:
     blog(sinfo_m=sinfo_m)
@@ -39,7 +40,7 @@ def learn_wmpi(rank):
       scher.learner.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
       sys.stdout.flush()
     scher.save(L)
-    for p in range(1, size):
+    for p in range(1, num_mpiprocs):
       sim_step = np.array([-1], dtype='i')
       comm.Send([sim_step, MPI.INT], dest=p)
       print("Sent req sim_step= {} to p= {}".format(sim_step, p) )
@@ -63,25 +64,21 @@ def learn_wmpi(rank):
     scher.restore(L)
     return scher
 
-sinfo_m = {
-  'njob': 1000, 'nworker': 10, 'wcap': 10,
-  'totaldemand_rv': TPareto(1, 10000, 1.1),
-  'demandperslot_mean_rv': TPareto(0.1, 10, 1.1),
-  'k_rv': DUniform(1, 1),
-  'func_slowdown': slowdown}
-ar_ub = arrival_rate_upperbound(sinfo_m)
-sinfo_m['ar'] = 3/4*ar_ub
-mapping_m = {'type': 'spreading'}
-sching_m = {'N': 10}
-L = 50 # number of learning steps
-
-num_mpiprocs = None
-
 if __name__ == "__main__":
   comm = MPI.COMM_WORLD
   num_mpiprocs = comm.Get_size()
   rank = comm.Get_rank()
-  sys.stdout.flush()
+  
+  sinfo_m = {
+    'njob': 1000, 'nworker': 10, 'wcap': 10,
+    'totaldemand_rv': TPareto(1, 10000, 1.1),
+    'demandperslot_mean_rv': TPareto(0.1, 10, 1.1),
+    'k_rv': DUniform(1, 1),
+    'func_slowdown': slowdown}
+  ar_ub = arrival_rate_upperbound(sinfo_m)
+  sinfo_m['ar'] = 3/4*ar_ub
+  sching_m = {'N': 10}
+  L = 150 # number of learning steps
   
   learn_wmpi(rank)
   

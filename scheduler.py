@@ -8,22 +8,41 @@ from rlearning import *
 
 # ############################################  Scher  ########################################### #
 class Scher(object):
-  def __init__(self):
-    pass
+  def __init__(self, sching_m):
+    self.sching_m = sching_m
+    
+    self.s_len = 1
+    
+    if sching_m['type'] == 'plain':
+      self.schedule = self.plain
+    elif sching_m['type'] == 'expand_if_totaldemand_leq':
+      self.schedule = self.expand_if_totaldemand_leq
   
-  def schedule(self, job, wload_l):
-    return None, len(wload_l)/job.k
+  def __repr__(self):
+    return "Scher[sching_m={}]".format(self.sching_m)
+  
+  def plain(self, job, wload_l):
+    return None, self.sching_m['a']
+  
+  def expand_if_totaldemand_leq(self, job, wload_l):
+    a = self.sching_m['a'] if job.totaldemand < self.sching_m['threshold'] else 0
+    return None, a
 
 # ###########################################  RLScher  ########################################## #
+def state(job, wload_l):
+  # s = [job.k, job.totaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
+  s = [job.k, job.totaldemand]
+  return s
+
 class RLScher(Scher):
   def __init__(self, sinfo_m, sching_m):
     self.sinfo_m = sinfo_m
     
-    self.s_len = 6 # k, totaldemand, (load) min, max, mean, sigma
+    self.s_len = 2
     self.a_len = 2 # expansion rate: 1, 2
     self.N, self.T = sching_m['N'], sinfo_m['njob']
     
-    self.learner = PolicyGradLearner(s_len=self.s_len, a_len=self.a_len, nn_len=10, w_actorcritic=False)
+    self.learner = PolicyGradLearner(s_len=self.s_len, a_len=self.a_len, nn_len=10, w_actorcritic=True)
   
   def __repr__(self):
     return "RLScher[learner=\n{}]".format(self.learner)
@@ -35,7 +54,7 @@ class RLScher(Scher):
     return self.learner.restore(i, save_name)
   
   def schedule(self, job, wload_l):
-    s = [job.k, job.totaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
+    s = state(job, wload_l)
     a = self.learner.get_random_action(s)
     # if a < 1:
     #   a = 1
@@ -138,7 +157,6 @@ if __name__ == '__main__':
   
   scher = RLScher(sinfo_m, sching_m)
   # sinfo_m['max_exprate'] = max_exprate
-  # evaluate(sinfo_m, scher=Scher() )
   
   print("scher= {}".format(scher) )
   scher.train_multithreaded(40) # train(40)
