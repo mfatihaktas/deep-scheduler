@@ -15,7 +15,7 @@ class RV(): # Random Variable
 
 class Normal(RV):
   def __init__(self, mu, sigma):
-    RV.__init__(self, l_l=-np.inf, u_l=np.inf)
+    super().__init__(self, l_l=-np.inf, u_l=np.inf)
     self.mu = mu
     self.sigma = sigma
     
@@ -38,7 +38,7 @@ class Normal(RV):
 
 class TNormal(RV):
   def __init__(self, mu, sigma):
-    RV.__init__(self, l_l=0, u_l=float('Inf') )
+    super().__init__(self, l_l=0, u_l=float('Inf') )
     self.mu = mu
     self.sigma = sigma
     
@@ -66,7 +66,7 @@ class TNormal(RV):
 
 class Exp(RV):
   def __init__(self, mu, D=0):
-    RV.__init__(self, l_l=D, u_l=float("inf") )
+    super().__init__(self, l_l=D, u_l=float("inf") )
     self.D = D
     self.mu = mu
   
@@ -109,7 +109,7 @@ class Exp(RV):
 
 class HyperExp(RV):
   def __init__(self, p_l, mu_l):
-    RV.__init__(self, l_l=0, u_l=float("inf") )
+    super().__init__(self, l_l=0, u_l=float("inf") )
     self.p_l = p_l
     self.mu_l = mu_l
     
@@ -145,7 +145,7 @@ class HyperExp(RV):
 
 class Pareto(RV):
   def __init__(self, loc, a):
-    RV.__init__(self, l_l=loc, u_l=float("inf") )
+    super().__init__(self, l_l=loc, u_l=float("inf") )
     self.loc = loc
     self.a = a
   
@@ -195,7 +195,7 @@ class Pareto(RV):
 
 class TPareto(): # Truncated
   def __init__(self, l, u, a):
-    RV.__init__(self, l_l=l, u_l=u)
+    super().__init__(self, l_l=l, u_l=u)
     self.l = l
     self.u = u
     self.a = a
@@ -244,7 +244,7 @@ class TPareto(): # Truncated
 
 class SimRV(RV):
   def __init__(self, sample_l):
-    RV.__init__(self, l_l=min(sample_l), u_l=max(sample_l) )
+    super().__init__(self, l_l=min(sample_l), u_l=max(sample_l) )
     
     self.sample_l = sample_l
     self.num_sample = len(self.sample_l)
@@ -261,7 +261,7 @@ class SimRV(RV):
 class Dolly(RV):
   # Kristen et al. A Better Model for Job Redundancy: Decoupling Server Slowdown and Job Size
   def __init__(self):
-    RV.__init__(self, l_l=1, u_l=12)
+    super().__init__(self, l_l=1, u_l=12)
     
     self.v = numpy.arange(1, 13)
     self.p = [0.23, 0.14, 0.09, 0.03, 0.08, 0.1, 0.04, 0.14, 0.12, 0.021, 0.007, 0.002]
@@ -301,7 +301,7 @@ class Dolly(RV):
 
 class Bern(RV):
   def __init__(self, L, U, p):
-    RV.__init__(self, l_l=L, u_l=U)
+    super().__init__(self, l_l=L, u_l=U)
     self.p = p
     
     self.v_l = [L, U]
@@ -333,9 +333,21 @@ class Bern(RV):
   def sample(self):
     return self.dist.rvs()[0]
 
-class DUniform():
+class Uniform(RV):
   def __init__(self, lb, ub):
-    RV.__init__(self, l_l=lb, u_l=ub)
+    super().__init__(self, l_l=lb, u_l=ub)
+    
+    self.dist = scipy.stats.uniform(loc=lb, scale=ub-lb)
+  
+  def __repr__(self):
+    return 'Uniform[{}, {}]'.format(self.l_l, self.u_l)
+  
+  def sample(self):
+    return self.dist.rvs()
+  
+class DUniform(RV):
+  def __init__(self, lb, ub):
+    super().__init__(self, l_l=lb, u_l=ub)
     
     self.v = numpy.arange(self.l_l, self.u_l+1)
     w_l = [1 for v in self.v]
@@ -343,7 +355,7 @@ class DUniform():
     self.dist = scipy.stats.rv_discrete(name='duniform', values=(self.v, self.p) )
   
   def __repr__(self):
-    return "DUniform[{}, {}]".format(self.l_l, self.u_l)
+    return 'DUniform[{}, {}]'.format(self.l_l, self.u_l)
   
   def mean(self):
     return (self.u_l + self.l_l)/2
@@ -370,9 +382,9 @@ class DUniform():
     # return random.randint(self.l_l, self.u_l)
     return self.dist.rvs() # [0]
 
-class BZipf():
+class BZipf(RV):
   def __init__(self, lb, ub, a=1):
-    RV.__init__(self, l_l=lb, u_l=ub)
+    super().__init__(self, l_l=lb, u_l=ub)
     self.a = a
     
     self.v = numpy.arange(self.l_l, self.u_l+1) # values
@@ -408,7 +420,7 @@ class BZipf():
 
 class Binom():
   def __init__(self, n, p):
-    RV.__init__(self, l_l=0, u_l=n)
+    super().__init__(self, l_l=0, u_l=n)
     self.n = n
     self.p = p
     
@@ -431,7 +443,7 @@ class Binom():
 
 class NegBinom():
   def __init__(self, num_succ, p):
-    RV.__init__(self, l_l=num_succ, u_l=float('Inf') )
+    super().__init__(self, l_l=num_succ, u_l=float('Inf') )
     self.p = p
     
     self.dist = scipy.stats.nbinom(num_succ, p)
@@ -450,7 +462,7 @@ class NegBinom():
 
 class Gamma():
   def __init__(self, num_exp, rate):
-    RV.__init__(self, l_l=0, u_l=float('Inf') )
+    super().__init__(self, l_l=0, u_l=float('Inf') )
     
     self.shape, self.scale = num_exp, 1/rate
     # self.dist = numpy.random.gamma(shape, scale, size=1)
@@ -470,7 +482,7 @@ class Gamma():
 
 class X_n_k():
   def __init__(self, X, n, k):
-    RV.__init__(self, l_l=X.l_l, u_l=X.u_l)
+    super().__init__(self, l_l=X.l_l, u_l=X.u_l)
     self.X, self.n, self.k = X, n, k
   
   def __repr__(self):

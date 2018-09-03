@@ -3,7 +3,7 @@ import concurrent.futures
 from operator import itemgetter
 
 from sim_objs import *
-from sim_exp import arrival_rate_upperbound, slowdown
+from sim_exp import arrival_rate_upperbound
 from rlearning import *
 
 # ############################################  Scher  ########################################### #
@@ -149,7 +149,10 @@ if __name__ == '__main__':
     'totaldemand_rv': TPareto(1, 10000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 10, 1.1),
     'k_rv': DUniform(1, 1),
-    'func_slowdown': slowdown}
+    'straggle_m': {
+      'slowdown_rv': Uniform(0.1, 0.5),
+      'straggle_dur_rv': TPareto(1, 100, 1.1),
+      'normal_dur_rv': TPareto(1, 100, 1.1) } }
   ar_ub = arrival_rate_upperbound(sinfo_m)
   sinfo_m['ar'] = 3/4*ar_ub
   sching_m = {'N': 10}

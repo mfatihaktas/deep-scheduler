@@ -55,8 +55,6 @@ def eval_wmpi(rank):
         return
       
       scher = Scher(sching_m_l[eval_i] )
-      log(INFO, "", scher=scher)
-      sys.stdout.flush()
       _, _, _, t_sl_l = sample_traj(sinfo_m, scher)
       
       Esl = np.array([np.mean(t_sl_l) ], dtype=np.float64)
@@ -74,12 +72,15 @@ if __name__ == "__main__":
     {'type': 'plain', 'a': 2},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1} ]
   sinfo_m = {
-    'njob': 1000, 'nworker': 10, 'wcap': 10,
+    'njob': 40000, 'nworker': 10, 'wcap': 10,
     'totaldemand_rv': TPareto(1, 10000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 10, 1.1),
     'k_rv': DUniform(1, 1),
-    'func_slowdown': slowdown}
+    'straggle_m': {
+      'slowdown_rv': Uniform(0.1, 0.5),
+      'straggle_dur_rv': TPareto(1, 100, 1.1),
+      'normal_dur_rv': TPareto(1, 100, 1.1) } }
   ar_ub = arrival_rate_upperbound(sinfo_m)
-  sinfo_m['ar'] = 3/4*ar_ub
+  sinfo_m['ar'] = 2/4*ar_ub
   
   eval_wmpi(rank)

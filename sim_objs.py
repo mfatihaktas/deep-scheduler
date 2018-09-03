@@ -84,21 +84,29 @@ class JobGen(object):
 
 # #########################################  Worker  ############################################# #
 class Worker(object):
-  def __init__(self, env, _id, cap, out_c, func_slowdown=None):
+  def __init__(self, env, _id, cap, out_c, straggle_m):
     self.env = env
     self._id = _id
     self.cap = cap
     self.out_c = out_c
-    if func_slowdown is None:
-      self.func_slowdown = lambda _: 1
-    else:
-      self.func_slowdown = func_slowdown
+    self.straggle_m = straggle_m
+    
+    self.cap_ = self.cap
     
     self.timeslot = 1
     self.t_l = []
     env.process(self.run() )
+    env.process(self.straggle() )
     
     self.sched_load_l = []
+  
+  def straggle(self):
+    while True:
+      self.cap_ = self.cap*self.straggle_m['slowdown_rv'].sample()
+      yield (self.env.timeout(self.straggle_m['straggle_dur_rv'].sample() ) )
+      
+      self.cap_ = self.cap
+      yield (self.env.timeout(self.straggle_m['normal_dur_rv'].sample() ) )
   
   def __repr__(self):
     return "Worker[id= {}]".format(self._id)
@@ -125,8 +133,7 @@ class Worker(object):
         p.gen_demand()
       
       # CPU scheduling
-      cap_ = self.func_slowdown(self.sched_load() )*self.cap
-      
+      cap_ = self.cap_
       sched_cap = self.sched_cap()
       total_supplytaken = 0
       for t in self.t_l:
@@ -170,20 +177,21 @@ class Worker(object):
         if t.jid == jid:
           ti = i
       if ti is not None:
+        slog(DEBUG, self.env, self, "removing", self.t_l[ti] )
         del self.t_l[ti]
     else:
       log(ERROR, "Unrecognized message;", m=m)
 
 # #########################################  Cluster  ############################################ #
 class Cluster(object):
-  def __init__(self, env, njob, nworker, wcap, func_slowdown, mapper, scher, max_exprate=1, **kwargs):
+  def __init__(self, env, njob, nworker, wcap, straggle_m, mapper, scher, max_exprate=1, **kwargs):
     self.env = env
     self.njob = njob
     self.mapper = mapper
     self.scher = scher
     self.max_exprate = max_exprate
     
-    self.w_l = [Worker(env, i, wcap, self, func_slowdown) for i in range(nworker) ]
+    self.w_l = [Worker(env, i, wcap, self, straggle_m) for i in range(nworker) ]
     
     self.njob_collected = 0
     self.store_c = simpy.Store(env)
