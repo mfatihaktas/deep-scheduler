@@ -44,12 +44,13 @@ class VEster(object): # Value Estimator
     # self.hidden1 = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu)
     # self.hidden2 = tf.contrib.layers.fully_connected(self.hidden1, self.nn_len, activation_fn=tf.nn.relu)
     # self.v = tf.contrib.layers.fully_connected(self.hidden2, 1, activation_fn=None)
-    self.hidden = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu)
-    self.v = tf.contrib.layers.fully_connected(self.hidden, 1, activation_fn=None)
+    self.hidden = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu, weights_regularizer=tf.contrib.layers.l2_regularizer(0.01) )
+    self.v = tf.contrib.layers.fully_connected(self.hidden, 1, activation_fn=None, weights_regularizer=tf.contrib.layers.l2_regularizer(0.01) )
     
     self.sampled_v = tf.placeholder(shape=(None, None, 1), dtype=tf.float32)
     # self.loss = tf.reduce_sum(tf.squared_difference(self.v, self.sampled_v) )
-    self.loss = tf.losses.mean_squared_error(self.v, self.sampled_v)
+    self.loss = tf.losses.mean_squared_error(self.v, self.sampled_v) + \
+      tf.losses.get_regularization_loss()
     
     # self.optimizer = tf.train.GradientDescentOptimizer(0.01)
     self.optimizer = tf.train.AdamOptimizer(0.01)
@@ -104,9 +105,9 @@ class PolicyGradLearner(object):
   def init(self):
     # N x T x s_len
     self.s_ph = tf.placeholder(tf.float32, shape=(None, None, self.s_len) )
-    hidden1 = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu)
-    hidden2 = tf.contrib.layers.fully_connected(hidden1, self.nn_len, activation_fn=tf.nn.relu)
-    self.a_probs = tf.contrib.layers.fully_connected(hidden2, self.a_len, activation_fn=tf.nn.softmax)
+    hidden1 = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu, weights_regularizer=tf.contrib.layers.l2_regularizer(0.01) )
+    hidden2 = tf.contrib.layers.fully_connected(hidden1, self.nn_len, activation_fn=tf.nn.relu, weights_regularizer=tf.contrib.layers.l2_regularizer(0.01) )
+    self.a_probs = tf.contrib.layers.fully_connected(hidden2, self.a_len, activation_fn=tf.nn.softmax, weights_regularizer=tf.contrib.layers.l2_regularizer(0.01) )
     # self.s_ph = tf.placeholder(tf.float32, shape=(None, None, self.s_len) )
     # hidden1 = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu)
     # self.a_probs = tf.contrib.layers.fully_connected(hidden1, self.a_len, activation_fn=tf.nn.softmax)
@@ -119,7 +120,8 @@ class PolicyGradLearner(object):
     N, T = sh[0], sh[1]
     indices = tf.range(0, N*T)*sh[2] + tf.reshape(self.a_ph, [-1] )
     self.resp_outputs = tf.reshape(tf.gather(tf.reshape(self.a_probs, [-1] ), indices), (N, T, 1) )
-    self.loss = -tf.reduce_mean(tf.reduce_sum(tf.log(self.resp_outputs)*(self.q_ph - self.v_ph), axis=1), axis=0)
+    self.loss = -tf.reduce_mean(tf.reduce_sum(tf.log(self.resp_outputs)*(self.q_ph - self.v_ph), axis=1), axis=0) + \
+      tf.losses.get_regularization_loss()
     
     self.optimizer = tf.train.AdamOptimizer(0.01) # tf.train.GradientDescentOptimizer(0.01)
     self.train_op = self.optimizer.minimize(self.loss)

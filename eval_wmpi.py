@@ -72,14 +72,14 @@ if __name__ == "__main__":
     {'type': 'plain', 'a': 2},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1} ]
   sinfo_m = {
-    'njob': 40000, 'nworker': 10, 'wcap': 10,
-    'totaldemand_rv': TPareto(1, 10000, 1.1),
-    'demandperslot_mean_rv': TPareto(0.1, 10, 1.1),
+    'njob': 1000, 'nworker': 10, 'wcap': 10,
+    'totaldemand_rv': TPareto(10, 10000, 1),
+    'demandperslot_mean_rv': TPareto(0.1, 5, 1),
     'k_rv': DUniform(1, 1),
     'straggle_m': {
-      'slowdown_rv': Uniform(0.1, 0.5),
-      'straggle_dur_rv': TPareto(1, 100, 1.1),
-      'normal_dur_rv': TPareto(1, 100, 1.1) } }
+      'slowdown': slowdown,
+      'straggle_dur_rv': TPareto(10, 1000, 1),
+      'normal_dur_rv': TPareto(10, 1000, 1) } }
   ar_ub = arrival_rate_upperbound(sinfo_m)
   sinfo_m['ar'] = 2/4*ar_ub
   

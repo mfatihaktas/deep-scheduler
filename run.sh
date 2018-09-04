@@ -6,8 +6,8 @@ PY=python3
 if [ $1 = 'i' ]; then
   source ~/tensorflow/bin/activate
 elif [ $1 = 's' ]; then
-  # $PY sim_exp.py
-  $PY scheduler.py
+  $PY sim_exp.py
+  # $PY scheduler.py
 else
   echo "Arg did not match!"
 fi

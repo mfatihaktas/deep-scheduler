@@ -18,7 +18,7 @@ class Task(object):
     
     self.prev_hop_id = None
     self.binding_time = None
-    self.runtime = None
+    self.run_time = None
     
     self.cum_supply = 0
     self.cum_demand = 0
@@ -102,9 +102,8 @@ class Worker(object):
   
   def straggle(self):
     while True:
-      self.cap_ = self.cap*self.straggle_m['slowdown_rv'].sample()
+      self.cap_ = self.cap*self.straggle_m['slowdown'](self.sched_load() )
       yield (self.env.timeout(self.straggle_m['straggle_dur_rv'].sample() ) )
-      
       self.cap_ = self.cap
       yield (self.env.timeout(self.straggle_m['normal_dur_rv'].sample() ) )
   
@@ -155,7 +154,8 @@ class Worker(object):
       t_l_ = []
       for t in self.t_l:
         if t.cum_supply - t.totaldemand > -0.01:
-          t.runtime = self.env.now - t.bindingt
+          t.run_time = self.env.now - t.bindingt
+          t.prev_hop_id = self._id
           self.out_c.put_c(t)
           slog(DEBUG, self.env, self, "finished", t)
         else:
@@ -184,16 +184,18 @@ class Worker(object):
 
 # #########################################  Cluster  ############################################ #
 class Cluster(object):
-  def __init__(self, env, njob, nworker, wcap, straggle_m, mapper, scher, max_exprate=1, **kwargs):
+  def __init__(self, env, njob, nworker, wcap, straggle_m, mapper, scher, **kwargs):
     self.env = env
     self.njob = njob
     self.mapper = mapper
     self.scher = scher
-    self.max_exprate = max_exprate
     
     self.w_l = [Worker(env, i, wcap, self, straggle_m) for i in range(nworker) ]
     
-    self.njob_collected = 0
+    self.store = simpy.Store(env)
+    env.process(self.run() )
+    
+    self.njob_finished = 0
     self.store_c = simpy.Store(env)
     self.wait_for_alljobs = env.process(self.run_c() )
     
@@ -203,28 +205,36 @@ class Cluster(object):
   def __repr__(self):
     return 'Cluster'
   
-  def put(self, job):
-    slog(DEBUG, self.env, self, "received", job)
-    w_load_l = self.mapper.worker_load_l(job, self.w_l)
-    if len(w_load_l) < job.k:
-      self.jid_info_m[job._id] = {'fate': 'dropped'}
-      return
-    
-    n_max = min(int(self.max_exprate*job.k), len(w_load_l) )
-    s, a = self.scher.schedule(job, [l for _, l in w_load_l[:n_max] ] )
-    job.n = int(job.k*(a + 1) )
-    
-    wid_l = []
-    for i, w in enumerate([w for w, _ in w_load_l[:job.n] ] ):
-      type_ = 's' if i+1 <= job.k else 'r'
-      w.put(Task(i+1, job._id, job.reqed, job.demandperslot_rv, job.totaldemand, job.k, type_) )
-      wid_l.append(w._id)
-    
-    self.jid__t_l_m[job._id] = []
-    self.jid_info_m[job._id] = {
-      'expected_lifetime': job.totaldemand/job.demandperslot_rv.mean(),
-      'wid_l': wid_l,
-      's': s, 'a': a}
+  def run(self):
+    while True:
+      j = yield self.store.get()
+      
+      w_load_l = self.mapper.worker_load_l(j, self.w_l)
+      if len(w_load_l) < j.k:
+        yield self.env.timeout(1)
+        self.store.put(j)
+        continue
+      
+      self.jid_info_m[j._id] = {'wait_time': self.env.now - j.arrival_time}
+      s, a = self.scher.schedule(j, w_load_l)
+      j.n = int(j.k*(a + 1) )
+      
+      wid_l = []
+      for i, w in enumerate([w for w, _ in w_load_l[:j.n] ] ):
+        type_ = 's' if i+1 <= j.k else 'r'
+        w.put(Task(i+1, j._id, j.reqed, j.demandperslot_rv, j.totaldemand, j.k, type_) )
+        wid_l.append(w._id)
+      
+      self.jid__t_l_m[j._id] = []
+      self.jid_info_m[j._id].update({
+        'expected_run_time': j.totaldemand/j.demandperslot_rv.mean(),
+        'wid_l': wid_l,
+        's': s, 'a': a} )
+  
+  def put(self, j):
+    slog(DEBUG, self.env, self, "received", j)
+    j.arrival_time = self.env.now
+    return self.store.put(j)
   
   def run_c(self):
     while True:
@@ -249,12 +259,12 @@ class Cluster(object):
         
         self.jid_info_m[t.jid].update({
           'fate': 'finished',
-          'runtime': max([t.runtime for t in self.jid__t_l_m[t.jid] ] ) } )
+          'run_time': max([t.run_time for t in self.jid__t_l_m[t.jid] ] ) } )
         self.jid__t_l_m.pop(t.jid, None)
         slog(DEBUG, self.env, self, "finished jid= {}".format(t.jid), t)
         
-        self.njob_collected += 1 # for now counting only the finished jobs, ignoring the dropped ones
-        if self.njob_collected >= self.njob:
+        self.njob_finished += 1 # for now counting only the finished jobs, ignoring the dropped ones
+        if self.njob_finished >= self.njob:
           return
   
   def put_c(self, t):
@@ -275,19 +285,16 @@ class Mapper(object):
     return "Mapper[mapping_m=\n {}]".format(self.mapping_m)
   
   def worker_load_l_w_packing(self, job, w_l):
-    w_l_ = []
+    w_load_l = []
     for w in w_l:
       if job.reqed <= w.nonsched_cap():
-        w_l_.append(w)
-    if len(w_load_l) < job.n:
-      return None
-    return w_l_[:job.n]
+        w_load_l.append((w, w.sched_load() ) )
+    return w_load_l
   
   def worker_load_l_w_spreading(self, job, w_l):
     w_load_l = []
     for w in w_l:
       if job.reqed <= w.nonsched_cap():
         w_load_l.append((w, w.sched_load() ) )
-    # for now assuming all n need to be dispatched to separate workers
     w_load_l.sort(key=itemgetter(1) )
     return w_load_l

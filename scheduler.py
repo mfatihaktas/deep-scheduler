@@ -3,7 +3,7 @@ import concurrent.futures
 from operator import itemgetter
 
 from sim_objs import *
-from sim_exp import arrival_rate_upperbound
+from sim_exp import arrival_rate_upperbound, slowdown
 from rlearning import *
 
 # ############################################  Scher  ########################################### #
@@ -29,23 +29,25 @@ class Scher(object):
     return None, a
 
 # ###########################################  RLScher  ########################################## #
+STATE_LEN = 2
 def state(job, wload_l):
-  # s = [job.k, job.totaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
-  s = [job.k, job.totaldemand]
-  return s
+  if STATE_LEN == 2:
+    return [job.k, job.totaldemand]
+  elif STATE_LEN == 5:
+    return [job.k, job.totaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
 
 class RLScher(Scher):
   def __init__(self, sinfo_m, sching_m):
     self.sinfo_m = sinfo_m
     
-    self.s_len = 2
-    self.a_len = 2 # expansion rate: 1, 2
+    self.s_len = STATE_LEN
+    self.a_len = sching_m['max_expandrate'] + 1
     self.N, self.T = sching_m['N'], sinfo_m['njob']
     
-    self.learner = PolicyGradLearner(s_len=self.s_len, a_len=self.a_len, nn_len=10, w_actorcritic=True)
+    self.learner = PolicyGradLearner(s_len=self.s_len, a_len=self.a_len, nn_len=10, w_actorcritic=False)
   
   def __repr__(self):
-    return "RLScher[learner=\n{}]".format(self.learner)
+    return "RLScher[learner={}]".format(self.learner)
   
   def save(self, i, save_name=None):
     return self.learner.save(i, save_name)
@@ -131,7 +133,7 @@ def sample_traj(sinfo_m, scher):
     if 'fate' in jinfo_m and jinfo_m['fate'] == 'finished':
       t_s_l[t, :] = jinfo_m['s']
       t_a_l[t, :] = jinfo_m['a']
-      sl = jinfo_m['runtime']/jinfo_m['expected_lifetime']
+      sl = (jinfo_m['wait_time'] + jinfo_m['run_time'] )/jinfo_m['expected_run_time']
       t_r_l[t, :] = reward(sl)
       t_sl_l[t, :] = sl
       t += 1
@@ -146,16 +148,16 @@ def evaluate(sinfo_m, scher):
 if __name__ == '__main__':
   sinfo_m = {
     'njob': 10000, 'nworker': 10, 'wcap': 10, # 10000
-    'totaldemand_rv': TPareto(1, 10000, 1.1),
-    'demandperslot_mean_rv': TPareto(0.1, 10, 1.1),
+    'totaldemand_rv': TPareto(100, 10000, 1.1),
+    'demandperslot_mean_rv': TPareto(0.1, 5, 1.1),
     'k_rv': DUniform(1, 1),
     'straggle_m': {
-      'slowdown_rv': Uniform(0.1, 0.5),
-      'straggle_dur_rv': TPareto(1, 100, 1.1),
-      'normal_dur_rv': TPareto(1, 100, 1.1) } }
+      'slowdown': slowdown,
+      'straggle_dur_rv': TPareto(10, 100, 1.1),
+      'normal_dur_rv': TPareto(10, 100, 1.1) } }
   ar_ub = arrival_rate_upperbound(sinfo_m)
   sinfo_m['ar'] = 3/4*ar_ub
-  sching_m = {'N': 10}
+  sching_m = {'max_expandrate': 2, 'N': 10}
   blog(sinfo_m=sinfo_m, sching_m=sching_m)
   
   scher = RLScher(sinfo_m, sching_m)
