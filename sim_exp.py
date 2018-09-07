@@ -11,16 +11,15 @@ def offered_load(sinfo_m):
 
 def sim(sinfo_m, mapping_m, sching_m):
   env = simpy.Environment()
-  cl = Cluster(env, mapper=Mapper(mapping_m), scher=Scher(sching_m), **sinfo_m)
+  cl = Cluster(env, scher=Scher(mapping_m, sching_m), **sinfo_m)
   jg = JobGen(env, out=cl, **sinfo_m)
   env.run(until=cl.wait_for_alljobs)
   # env.run(until=sinfo_m['njob']/sinfo_m['ar'] )
   
   avg_schedload_l = []
   for i, w in enumerate(cl.w_l):
-    avg_schedload = np.mean(w.sched_load_l)
-    print("w._id= {}, mean(w.sched_load_l)= {}".format(w._id, avg_schedload) )
-    avg_schedload_l.append(avg_schedload)
+    print("w._id= {}, w.avg_load= {}".format(w._id, w.avg_load) )
+    avg_schedload_l.append(w.avg_load)
   
   njobs_wfate, ndropped = 0, 0
   slowdown_l = []
@@ -50,7 +49,8 @@ def slowdown(load):
   #   # return 1-load if random.uniform(0, 1) < p else 1
   #   return 0.1 if random.uniform(0, 1) < p else 1
   
-  return np.random.uniform(0.01, 1 - load)
+  # return np.random.uniform(0.01, 1 - load)
+  return np.random.uniform(0.01, 0.1)
 
 def exp():
   sinfo_m = {
@@ -64,7 +64,7 @@ def exp():
       'normal_dur_rv': TPareto(1, 100, 1.1) }
   }
   mapping_m = {'type': 'spreading'} # {'type': 'packing'}
-  sching_m = {'type': 'plain', 'a': 0}
+  sching_m = {'type': 'opportunistic', 'a': 2} # {'type': 'plain', 'a': 0}
   ar_ub = arrival_rate_upperbound(sinfo_m)
   blog(ar_ub=ar_ub, sinfo_m=sinfo_m, mapping_m=mapping_m)
   

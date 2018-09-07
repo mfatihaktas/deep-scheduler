@@ -11,6 +11,8 @@ def eval_wmpi(rank):
   
   if rank == 0:
     blog(sinfo_m=sinfo_m)
+    sys.stdout.flush()
+    
     schingi_Esl_l = []
     for i, sching_m in enumerate(sching_m_l):
       for p in range(1, num_mpiprocs):
@@ -54,15 +56,16 @@ def eval_wmpi(rank):
       if eval_i == -1:
         return
       
-      scher = Scher(sching_m_l[eval_i] )
-      _, _, _, t_sl_l = sample_traj(sinfo_m, scher)
+      scher = Scher(mapping_m, sching_m_l[eval_i] )
+      _, _, _, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher)
+      print("rank= {}, eval_i= {}, slowdown_mean= {}, load_mean= {}, droprate_mean= {}".format(rank, eval_i, np.mean(t_sl_l), load_mean, droprate_mean) )
       
       Esl = np.array([np.mean(t_sl_l) ], dtype=np.float64)
       comm.Send([Esl, MPI.FLOAT], dest=0)
       sys.stdout.flush()
 
 def learn_wmpi(rank):
-  scher = RLScher(sinfo_m, sching_m)
+  scher = RLScher(sinfo_m, mapping_m, sching_m)
   N, T, s_len = scher.N, scher.T, scher.s_len
   log(INFO, "starting;", rank=rank, scher=scher)
   sys.stdout.flush()
@@ -92,7 +95,7 @@ def learn_wmpi(rank):
         n_t_a_l[n, :] = t_a_l.reshape((T, 1))
         n_t_r_l[n, :] = t_r_l.reshape((T, 1))
         n_t_sl_l[n, :] = t_sl_l.reshape((T, 1))
-      alog("i= {}, avg a= {}, avg sl= {}".format(i, np.mean(n_t_a_l), np.mean(n_t_sl_l) ) )
+      alog("i= {}, a_mean= {}, sl_mean= {}, sl_std= {}".format(i, np.mean(n_t_a_l), np.mean(n_t_sl_l), np.std(n_t_sl_l) ) )
       scher.learner.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
       sys.stdout.flush()
     scher.save(L)
@@ -111,7 +114,8 @@ def learn_wmpi(rank):
         break
       
       scher.restore(sim_step)
-      t_s_l, t_a_l, t_r_l, t_sl_l = sample_traj(sinfo_m, scher)
+      t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher)
+      print("rank= {}, sim_step= {}, a_mean= {}, sl_mean= {}, load_mean= {}, droprate_mean= {}".format(rank, sim_step, np.mean(t_a_l), np.mean(t_sl_l), load_mean, droprate_mean) )
       comm.Send([t_s_l.flatten(), MPI.FLOAT], dest=0)
       comm.Send([t_a_l.flatten(), MPI.FLOAT], dest=0)
       comm.Send([t_r_l.flatten(), MPI.FLOAT], dest=0)
@@ -120,13 +124,16 @@ def learn_wmpi(rank):
     scher.restore(L)
     return scher
 
+def slowdown(load):
+  return np.random.uniform(0.01, 0.1)
+
 if __name__ == "__main__":
   comm = MPI.COMM_WORLD
   num_mpiprocs = comm.Get_size()
   rank = comm.Get_rank()
   
   sinfo_m = {
-    'njob': 10000, 'nworker': 10, 'wcap': 10,
+    'njob': 2000, 'nworker': 5, 'wcap': 10,
     'totaldemand_rv': TPareto(10, 10000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 5, 1),
     'k_rv': DUniform(1, 1),
@@ -135,16 +142,17 @@ if __name__ == "__main__":
       'straggle_dur_rv': TPareto(10, 1000, 1),
       'normal_dur_rv': TPareto(10, 1000, 1) } }
   ar_ub = arrival_rate_upperbound(sinfo_m)
-  sinfo_m['ar'] = 3/4*ar_ub
-  sching_m = {'N': 10}
-  L = 150 # number of learning steps
+  sinfo_m['ar'] = 1/2*ar_ub
+  mapping_m = {'type': 'spreading'}
+  sching_m = {'a': 1, 'N': 10}
+  L = 50 # number of learning steps
   
+  # {'type': 'plain', 'a': 1},
   sching_m_l = [
     {'type': 'plain', 'a': 0},
-    {'type': 'plain', 'a': 1},
-    {'type': 'plain', 'a': 2},
-    {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1} ]
-  eval_wmpi(rank)
+    {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1},
+    {'type': 'opportunistic', 'mapping_type': 'spreading', 'a': 1} ]
+  # eval_wmpi(rank)
   
   learn_wmpi(rank)
   

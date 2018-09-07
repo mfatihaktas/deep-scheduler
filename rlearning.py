@@ -69,38 +69,46 @@ class VEster(object): # Value Estimator
     return self.sess.run(self.v,
                          feed_dict={self.s_ph: n_t_s_l} )
 
-# ####################################  Policy Gradient Learner  ################################# #
-class PolicyGradLearner(object):
-  def __init__(self, s_len, a_len, nn_len=10, w_actorcritic=False):
+# #############################################  Learner  ###################################### #
+class Learner(object):
+  def __init__(self, s_len, a_len, nn_len):
     self.s_len = s_len
     self.a_len = a_len
     self.nn_len = nn_len
-    self.w_actorcritic = w_actorcritic
     
-    self.v_ester = VEster(s_len, nn_len)
     self.gamma = 0.99 # 0.8
-    self.init()
     
-    self.save_name = 'save/PolicyGradLearner_gamma{}_slen{}_alen{}_nnlen{}_wactorcritic{}'.format(self.gamma, s_len, a_len, nn_len, w_actorcritic)
-    self.saver = tf.train.Saver(max_to_keep=5)
+    self.saver = None
+    self.sess = None
   
-  def __repr__(self):
-    return "PolicyGradLearner[s_len= {}, a_len= {}, nn_len= {}, gamma= {}, w_actorcritic= {}]".format(self.s_len, self.a_len, self.nn_len, self.gamma, self.w_actorcritic)
-  
-  def save(self, step, save_name=None):
-    save_name = self.save_name if save_name is None else save_name
+  def save(self, step):
+    save_name = 'save/{}'.format(self)
     save_path = self.saver.save(self.sess, save_name, global_step=step)
     log(WARNING, "saved; ", save_path=save_path)
   
-  def restore(self, step, save_name=None):
-    save_name = self.save_name if save_name is None else save_name
+  def restore(self, step):
+    save_name = 'save/{}-{}'.format(self, step)
     try:
-      save_path = '{}-{}'.format(self.save_name, step)
-      self.saver.restore(self.sess, save_path)
+      save_path = self.saver.restore(self.sess, save_name)
       # log(WARNING, "restored; ", save_path=save_path)
       return True
     except:
       return False
+
+# ####################################  Policy Gradient Learner  ################################# #
+class PolicyGradLearner(Learner):
+  def __init__(self, s_len, a_len, nn_len=10, w_actorcritic=False):
+    super().__init__(s_len, a_len, nn_len)
+    self.w_actorcritic = w_actorcritic
+    
+    self.v_ester = VEster(s_len, nn_len)
+    self.init()
+    self.saver = tf.train.Saver(max_to_keep=5)
+    
+    # self.save_name = 'save/PolicyGradLearner_gamma{}_slen{}_alen{}_nnlen{}_wactorcritic{}'.format(self.gamma, s_len, a_len, nn_len, w_actorcritic)
+  
+  def __repr__(self):
+    return 'PolicyGradLearner[s_len= {}, a_len= {}, nn_len= {}, gamma= {}, w_actorcritic= {}]'.format(self.s_len, self.a_len, self.nn_len, self.gamma, self.w_actorcritic)
   
   def init(self):
     # N x T x s_len
@@ -108,9 +116,7 @@ class PolicyGradLearner(object):
     hidden1 = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu, weights_regularizer=tf.contrib.layers.l2_regularizer(0.01) )
     hidden2 = tf.contrib.layers.fully_connected(hidden1, self.nn_len, activation_fn=tf.nn.relu, weights_regularizer=tf.contrib.layers.l2_regularizer(0.01) )
     self.a_probs = tf.contrib.layers.fully_connected(hidden2, self.a_len, activation_fn=tf.nn.softmax, weights_regularizer=tf.contrib.layers.l2_regularizer(0.01) )
-    # self.s_ph = tf.placeholder(tf.float32, shape=(None, None, self.s_len) )
-    # hidden1 = tf.contrib.layers.fully_connected(self.s_ph, self.nn_len, activation_fn=tf.nn.relu)
-    # self.a_probs = tf.contrib.layers.fully_connected(hidden1, self.a_len, activation_fn=tf.nn.softmax)
+    # self.a_probs = tf.contrib.layers.fully_connected(hidden1, self.a_len, activation_fn=tf.nn.softmax, weights_regularizer=tf.contrib.layers.l2_regularizer(0.01) )
     
     self.a_ph = tf.placeholder(tf.int32, shape=(None, None, 1), name='a_ph')
     self.q_ph = tf.placeholder(tf.float32, shape=(None, None, 1), name='q_ph')
@@ -120,7 +126,8 @@ class PolicyGradLearner(object):
     N, T = sh[0], sh[1]
     indices = tf.range(0, N*T)*sh[2] + tf.reshape(self.a_ph, [-1] )
     self.resp_outputs = tf.reshape(tf.gather(tf.reshape(self.a_probs, [-1] ), indices), (N, T, 1) )
-    self.loss = -tf.reduce_mean(tf.reduce_sum(tf.log(self.resp_outputs)*(self.q_ph - self.v_ph), axis=1), axis=0) + \
+    self.loss = \
+      -tf.reduce_mean(tf.reduce_sum(tf.log(self.resp_outputs)*(self.q_ph - self.v_ph), axis=1), axis=0) + \
       tf.losses.get_regularization_loss()
     
     self.optimizer = tf.train.AdamOptimizer(0.01) # tf.train.GradientDescentOptimizer(0.01)
@@ -206,18 +213,15 @@ class PolicyGradLearner(object):
     return np.argmax(a_dist)  
 
 # ###########################################  Q Learning  ####################################### #
-class QLearner(object):
+class QLearner(Learner):
   def __init__(self, s_len, a_len, nn_len=10):
-    self.s_len = s_len
-    self.a_len = a_len
-    self.nn_len = nn_len
-    
-    self.gamma = 0.99
+    super().__init__(s_len, a_len, nn_len)
     self.eps = 0.1
     self.init()
+    self.saver = tf.train.Saver(max_to_keep=5)
     
   def __repr__(self):
-    return "QLearner[s_len= {}, a_len= {}]".format(self.s_len, self.a_len)
+    return 'QLearner[s_len= {}, a_len= {}]'.format(self.s_len, self.a_len)
   
   def init(self):
     # N x T x s_len
@@ -245,19 +249,19 @@ class QLearner(object):
     N = len(n_t_s_l)
     T = len(n_t_s_l[0] )
     
-    # n_t_q_l = self.sess.run(self.Qa_ph,
-    #                         feed_dict={self.s_ph: n_t_s_l} )
-    # n_t_targetq_l = np.zeros((N, T, 1))
-    # for n in range(N):
-    #   for t in range(T):
-    #     if t < T-1:
-    #       n_t_targetq_l[n, t, 0] = n_t_r_l[n, t, 0] + self.gamma*max(n_t_q_l[n, t+1, :] )
-    #     else:
-    #       n_t_targetq_l[n, t, 0] = n_t_r_l[n, t, 0]
-    
+    n_t_q_l = self.sess.run(self.Qa_ph,
+                            feed_dict={self.s_ph: n_t_s_l} )
     n_t_targetq_l = np.zeros((N, T, 1))
     for n in range(N):
-      n_t_targetq_l[n] = rewards_to_qvals(n_t_r_l[n], self.gamma)
+      for t in range(T):
+        if t < T-1:
+          n_t_targetq_l[n, t, 0] = n_t_r_l[n, t, 0] + self.gamma*max(n_t_q_l[n, t+1, :] )
+        else:
+          n_t_targetq_l[n, t, 0] = n_t_r_l[n, t, 0]
+    
+    # n_t_targetq_l = np.zeros((N, T, 1))
+    # for n in range(N):
+    #   n_t_targetq_l[n] = rewards_to_qvals(n_t_r_l[n], self.gamma)
     
     loss, _ = self.sess.run([self.loss, self.train_op],
                             feed_dict={self.s_ph: n_t_s_l,
@@ -350,7 +354,35 @@ def vsimple_regress():
     t_s_l, t_r_l = sample_traj()
     value_ester.train_w_single_traj(t_s_l, t_r_l)
 
+class A(object):
+  def __init__(self):
+    self.a = 'A'
+  
+  def __repr__(self):
+    return self.a
+  
+  def test(self):
+    print("self.a= {}".format(self.a) )
+  
+class B(A):
+  def __init__(self):
+    super().__init__()
+    
+    self.init()
+  
+  def init(self):
+    self.a = 'B'
+
 if __name__ == "__main__":
-  test()
+  # test()
   # vsimple_regress()
   
+  # b = B()
+  # # print("b= {}".format(b) )
+  # b.test()
+  
+  # learner = PolicyGradLearner(s_len=1, a_len=1)
+  learner = QLearner(s_len=1, a_len=1)
+  learner.save(0)
+  restore_result = learner.restore(0)
+  print("restore_result= {}".format(restore_result) )

@@ -29,7 +29,6 @@ class Task(object):
     return "Task[id= {}, jid= {}, type= {}]".format(self._id, self.jid, self.type_)
   
   def gen_demand(self):
-    # d = min(self.demandperslot_rv.sample(), self.totaldemand - self.cum_demand)
     d = min(self.demandperslot_rv_mean, self.totaldemand - self.cum_demand)
     self.cum_demand += d
     return d
@@ -78,10 +77,7 @@ class JobGen(object):
         k = k, n = k,
         demandperslot_rv = TNormal(demandmean, demandmean*coeff_var),
         totaldemand = self.totaldemand_rv.sample() ) )
-      
-      # if self.nsent >= self.njob:
-      #   return
-
+  
 # #########################################  Worker  ############################################# #
 class Worker(object):
   def __init__(self, env, _id, cap, out_c, straggle_m):
@@ -94,6 +90,7 @@ class Worker(object):
     self.cap_ = self.cap
     
     self.timeslot = 1
+    
     self.t_l = []
     env.process(self.run() )
     env.process(self.straggle() )
@@ -125,25 +122,38 @@ class Worker(object):
   def update_avg_load(self, load):
     self.avg_load = (self.avg_load*(self.ntimeslots-1) + load)/self.ntimeslots
   
+  def update_n(self):
+    total_reqed, n = 0, 0
+    while n < len(self.t_l) and total_reqed < self.cap:
+      total_reqed += self.t_l[n]
+      n += 1
+    
+    self.n = n
+    for t in self.t_l[n]:
+      if t.binding_time is None:
+        t.binding_time = self.env.now
+  
   def run(self):
     while True:
       yield (self.env.timeout(self.timeslot) )
       self.ntimeslots += 1
-      if len(self.t_l) == 0:
+      
+      t_l = self.t_l[:self.n]
+      if len(t_l) == 0:
         self.update_avg_load(0)
         continue
       
-      for p in self.t_l:
+      for p in t_l:
         p.gen_demand()
       
       # CPU scheduling
       cap_ = self.cap_
       sched_cap = self.sched_cap()
       total_supplytaken = 0
-      for t in self.t_l:
+      for t in t_l:
         total_supplytaken += t.take_supply(min(t.reqed, t.reqed/sched_cap*cap_) )
       
-      t_l_ = self.t_l
+      t_l_ = t_l
       while cap_ - total_supplytaken > 0.01:
         t_l_ = [t for t in t_l_ if t.cum_demand - t.cum_supply > 0.01]
         if len(t_l_) == 0:
@@ -152,38 +162,28 @@ class Worker(object):
         supply_foreach = (cap_ - total_supplytaken)/len(t_l_)
         for t in t_l_:
           total_supplytaken += t.take_supply(supply_foreach)
-      self.update_avg_load(self.sched_load() )
+      
+      self.sched_load_l.append(self.sched_load() )
+      
       # Check if a task is finished
-      t_l_ = []
-      for t in self.t_l:
+      t_toremove_l = []
+      for t in t_l:
         if t.cum_supply - t.totaldemand > -0.01:
           t.run_time = self.env.now - t.binding_time
           t.prev_hop_id = self._id
           self.out_c.put_c(t)
           slog(DEBUG, self.env, self, "finished", t)
         else:
-          t_l_.append(t)
-      self.t_l = t_l_
+          t_toremove_l.append(t)
+      for t in t_toremove_l:
+        self.t_l.remove(t)
+        self.update_n()
   
   def put(self, t):
-    avail_cap = self.nonsched_cap()
-    if t.type_ == 's' and t.reqed > avail_cap:
-      tred_l = [t for t in self.t_l if t.type_ == 'r']
-      i = 0
-      while i < len(tred_l) and avail_cap < t.reqed:
-        tred = tred_l[i]
-        avail_cap += tred.reqed
-        self.t_l.remove(tred)
-        i += 1
-      if avail_cap < t.reqed:
-        slog(ERROR, self.env, self, "could not bind", t)
-        return
-    elif t.type_ == 'r' and t.reqed > avail_cap:
-      return
-    
-    t.binding_time = self.env.now
+    slog(DEBUG, self.env, self, "received", t)
+    t.ent_time = self.env.now
     self.t_l.append(t)
-    slog(DEBUG, self.env, self, "binded, njob= {}".format(len(self.t_l) ), t)
+    self.update_n()
   
   def put_c(self, m):
     slog(DEBUG, self.env, self, "received", m)
@@ -228,9 +228,8 @@ class Cluster(object):
       
       s, a, w_l = self.scher.schedule(j, self.w_l)
       if a == -1:
-        yield self.env.timeout(0.1)
+        yield self.env.timeout(1)
         self.store.put(j)
-        # self.jid_info_m[j._id] = {'fate': 'dropped'}
         continue
       
       self.jid_info_m[j._id] = {'wait_time': self.env.now - j.arrival_time}
