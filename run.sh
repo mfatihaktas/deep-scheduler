@@ -10,6 +10,8 @@ elif [ $1 = 's' ]; then
   # $PY scheduler.py
 elif [ $1 = 'r' ]; then
   $PY rlearning.py
+elif [ $1 = 'p' ]; then
+  $PY plot_scher.py
 else
   echo "Arg did not match!"
 fi

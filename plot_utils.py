@@ -1,5 +1,9 @@
-import inspect, math, mpmath, scipy, itertools
-from scipy import special
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+matplotlib.use('Agg')
+import matplotlib.pyplot as plot
+import itertools
 
 mew, ms = 3, 5
 

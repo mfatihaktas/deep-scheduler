@@ -131,7 +131,14 @@ class RLScher():
 def sample_traj(sinfo_m, scher):
   def reward(slowdown):
     # return 1/slowdown
-    return 10 if slowdown < 1.5 else -10
+    # return 10 if slowdown < 1.5 else -10
+    
+    if slowdown < 1.1:
+      return 10
+    elif slowdown < 1.5:
+      return 1
+    else:
+      return -10
   
   env = simpy.Environment()
   cl = Cluster(env, scher=scher, **sinfo_m)

@@ -108,7 +108,7 @@ class PolicyGradLearner(Learner):
     # self.save_name = 'save/PolicyGradLearner_gamma{}_slen{}_alen{}_nnlen{}_wactorcritic{}'.format(self.gamma, s_len, a_len, nn_len, w_actorcritic)
   
   def __repr__(self):
-    return 'PolicyGradLearner[s_len= {}, a_len= {}, nn_len= {}, gamma= {}, w_actorcritic= {}]'.format(self.s_len, self.a_len, self.nn_len, self.gamma, self.w_actorcritic)
+    return 'PolicyGradLearner(s_len= {}, a_len= {}, nn_len= {}, gamma= {}, w_actorcritic= {})'.format(self.s_len, self.a_len, self.nn_len, self.gamma, self.w_actorcritic)
   
   def init(self):
     # N x T x s_len
@@ -190,10 +190,6 @@ class PolicyGradLearner(Learner):
                                          self.v_ph: n_t_v_l} )
     log(INFO, "PolicyGradLearner;", loss=loss)
   
-  def get_action_val(self, s):
-    a = self.sess.run(self.a_probs, feed_dict={self.s_ph: [[s]] } )
-    return a[0][0]
-  
   def get_action_dist(self, s):
     a_probs = self.sess.run(self.a_probs, feed_dict={self.s_ph: [[s]] } )
     return np.array(a_probs[0][0] )
@@ -221,7 +217,7 @@ class QLearner(Learner):
     self.saver = tf.train.Saver(max_to_keep=5)
     
   def __repr__(self):
-    return 'QLearner[s_len= {}, a_len= {}]'.format(self.s_len, self.a_len)
+    return 'QLearner(s_len= {}, a_len= {})'.format(self.s_len, self.a_len)
   
   def init(self):
     # N x T x s_len

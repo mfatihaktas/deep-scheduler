@@ -125,7 +125,15 @@ def learn_wmpi(rank):
     return scher
 
 def slowdown(load):
-  return np.random.uniform(0.01, 0.1)
+  # return np.random.uniform(0.01, 0.1)
+  threshold = 0.1
+  if load < threshold:
+    return 1
+    # return 0.9 if random.uniform(0, 1) < 0.5 else 1
+  else:
+    p_max = 0.8 # probability of straggling when load is 1
+    p = p_max/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
+    return 0.1*(1-load) if random.uniform(0, 1) < p else 1
 
 if __name__ == "__main__":
   comm = MPI.COMM_WORLD
@@ -144,8 +152,8 @@ if __name__ == "__main__":
   ar_ub = arrival_rate_upperbound(sinfo_m)
   sinfo_m['ar'] = 1/2*ar_ub
   mapping_m = {'type': 'spreading'}
-  sching_m = {'a': 1, 'N': 10}
-  L = 50 # number of learning steps
+  sching_m = {'a': 1, 'N': num_mpiprocs-1}
+  L = 100 # number of learning steps
   
   # {'type': 'plain', 'a': 1},
   sching_m_l = [
