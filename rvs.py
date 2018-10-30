@@ -5,6 +5,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plot
 import math, random, numpy, scipy
 from scipy.stats import *
+import mpmath
 
 from log_utils import *
 
@@ -505,6 +506,25 @@ class X_n_k(RV):
 
 def binomial(n, k):
   return scipy.special.binom(n, k)
+
+def mean(X, given_X_leq_x=None, x=None):
+  EX = moment_ith(1, X)
+  if given_X_leq_x is None:
+    return EX
+  
+  s = float(mpmath.quad(lambda x: X.tail(x), [0, x] ) )
+  Pr_X_leq_x = X.cdf(x)
+  if given_X_leq_x:
+    if Pr_X_leq_x == 0:
+      log(ERROR, "X.cdf(x) = 0!", X=X, x=x)
+      return
+    return s/Pr_X_leq_x
+  else:
+    Pr_X_g_x = 1 - Pr_X_leq_x
+    if Pr_X_g_x == 0:
+      log(ERROR, "X.tail(x) = 0!", X=X, x=x)
+      return
+    return (EX - s)/Pr_X_g_x
 
 def moment_ith(i, X):
   # return float(mpmath.quad(lambda x: i*x**(i-1) * X.tail(x), [0, X.u_l] ) ) # mpmath.inf 10000*10

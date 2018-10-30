@@ -115,7 +115,7 @@ def learn_wmpi(rank):
       
       scher.restore(sim_step)
       t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher)
-      print("rank= {}, sim_step= {}, a_mean= {}, sl_mean= {}, load_mean= {}, droprate_mean= {}".format(rank, sim_step, np.mean(t_a_l), np.mean(t_sl_l), load_mean, droprate_mean) )
+      print("rank= {}, sim_step= {}, a_mean= {}, r_mean= {}, sl_mean= {}, load_mean= {}, droprate_mean= {}".format(rank, sim_step, np.mean(t_a_l), np.mean(t_r_l), np.mean(t_sl_l), load_mean, droprate_mean) )
       comm.Send([t_s_l.flatten(), MPI.FLOAT], dest=0)
       comm.Send([t_a_l.flatten(), MPI.FLOAT], dest=0)
       comm.Send([t_r_l.flatten(), MPI.FLOAT], dest=0)
@@ -126,14 +126,17 @@ def learn_wmpi(rank):
 
 def slowdown(load):
   # return np.random.uniform(0.01, 0.1)
-  threshold = 0.1
+  threshold = 0.3
   if load < threshold:
-    return 1
-    # return 0.9 if random.uniform(0, 1) < 0.5 else 1
+    # return 1
+    return 0.5 if random.uniform(0, 1) < 0.1 else 1
   else:
     p_max = 0.8 # probability of straggling when load is 1
     p = p_max/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
-    return 0.1*(1-load) if random.uniform(0, 1) < p else 1
+    # return 0.05*(1-load) if random.uniform(0, 1) < p else 1
+    # return 0.05 if random.uniform(0, 1) < p else 1
+    
+    return random.uniform(0, 0.1)*random.uniform(0, 1-p) if random.uniform(0, 1) < p else 1
 
 if __name__ == "__main__":
   comm = MPI.COMM_WORLD
@@ -141,19 +144,19 @@ if __name__ == "__main__":
   rank = comm.Get_rank()
   
   sinfo_m = {
-    'njob': 2000, 'nworker': 5, 'wcap': 10,
+    'njob': 2000*2, 'nworker': 5, 'wcap': 10,
     'totaldemand_rv': TPareto(10, 10000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 5, 1),
     'k_rv': DUniform(1, 1),
     'straggle_m': {
       'slowdown': slowdown,
-      'straggle_dur_rv': TPareto(10, 1000, 1),
-      'normal_dur_rv': TPareto(10, 1000, 1) } }
+      'straggle_dur_rv': DUniform(100, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
+      'normal_dur_rv': DUniform(1, 1) } } # TPareto(1, 10, 1)
   ar_ub = arrival_rate_upperbound(sinfo_m)
-  sinfo_m['ar'] = 1/2*ar_ub
+  sinfo_m['ar'] = 1/2*ar_ub # 1/2*ar_ub
   mapping_m = {'type': 'spreading'}
   sching_m = {'a': 1, 'N': num_mpiprocs-1}
-  L = 100 # number of learning steps
+  L = 50 # number of learning steps
   
   # {'type': 'plain', 'a': 1},
   sching_m_l = [

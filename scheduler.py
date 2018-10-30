@@ -59,12 +59,14 @@ class Scher(object):
     return None, 1, w_l_[:j.k*(self.sching_m['a'] + 1) ]
 
 # ###########################################  RLScher  ########################################## #
-STATE_LEN = 5
+STATE_LEN = 3
 def state(j, wload_l):
   if STATE_LEN == 1:
     return [j.totaldemand] # j.k
   elif STATE_LEN == 5:
     return [j.totaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
+  elif STATE_LEN == 3:
+    return [j.totaldemand, min(wload_l), max(wload_l) ]
 
 class RLScher():
   def __init__(self, sinfo_m, mapping_m, sching_m):
@@ -133,12 +135,15 @@ def sample_traj(sinfo_m, scher):
     # return 1/slowdown
     # return 10 if slowdown < 1.5 else -10
     
-    if slowdown < 1.1:
-      return 10
-    elif slowdown < 1.5:
-      return 1
+    ## The following allows Q-learning to converge
+    # if slowdown < 1.1:
+    #   return 10
+    # elif slowdown < 1.5:
+    #   return 1
+    if slowdown < 1.5:
+      return 10/slowdown
     else:
-      return -10
+      return -10*slowdown
   
   env = simpy.Environment()
   cl = Cluster(env, scher=scher, **sinfo_m)

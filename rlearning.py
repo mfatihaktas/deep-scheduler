@@ -76,7 +76,7 @@ class Learner(object):
     self.a_len = a_len
     self.nn_len = nn_len
     
-    self.gamma = 0.99 # 0.8
+    self.gamma = 0.9 # 0.99
     
     self.saver = None
     self.sess = None
@@ -232,7 +232,7 @@ class QLearner(Learner):
     sh = tf.shape(self.Qa_ph)
     N, T = sh[0], sh[1]
     indices = tf.range(0, N*T)*sh[2] + tf.reshape(self.a_ph, [-1] )
-    self.resp_outputs = tf.reshape(tf.gather(tf.reshape(self.Qa_ph, [-1] ), indices), (sh[0], sh[1], 1) )
+    self.resp_outputs = tf.reshape(tf.gather(tf.reshape(self.Qa_ph, [-1] ), indices), (N, T, 1) )
     self.loss = tf.losses.mean_squared_error(self.resp_outputs, self.targetq_ph)
     
     self.optimizer = tf.train.AdamOptimizer(0.01)
@@ -264,7 +264,7 @@ class QLearner(Learner):
                                        self.a_ph: n_t_a_l,
                                        self.targetq_ph: n_t_targetq_l} )
     print("QLearner:: loss= {}".format(loss) )
-    # self.eps *= 0.95
+    self.eps *= 0.95
   
   def get_random_action(self, s):
     if random.uniform(0, 1) < self.eps:

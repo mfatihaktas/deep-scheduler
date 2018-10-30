@@ -102,11 +102,14 @@ class Worker(object):
     self.avg_load = 0
   
   def straggle(self):
+    sl = self.straggle_m['slowdown']
+    straggle_dur_rv = self.straggle_m['straggle_dur_rv']
+    normal_dur_v = self.straggle_m['normal_dur_rv']
     while True:
-      self.cap_ = self.cap*self.straggle_m['slowdown'](self.sched_load() )
-      yield (self.env.timeout(self.straggle_m['straggle_dur_rv'].sample() ) )
+      self.cap_ = self.cap*sl(self.sched_load() )
+      yield (self.env.timeout(straggle_dur_rv.sample() ) )
       self.cap_ = self.cap
-      yield (self.env.timeout(self.straggle_m['normal_dur_rv'].sample() ) )
+      yield (self.env.timeout(normal_dur_v.sample() ) )
   
   def __repr__(self):
     return "Worker[id= {}]".format(self._id)

@@ -12,6 +12,8 @@ elif [ $1 = 'r' ]; then
   $PY rlearning.py
 elif [ $1 = 'p' ]; then
   $PY plot_scher.py
+elif [ $1 = 'm' ]; then
+  $PY modeling.py
 else
   echo "Arg did not match!"
 fi
