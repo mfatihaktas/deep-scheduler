@@ -139,12 +139,17 @@ def sample_traj(sinfo_m, scher):
     # if slowdown < 1.1:
     #   return 10
     # elif slowdown < 1.5:
-    #   return 1
-    if slowdown < 1.5:
-      return 10/slowdown
-    else:
-      return -10*slowdown
-  
+    #   return 10/slowdown
+    # else:
+    #   return -slowdown
+    
+    return -slowdown
+    
+    # if slowdown < 2:
+    #   return 10/slowdown
+    # else:
+    #   return -10*slowdown
+    
   env = simpy.Environment()
   cl = Cluster(env, scher=scher, **sinfo_m)
   jg = JobGen(env, out=cl, **sinfo_m)

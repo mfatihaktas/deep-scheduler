@@ -498,6 +498,9 @@ class X_n_k(RV):
   def tail(self, x):
     return 1 - self.cdf(x)
   
+  def mean(self):
+    return self.moment(1)
+  
   def moment(self, i):
     return float(mpmath.quad(lambda x: i*x**(i-1) * self.tail(x), [0, mpmath.inf] ) )
   
@@ -516,14 +519,14 @@ def mean(X, given_X_leq_x=None, x=None):
   Pr_X_leq_x = X.cdf(x)
   if given_X_leq_x:
     if Pr_X_leq_x == 0:
-      log(ERROR, "X.cdf(x) = 0!", X=X, x=x)
-      return
+      # log(WARNING, "X.cdf(x) = 0!", X=X, x=x)
+      return 0
     return s/Pr_X_leq_x
   else:
     Pr_X_g_x = 1 - Pr_X_leq_x
     if Pr_X_g_x == 0:
-      log(ERROR, "X.tail(x) = 0!", X=X, x=x)
-      return
+      # log(WARNING, "X.tail(x) = 0!", X=X, x=x)
+      return 0
     return (EX - s)/Pr_X_g_x
 
 def moment_ith(i, X):

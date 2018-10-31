@@ -241,7 +241,7 @@ class QLearner(Learner):
     self.sess = tf.Session()
     self.sess.run(tf.global_variables_initializer() )
   
-  def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
+  def _train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)
     T = len(n_t_s_l[0] )
     
@@ -258,6 +258,41 @@ class QLearner(Learner):
     # n_t_targetq_l = np.zeros((N, T, 1))
     # for n in range(N):
     #   n_t_targetq_l[n] = rewards_to_qvals(n_t_r_l[n], self.gamma)
+    
+    loss, _ = self.sess.run([self.loss, self.train_op],
+                            feed_dict={self.s_ph: n_t_s_l,
+                                       self.a_ph: n_t_a_l,
+                                       self.targetq_ph: n_t_targetq_l} )
+    print("QLearner:: loss= {}".format(loss) )
+    # self.eps *= 0.95
+  
+  def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
+    N = len(n_t_s_l)
+    T = len(n_t_s_l[0] )
+    
+    n_t_q_l = self.sess.run(self.Qa_ph,
+                            feed_dict={self.s_ph: n_t_s_l} )
+    def target_q_w_mstep(m):
+      n_t_targetq_l = np.zeros((N, T, 1))
+      for n in range(N):
+        for t in range(T):
+          if t < T-1:
+            cumr = 0
+            tu_ = min(T-2, t+m-1)
+            for t_ in range(tu_, t-1, -1):
+              cumr = n_t_r_l[n, t_, 0] + self.gamma*cumr
+            n_t_targetq_l[n, t, 0] = cumr + self.gamma*max(n_t_q_l[n, tu_+1, :] )
+            # n_t_targetq_l[n, t, 0] = cumr + self.gamma*n_t_q_l[n, tu_+1, n_t_a_l[n, tu_+1, 0] ] # SARSA
+          else:
+            n_t_targetq_l[n, t, 0] = max(n_t_q_l[n, t, :] )
+            # n_t_targetq_l[n, t, 0] = n_t_q_l[n, t, n_t_a_l[n, t, 0] ] # SARSA
+      return n_t_targetq_l
+    
+    lambda_, L = 0.5, 10
+    n_t_targetq_l = np.zeros((N, T, 1))
+    for m in range(1, L):
+      n_t_targetq_l += lambda_**(m-1) * target_q_w_mstep(m)
+    n_t_targetq_l *= (1 - lambda_)/(1 - lambda_**L)
     
     loss, _ = self.sess.run([self.loss, self.train_op],
                             feed_dict={self.s_ph: n_t_s_l,

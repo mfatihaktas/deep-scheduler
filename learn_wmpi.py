@@ -126,17 +126,28 @@ def learn_wmpi(rank):
 
 def slowdown(load):
   # return np.random.uniform(0.01, 0.1)
-  threshold = 0.3
+  '''
+  threshold = 0.2
   if load < threshold:
     # return 1
-    return 0.5 if random.uniform(0, 1) < 0.1 else 1
+    return 0.5 if random.uniform(0, 1) < 0.2 else 1
   else:
     p_max = 0.8 # probability of straggling when load is 1
     p = p_max/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
     # return 0.05*(1-load) if random.uniform(0, 1) < p else 1
     # return 0.05 if random.uniform(0, 1) < p else 1
     
-    return random.uniform(0, 0.1)*random.uniform(0, 1-p) if random.uniform(0, 1) < p else 1
+    # return random.uniform(0, 0.1)*random.uniform(0, 1-p) if random.uniform(0, 1) < p else 1
+    return random.uniform(0, 0.1)*random.uniform(0, 1) if random.uniform(0, 1) < p else 1
+  '''
+  base_Pr_straggling = 0.3
+  threshold = 0.6
+  if load < threshold:
+    return random.uniform(0, 0.1) if random.uniform(0, 1) < base_Pr_straggling else 1
+  else:
+    p_max = 0.5
+    p = base_Pr_straggling + p_max/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
+    return random.uniform(0, 0.1) if random.uniform(0, 1) < p else 1
 
 if __name__ == "__main__":
   comm = MPI.COMM_WORLD
@@ -150,7 +161,7 @@ if __name__ == "__main__":
     'k_rv': DUniform(1, 1),
     'straggle_m': {
       'slowdown': slowdown,
-      'straggle_dur_rv': DUniform(100, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
+      'straggle_dur_rv': DUniform(10, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
       'normal_dur_rv': DUniform(1, 1) } } # TPareto(1, 10, 1)
   ar_ub = arrival_rate_upperbound(sinfo_m)
   sinfo_m['ar'] = 1/2*ar_ub # 1/2*ar_ub
