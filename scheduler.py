@@ -92,21 +92,20 @@ class RLScher():
     return self.learner.restore(step)
   
   def summarize(self):
-    job_totaldemand_rv = sinfo_m['totaldemand_rv']
+    job_totaldemand_rv = self.sinfo_m['totaldemand_rv']
     if STATE_LEN == 1:
-      for totaldemand in np.logspace(0.1, math.log10(job_totaldemand_rv.u_l)/10, 10):
+      for totaldemand in np.logspace(0.1, math.log10(job_totaldemand_rv.u_l/10), 10):
       # for totaldemand in np.linspace(1, 300, 10):
         j = Job(_id=0, k=1, n=1, demandperslot_rv=TNormal(1, 1), totaldemand=totaldemand)
         qa_l = self.learner.get_qa_l(state(j) )
-        print("totaldemand= {},\n\tqa_l= {}".format(totaldemand, qa_l) )
+        print("totaldemand= {}, qa_l= {}".format(totaldemand, qa_l) )
     elif STATE_LEN == 3 or STATE_LEN == 5:
-      for load1 in np.linspace(0, 1, 10):
-        for load2 in np.linspace(0, 1, 10):
-          for totaldemand in np.logspace(0.1, math.log10(job_totaldemand_rv.u_l)/10, 10):
-            
+      for load1 in np.linspace(0, 1, 5):
+        for load2 in np.linspace(load1, 1, 2):
+          for totaldemand in np.logspace(0.1, math.log10(job_totaldemand_rv.u_l/10), 10):
             j = Job(_id=0, k=1, n=1, demandperslot_rv=TNormal(1, 1), totaldemand=totaldemand)
             qa_l = self.learner.get_qa_l(state(j, [load1, load2] ) )
-            print("load1= {}, load2= {}, totaldemand= {},\n\tqa_l= {}".format(load1, load2, totaldemand, qa_l) )
+            print("load1= {}, load2= {}, totaldemand= {}, qa_l= {}".format(load1, load2, totaldemand, qa_l) )
     
   def schedule(self, j, w_l):
     w_l = self.mapper.worker_l(j, w_l)
@@ -175,7 +174,6 @@ def sample_traj(sinfo_m, scher):
   
   T = sinfo_m['njob']
   t_s_l, t_a_l, t_r_l, t_sl_l = np.zeros((T, scher.s_len)), np.zeros((T, 1)), np.zeros((T, 1)), np.zeros((T, 1))
-  
   
   t = 0
   for jid, jinfo_m in sorted(cl.jid_info_m.items(), key=itemgetter(0) ):

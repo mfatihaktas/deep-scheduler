@@ -281,9 +281,12 @@ class Cluster(object):
         self.jid__t_l_m.pop(t.jid, None)
         slog(DEBUG, self.env, self, "finished jid= {}".format(t.jid), t)
         
-        self.njob_finished += 1 # for now counting only the finished jobs, ignoring the dropped ones
-        if self.njob_finished >= self.njob:
-          return
+        ## This causes (s1, a1, r1), (s2, a2, r2) to be interleaved by more than one job
+        # self.njob_finished += 1
+        if t.jid <= self.njob:
+          self.njob_finished += 1
+          if self.njob_finished >= self.njob:
+            return
   
   def put_c(self, t):
     slog(DEBUG, self.env, self, "received", t)

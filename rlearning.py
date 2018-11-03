@@ -215,7 +215,7 @@ class PolicyGradLearner(Learner):
 class QLearner(Learner):
   def __init__(self, s_len, a_len, nn_len=10):
     super().__init__(s_len, a_len, nn_len)
-    self.eps = 1 # 0.1
+    self.eps = 0.1
     self.init()
     self.saver = tf.train.Saver(max_to_keep=5)
     
