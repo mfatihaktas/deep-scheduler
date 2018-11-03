@@ -76,7 +76,7 @@ class Learner(object):
     self.a_len = a_len
     self.nn_len = nn_len
     
-    self.gamma = 0.9 # 0.99
+    self.gamma = 0.99 # 0.9
     
     self.saver = None
     self.sess = None
@@ -105,7 +105,7 @@ class PolicyGradLearner(Learner):
     self.init()
     self.saver = tf.train.Saver(max_to_keep=5)
     
-    # self.save_name = 'save/PolicyGradLearner_gamma{}_slen{}_alen{}_nnlen{}_wactorcritic{}'.format(self.gamma, s_len, a_len, nn_len, w_actorcritic)
+    self.eps = 0.1
   
   def __repr__(self):
     return 'PolicyGradLearner(s_len= {}, a_len= {}, nn_len= {}, gamma= {}, w_actorcritic= {})'.format(self.s_len, self.a_len, self.nn_len, self.gamma, self.w_actorcritic)
@@ -195,12 +195,15 @@ class PolicyGradLearner(Learner):
     return np.array(a_probs[0][0] )
   
   def get_random_action(self, s):
-    a_probs = self.sess.run(self.a_probs, feed_dict={self.s_ph: [[s]] } )
-    a_dist = np.array(a_probs[0][0] )
-    # log(WARNING, "", s=s, a_dist=a_dist)
-    a = np.random.choice(a_dist, 1, p=a_dist)
-    a = np.argmax(a_dist == a)
-    return a
+    if random.uniform(0, 1) < self.eps:
+      return np.random.randint(self.a_len, size=1)[0]
+    else:
+      a_probs = self.sess.run(self.a_probs, feed_dict={self.s_ph: [[s]] } )
+      a_dist = np.array(a_probs[0][0] )
+      # log(WARNING, "", s=s, a_dist=a_dist)
+      a = np.random.choice(a_dist, 1, p=a_dist)
+      a = np.argmax(a_dist == a)
+      return a
   
   def get_max_action(self, s):
     a_probs = self.sess.run(self.a_probs, feed_dict={self.s_ph: [[s]] } )
@@ -212,7 +215,7 @@ class PolicyGradLearner(Learner):
 class QLearner(Learner):
   def __init__(self, s_len, a_len, nn_len=10):
     super().__init__(s_len, a_len, nn_len)
-    self.eps = 0.1
+    self.eps = 1 # 0.1
     self.init()
     self.saver = tf.train.Saver(max_to_keep=5)
     
@@ -253,7 +256,7 @@ class QLearner(Learner):
         if t < T-1:
           n_t_targetq_l[n, t, 0] = n_t_r_l[n, t, 0] + self.gamma*max(n_t_q_l[n, t+1, :] )
         else:
-          n_t_targetq_l[n, t, 0] = n_t_r_l[n, t, 0]
+          n_t_targetq_l[n, t, 0] = max(n_t_q_l[n, t, :] )
     
     # n_t_targetq_l = np.zeros((N, T, 1))
     # for n in range(N):
@@ -264,7 +267,7 @@ class QLearner(Learner):
                                        self.a_ph: n_t_a_l,
                                        self.targetq_ph: n_t_targetq_l} )
     print("QLearner:: loss= {}".format(loss) )
-    # self.eps *= 0.95
+    self.eps *= 0.95
   
   def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)
@@ -300,6 +303,7 @@ class QLearner(Learner):
                                        self.targetq_ph: n_t_targetq_l} )
     print("QLearner:: loss= {}".format(loss) )
     self.eps *= 0.95
+    log(INFO, "", eps=self.eps)
   
   def get_random_action(self, s):
     if random.uniform(0, 1) < self.eps:
@@ -313,7 +317,12 @@ class QLearner(Learner):
     qa_l = self.sess.run(self.Qa_ph,
                          feed_dict={self.s_ph: [[s]] } )
     return np.argmax(qa_l)
-
+  
+  def get_qa_l(self, s):
+    qa_l = self.sess.run(self.Qa_ph,
+                         feed_dict={self.s_ph: [[s]] } )
+    return qa_l
+  
 # #############################################  Test  ########################################### #
 def test():
   s_len, a_len, nn_len = 3, 3, 10

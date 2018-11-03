@@ -97,6 +97,7 @@ def learn_wmpi(rank):
         n_t_sl_l[n, :] = t_sl_l.reshape((T, 1))
       alog("i= {}, a_mean= {}, sl_mean= {}, sl_std= {}".format(i, np.mean(n_t_a_l), np.mean(n_t_sl_l), np.std(n_t_sl_l) ) )
       scher.learner.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
+      scher.summarize()
       sys.stdout.flush()
     scher.save(L)
     for p in range(1, num_mpiprocs):
@@ -161,7 +162,7 @@ if __name__ == "__main__":
     'k_rv': DUniform(1, 1),
     'straggle_m': {
       'slowdown': slowdown,
-      'straggle_dur_rv': DUniform(10, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
+      'straggle_dur_rv': DUniform(100, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
       'normal_dur_rv': DUniform(1, 1) } } # TPareto(1, 10, 1)
   ar_ub = arrival_rate_upperbound(sinfo_m)
   sinfo_m['ar'] = 1/2*ar_ub # 1/2*ar_ub

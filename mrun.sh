@@ -8,7 +8,7 @@ if [ $1 = 'i' ]; then
   # source ~/tensorflow/bin/activate
 elif [ $1 = 'r' ]; then
   FILE='learn_wmpi' # 'eval_wmpi'
-  NTASKS=11
+  NTASKS=11 # 2
   echo "#!/bin/bash
 #SBATCH --partition=main             # Partition (job queue)
 #SBATCH --job-name=$FILE

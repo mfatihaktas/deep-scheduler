@@ -73,6 +73,9 @@ def E_slowdown(ar, N, Cap, k, D, S_gen, d=None, r=None):
 def arrival_rate_ub(N, Cap, k, D, S_gen):
   return N*Cap/k.mean()/D.mean()/S_gen(1).mean()  
 
+def arrival_rate_for_load_ro(ro, N, Cap, k, D, S_gen):
+  return ro*N*Cap/k.mean()/D.mean()/S_gen(ro).mean()
+
 def plot_slowdown():
   N, Cap = 10, 100
   D = TPareto(1, 10000, 2) # Pareto(10, 2)
@@ -81,8 +84,8 @@ def plot_slowdown():
   
   # S_gen = lambda ro: TPareto(1, 40, 2/ro)
   def S_gen(ro):
-    a = 1.5 # - math.sqrt(ro) # 2 - ro
-    return TPareto(1, 1000, a)
+    a = 1.5 - math.sqrt(ro) # 2 - ro
+    return TPareto(1, 100, a)
   ar_ub = arrival_rate_ub(N, Cap, k, D, S_gen)
   print("ar_ub= {}".format(ar_ub) )
   
@@ -92,16 +95,20 @@ def plot_slowdown():
   #   E_sl_wred = E_slowdown(ar, N, Cap, k, D, S_gen, d, r)
   #   print("ar= {}, E_sl= {}, E_sl_wred= {}".format(ar, E_sl, E_sl_wred) )
   
-  ar = 1/4*ar_ub # 1/2, 2/3
+  # ar = 1/4*ar_ub # 1/2, 2/3
+  ar = arrival_rate_for_load_ro(1/2, N, Cap, k, D, S_gen)
+  
   l, u = 1.1*D.l_l, 0.95*D.u_l
   # for d in np.linspace(l, u, 10):
+  E_sl = E_slowdown(ar, N, Cap, k, D, S_gen)
+  print("E_sl= {}".format(E_sl) )
+  
   for d in np.logspace(math.log10(l), math.log10(u), 10):
-    print(">> d= {}".format(d) )
-    E_sl = E_slowdown(ar, N, Cap, k, D, S_gen)
+    print("\n>> d= {}".format(d) )
     E_sl_wred = E_slowdown(ar, N, Cap, k, D, S_gen, d, r)
     blog(E_sl=E_sl, E_sl_wred=E_sl_wred)
-    if E_sl_wred is None:
-      break
+    # if E_sl_wred is None:
+    #   break
   
   log(INFO, "done.")
 

@@ -2,29 +2,42 @@ from scheduler import *
 from plot_utils import *
 
 def plot_Pr_rep(step, s_len, a_len, nn_len, job_totaldemand_rv):
-  learner = QLearner(s_len, a_len, nn_len)
+  learner = PolicyGradLearner(s_len, a_len, nn_len=10, w_actorcritic=True)
+  # learner = QLearner(s_len, a_len, nn_len)
   if not learner.restore(step):
     log(ERROR, "learner.restore failed!")
     return
   
-  load1_l, load2_l, totaldemand_l = [], [], []
-  a_l = []
-  for load1 in np.linspace(0, 1, 10):
-    for load2 in np.linspace(0, 1, 10):
-      for totaldemand in np.logspace(0.1, math.log10(job_totaldemand_rv.u_l), 10):
-      # for totaldemand in np.logspace(0.01, math.log10(job_totaldemand_rv.mean() ), 10):
-      # for totaldemand in np.linspace(0.1, 100, 10):
-        load1_l.append(load1)
-        load2_l.append(load2)
-        totaldemand_l.append(totaldemand)
-        
-        j = Job(_id=0, k=1, n=1, demandperslot_rv=TNormal(1, 1), totaldemand=totaldemand)
-        a = learner.get_max_action(state(j, [load1, load2] ) )
-        print("load1= {}, load2= {}, totaldemand= {}, a= {}".format(load1, load2, totaldemand, a) )
-        a_l.append(a)
+  if STATE_LEN == 1:
+    totaldemand_l = []
+    a_l = []
+    # for totaldemand in np.logspace(0.1, math.log10(job_totaldemand_rv.u_l), 10):
+    for totaldemand in np.linspace(1, 300, 10):
+      totaldemand_l.append(totaldemand)
+      
+      j = Job(_id=0, k=1, n=1, demandperslot_rv=TNormal(1, 1), totaldemand=totaldemand)
+      a = learner.get_max_action(state(j) )
+      print("totaldemand= {}, a= {}".format(totaldemand, a) )
+      a_l.append(a)
+  elif STATE_LEN == 3:
+    load1_l, load2_l, totaldemand_l = [], [], []
+    a_l = []
+    for load1 in np.linspace(0, 1, 10):
+      for load2 in np.linspace(0, 1, 10):
+        for totaldemand in np.logspace(0.1, math.log10(job_totaldemand_rv.u_l), 10):
+        # for totaldemand in np.logspace(0.01, math.log10(job_totaldemand_rv.mean() ), 10):
+        # for totaldemand in np.linspace(0.1, 100, 10):
+          load1_l.append(load1)
+          load2_l.append(load2)
+          totaldemand_l.append(totaldemand)
+          
+          j = Job(_id=0, k=1, n=1, demandperslot_rv=TNormal(1, 1), totaldemand=totaldemand)
+          a = learner.get_max_action(state(j, [load1, load2] ) )
+          print("load1= {}, load2= {}, totaldemand= {}, a= {}".format(load1, load2, totaldemand, a) )
+          a_l.append(a)
 
 if __name__ == "__main__":
-  plot_Pr_rep(step=50, s_len=3, a_len=2, nn_len=10, job_totaldemand_rv=TPareto(10, 10000, 1.1) )
+  plot_Pr_rep(step=100, s_len=STATE_LEN, a_len=2, nn_len=10, job_totaldemand_rv=TPareto(10, 10000, 1.1) )
   
   '''
   # x and y and z coordinates
