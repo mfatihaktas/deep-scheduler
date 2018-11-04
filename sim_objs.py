@@ -208,6 +208,9 @@ class Cluster(object):
   def __init__(self, env, njob, nworker, wcap, straggle_m, scher, **kwargs):
     self.env = env
     self.njob = njob
+    self.nworker = nworker
+    self.wcap = wcap
+    self.straggle_m = straggle_m
     self.scher = scher
     
     self.w_l = [Worker(env, i, wcap, self, straggle_m) for i in range(nworker) ]
@@ -223,18 +226,26 @@ class Cluster(object):
     self.jid_info_m = {}
     
   def __repr__(self):
+    # return 'Cluster[' + '\n' + \
+    #       '\t njob= {}'.format(self.njob) + '\n' + \
+    #       '\t nworker= {}'.format(self.nworker) + '\n' + \
+    #       '\t wcap= {}'.format(self.wcap) + '\n' + \
+    #       '\t straggle_m= {}'.format(self.straggle_m) + '\n' + \
+    #       '\t scher= {}'.format(self.scher)
     return 'Cluster'
   
   def run(self):
     while True:
       j = yield self.store.get()
       
-      s, a, w_l = self.scher.schedule(j, self.w_l)
-      if a == -1:
-        yield self.env.timeout(0.1)
-        self.store.put(j)
-        # self.jid_info_m[j._id] = {'fate': 'dropped'}
-        continue
+      while True:
+        s, a, w_l = self.scher.schedule(j, self.w_l)
+        if a == -1:
+          yield self.env.timeout(0.1)
+        else:
+          break
+      # self.store.put(j)
+      # self.jid_info_m[j._id] = {'fate': 'dropped'}
       
       self.jid_info_m[j._id] = {'wait_time': self.env.now - j.arrival_time}
       wid_l = []
@@ -251,6 +262,9 @@ class Cluster(object):
   
   def put(self, j):
     slog(DEBUG, self.env, self, "received", j)
+    if len(self.store.items) >= 1000:
+      # slog(WARNING, self.env, self, ">= 1000 tasks are in q! dropping.", j)
+      return
     j.arrival_time = self.env.now
     return self.store.put(j)
   
@@ -283,8 +297,10 @@ class Cluster(object):
         
         ## This causes (s1, a1, r1), (s2, a2, r2) to be interleaved by more than one job
         # self.njob_finished += 1
+        print("job completed, jid= {}".format(t.jid) )
         if t.jid <= self.njob:
           self.njob_finished += 1
+          log(WARNING, "job completion;", jid=t.jid, njob=self.njob, njob_finished=self.njob_finished)
           if self.njob_finished >= self.njob:
             return
   

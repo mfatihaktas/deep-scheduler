@@ -244,6 +244,24 @@ class QLearner(Learner):
     self.sess = tf.Session()
     self.sess.run(tf.global_variables_initializer() )
   
+  def train_w_sarsa_l(self, sarsa_l):
+    s_l, a_l, targetq_l = [], [], []
+    for sarsa in sarsa_l:
+      s, a, r, snext = sarsa[0], sarsa[1], sarsa[2], sarsa[3]
+      s_l.append(s)
+      a_l.append(a)
+      
+      q_l = self.sess.run(self.Qa_ph,
+                         feed_dict={self.s_ph: [[snext]] } )[0]
+      targetq = r + self.gamma*max(q_l)
+      targetq_l.append(targetq)
+    
+    loss, _ = self.sess.run([self.loss, self.train_op],
+                            feed_dict={self.s_ph: [s_l],
+                                       self.a_ph: [a_l],
+                                       self.targetq_ph: [targetq_l] } )
+    print("QLearner:: loss= {}".format(loss) )
+  
   def _train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)
     T = len(n_t_s_l[0] )
