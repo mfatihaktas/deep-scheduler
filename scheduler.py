@@ -25,7 +25,7 @@ class Scher(object):
   def __repr__(self):
     return 'Scher[sching_m={}, \nmapper= {}]'.format(self.sching_m, self.mapper)
   
-  def plain(self, j, w_l, expand=False):
+  def plain(self, j, w_l, expand=True):
     w_l = self.mapper.worker_l(j, w_l)
     if len(w_l) < j.k:
       return None, -1, None
@@ -82,25 +82,35 @@ class RLScher():
   
   def summarize(self):
     job_totaldemand_rv = self.sinfo_m['totaldemand_rv']
+    log_intermediate_totaldemand, log_max_totaldemand = math.log10(job_totaldemand_rv.u_l/10), math.log10(job_totaldemand_rv.u_l)
+    totaldemand_l = list(np.logspace(0.1, log_intermediate_totaldemand, 5, endpoint=False) ) + \
+                    list(np.logspace(log_intermediate_totaldemand, log_max_totaldemand, 5) )
     if STATE_LEN == 1:
-      for totaldemand in np.logspace(0.1, math.log10(job_totaldemand_rv.u_l/10), 10):
+      for totaldemand in totaldemand_l:
       # for totaldemand in np.linspace(1, 300, 10):
-        j = Job(_id=0, k=1, n=1, demandperslot_rv=TNormal(1, 1), totaldemand=totaldemand)
-        qa_l = self.learner.get_qa_l(state(j) )
+        qa_l = self.learner.get_qa_l(state_(totaldemand) )
         print("totaldemand= {}, qa_l= {}".format(totaldemand, qa_l) )
-    elif STATE_LEN == 3 or STATE_LEN == 5:
-      for load1 in np.linspace(0, 1, 5):
+        blog(a=np.argmax(qa_l) )
+    elif STATE_LEN == 3 or STATE_LEN == 3:
+      for load1 in np.linspace(0, 0.9, 5):
         for load2 in np.linspace(load1, 1, 2):
-          for totaldemand in np.logspace(0.1, math.log10(job_totaldemand_rv.u_l/10), 10):
-            j = Job(_id=0, k=1, n=1, demandperslot_rv=TNormal(1, 1), totaldemand=totaldemand)
-            qa_l = self.learner.get_qa_l(state(j, [load1, load2] ) )
+          for totaldemand in totaldemand_l:
+            qa_l = self.learner.get_qa_l(state_(totaldemand, [load1, load2] ) )
             print("load1= {}, load2= {}, totaldemand= {}, qa_l= {}".format(load1, load2, totaldemand, qa_l) )
-    
-  def schedule(self, j, w_l):
+            blog(a=np.argmax(qa_l) )
+    elif STATE_LEN == 4:
+      load1, load2 = 0, 0
+      for cluster_qlen in range(0, 5):
+        for totaldemand in totaldemand_l:
+          qa_l = self.learner.get_qa_l(state_(totaldemand, [load1, load2], cluster_qlen) )
+          print("cluster_qlen= {}, totaldemand= {}, qa_l= {}".format(cluster_qlen, totaldemand, qa_l) )
+          blog(a=np.argmax(qa_l) )
+  
+  def schedule(self, j, w_l, cluster):
     w_l = self.mapper.worker_l(j, w_l)
     if len(w_l) < j.k:
       return None, -1, None
-    s = state(j, [w.sched_load() for w in w_l] )
+    s = state(j, [w.sched_load() for w in w_l], cluster)
     a = self.learner.get_random_action(s)
     j.n = int(j.k*(a + 1) )
     return s, a, w_l[:j.n]

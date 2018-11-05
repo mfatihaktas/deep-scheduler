@@ -1,14 +1,28 @@
+import numpy as np
+
 from sim_objs import *
 
-STATE_LEN = 3
-def state(j, wload_l=None):
+STATE_LEN = 4
+def state(j, wload_l=None, cluster=None):
   if STATE_LEN == 1:
     return [j.totaldemand] # j.k
   elif STATE_LEN == 3:
-    # return [j.totaldemand, min(wload_l), max(wload_l) ]
-    return [j.totaldemand, np.mean(wload_l), np.std(wload_l) ]
+    return [j.totaldemand, min(wload_l), max(wload_l) ]
+    # return [j.totaldemand, np.mean(wload_l), np.std(wload_l) ]
+  elif STATE_LEN == 4:
+    return [j.totaldemand, min(wload_l), max(wload_l), len(cluster.store.items) ]
   elif STATE_LEN == 5:
     return [j.totaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
+
+def state_(jtotaldemand, wload_l=None, cluster_qlen=None):
+  if STATE_LEN == 1:
+    return [jtotaldemand]
+  elif STATE_LEN == 3:
+    return [jtotaldemand, min(wload_l), max(wload_l) ]
+  elif STATE_LEN == 4:
+    return [jtotaldemand, min(wload_l), max(wload_l), cluster_qlen]
+  elif STATE_LEN == 5:
+    return [jtotaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
 
 def sample_traj(sinfo_m, scher):
   def reward(slowdown):
@@ -29,7 +43,7 @@ def sample_traj(sinfo_m, scher):
     #   return 10/slowdown
     # else:
     #   return -10*slowdown
-    
+  
   env = simpy.Environment()
   cl = Cluster(env, scher=scher, **sinfo_m)
   jg = JobGen(env, out=cl, **sinfo_m)

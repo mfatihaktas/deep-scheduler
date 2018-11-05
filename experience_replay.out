@@ -1,0 +1,1 @@
+2018-11-05 14:13:31.694132: I tensorflow/core/platform/cpu_feature_guard.cc:137] Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2 AVX

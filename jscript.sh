@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --partition=main             # Partition (job queue)
 #SBATCH --job-name=learn_wmpi
-#SBATCH --nodes=2              # Number of nodes you require
-#SBATCH --ntasks=2             # Total # of tasks across all nodes
+#SBATCH --nodes=11              # Number of nodes you require
+#SBATCH --ntasks=11             # Total # of tasks across all nodes
 #SBATCH --cpus-per-task=1            # Cores per task (>1 if multithread tasks)
 #SBATCH --mem=24000                  # Real memory (RAM) required (MB)
 #SBATCH --time=4:00:00               # Total run time limit (HH:MM:SS)

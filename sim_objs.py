@@ -1,7 +1,6 @@
 import math, random, simpy, pprint
 from operator import itemgetter
 
-from scheduler import *
 from rvs import *
 from log_utils import *
 
@@ -240,7 +239,7 @@ class Cluster(object):
       j = yield self.store.get()
       
       while True:
-        s, a, w_l = self.scher.schedule(j, self.w_l)
+        s, a, w_l = self.scher.schedule(j, self.w_l, self)
         if a == -1:
           slog(DEBUG, self.env, self, "a = -1", j)
           yield self.env.timeout(0.1)
@@ -264,9 +263,9 @@ class Cluster(object):
   
   def put(self, j):
     slog(DEBUG, self.env, self, "received", j)
-    if len(self.store.items) >= 1000:
-      # slog(WARNING, self.env, self, ">= 1000 tasks are in q! dropping.", j)
-      return
+    # if len(self.store.items) >= 1000:
+    #   # slog(WARNING, self.env, self, ">= 1000 tasks are in q! dropping.", j)
+    #   return
     j.arrival_time = self.env.now
     return self.store.put(j)
   
@@ -299,10 +298,9 @@ class Cluster(object):
         
         ## This causes (s1, a1, r1), (s2, a2, r2) to be interleaved by more than one job
         # self.njob_finished += 1
-        print("job completed, jid= {}".format(t.jid) )
         if t.jid <= self.njob:
           self.njob_finished += 1
-          log(WARNING, "job completion;", jid=t.jid, njob=self.njob, njob_finished=self.njob_finished)
+          # log(WARNING, "job completion;", jid=t.jid, njob=self.njob, njob_finished=self.njob_finished)
           if self.njob_finished >= self.njob:
             return
   

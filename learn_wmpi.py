@@ -58,7 +58,7 @@ def eval_wmpi(rank):
         return
       
       scher = Scher(mapping_m, sching_m_l[eval_i] )
-      log(INFO, "simulating;", rank=rank, eval_i=eval_i, scher=scher)
+      # log(INFO, "simulating;", rank=rank, eval_i=eval_i, scher=scher)
       sys.stdout.flush()
       t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher)
       print("rank= {}, eval_i= {}, a_mean= {}, sl_mean= {}, load_mean= {}, droprate_mean= {}".format(rank, eval_i, np.mean(t_a_l), np.mean(t_sl_l), load_mean, droprate_mean) )
@@ -152,7 +152,8 @@ def slowdown(load):
   else:
     p_max = 0.5
     p = base_Pr_straggling + p_max/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
-    return random.uniform(0, 0.1) if random.uniform(0, 1) < p else 1
+    # return random.uniform(0, 0.1) if random.uniform(0, 1) < p else 1
+    return random.uniform(0, 0.02) if random.uniform(0, 1) < p else 1
 
 if __name__ == "__main__":
   comm = MPI.COMM_WORLD
@@ -160,7 +161,7 @@ if __name__ == "__main__":
   rank = comm.Get_rank()
   
   sinfo_m = {
-    'njob': 2000*2, 'nworker': 5, 'wcap': 10,
+    'njob': 2000*5, 'nworker': 5, 'wcap': 10,
     'totaldemand_rv': TPareto(10, 1000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 5, 1),
     'k_rv': DUniform(1, 1),
@@ -172,12 +173,12 @@ if __name__ == "__main__":
   sinfo_m['ar'] = 1/4*ar_ub # 1/2
   mapping_m = {'type': 'spreading'}
   sching_m = {'a': 1, 'N': num_mpiprocs-1}
-  L = 400 # number of learning steps
+  L = 150 # number of learning steps
   
   # {'type': 'plain', 'a': 1},
   # {'type': 'opportunistic', 'mapping_type': 'spreading', 'a': 1}
   sching_m_l = [
-    # {'type': 'plain', 'a': 0},
+    {'type': 'plain', 'a': 0},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 10, 'a': 1},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 1} ]
