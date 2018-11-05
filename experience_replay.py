@@ -62,6 +62,7 @@ class Cluster_wExpReplay(object):
         'expected_run_time': j.totaldemand/j.demandperslot_rv.mean(),
         'wid_l': wid_l,
         's': s, 'a': a} )
+      self.last_sched_jid = j._idzh
   
   def run_c(self):
     while True:
@@ -90,6 +91,7 @@ class Cluster_wExpReplay(object):
         self.jid__t_l_m.pop(t.jid, None)
         slog(DEBUG, self.env, self, "finished jid= {}".format(t.jid), t)
         
+        ## Learning
         if self.waitforjid_begin <= t.jid <= self.waitforjid_end:
           self.waitfor_njob -= 1
           if self.waitfor_njob == 0:
@@ -101,9 +103,7 @@ class Cluster_wExpReplay(object):
               jnextinfo_m = self.jid_info_m[t.jid + 1]
               self.exp_q.put((jinfo_m['s'], jinfo_m['a'], r, jnextinfo_m['s'], jnextinfo_m['a'] ) )
             # Train
-            sarsa_l = self.exp_q.sample_batch()
-            
-            
+            scher.learner.train_w_sarsa_l(self.exp_q.sample_batch() )
             
             self.waitforjid_begin = self.last_sched_jid + 1
             self.waitforjid_end = self.waitforjid_begin + M-1

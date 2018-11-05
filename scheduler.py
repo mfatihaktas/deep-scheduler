@@ -25,19 +25,18 @@ class Scher(object):
   def __repr__(self):
     return 'Scher[sching_m={}, \nmapper= {}]'.format(self.sching_m, self.mapper)
   
-  def plain(self, j, w_l):
+  def plain(self, j, w_l, expand=False):
     w_l = self.mapper.worker_l(j, w_l)
     if len(w_l) < j.k:
       return None, -1, None
-    a = self.sching_m['a']
-    j.n = int(j.k*(a + 1) )
+    
+    a = self.sching_m['a'] if expand else 0
+    j.n = min(int(j.k*(a + 1) ), len(w_l) )
     return None, a, w_l[:j.n]
   
   def expand_if_totaldemand_leq(self, j, w_l):
-    if j.totaldemand < self.sching_m['threshold']:
-      return self.plain(j, w_l)
-    else:
-      return None, -1, None
+    expand = True if j.totaldemand < self.sching_m['threshold'] else False
+    return self.plain(j, w_l, expand)
   
   def opportunistic(self, j, w_l):
     if self.sching_m['mapping_type'] == 'packing':

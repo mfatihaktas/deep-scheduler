@@ -50,7 +50,8 @@ class Job(object):
     self.reqed = self.demandperslot_rv.mean()
   
   def __repr__(self):
-    return "Job[id= {}]".format(self._id)
+    # return "Job[id= {}]".format(self._id)
+    return "Job[id= {}, k= {}, totaldemand= {}, reqed= {}]".format(self._id, self.k, self.totaldemand, self.reqed)
 
 class JobGen(object):
   def __init__(self, env, ar, demandperslot_mean_rv, totaldemand_rv, k_rv, njob, out, **kwargs):
@@ -241,6 +242,7 @@ class Cluster(object):
       while True:
         s, a, w_l = self.scher.schedule(j, self.w_l)
         if a == -1:
+          slog(DEBUG, self.env, self, "a = -1", j)
           yield self.env.timeout(0.1)
         else:
           break
