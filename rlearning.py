@@ -1,4 +1,4 @@
-import math, time, random
+import math, time, random, scipy
 import numpy as np
 import tensorflow as tf
 
@@ -238,13 +238,16 @@ class QLearner(Learner):
     self.resp_outputs = tf.reshape(tf.gather(tf.reshape(self.Qa_ph, [-1] ), indices), (N, T, 1) )
     self.loss = tf.losses.mean_squared_error(self.resp_outputs, self.targetq_ph)
     
-    self.optimizer = tf.train.AdamOptimizer(0.01)
+    self.optimizer = tf.train.AdamOptimizer(0.0001) # 0.01
     self.train_op = self.optimizer.minimize(self.loss)
     
     self.sess = tf.Session()
     self.sess.run(tf.global_variables_initializer() )
   
   def train_w_sarsa_l(self, sarsa_l):
+    if len(sarsa_l) == 0:
+      log(WARNING, "sarsa_l is empty, skipping.")
+      return
     s_l, a_l, targetq_l = [], [], []
     for sarsa in sarsa_l:
       s, a, r, snext = sarsa[0], sarsa[1], sarsa[2], sarsa[3]
@@ -262,6 +265,8 @@ class QLearner(Learner):
                                        self.a_ph: [a_l],
                                        self.targetq_ph: [targetq_l] } )
     print("QLearner:: loss= {}".format(loss) )
+    self.eps *= 0.99
+    log(INFO, "", eps=self.eps)
   
   def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)
@@ -322,26 +327,43 @@ class QLearner(Learner):
                                        self.a_ph: n_t_a_l,
                                        self.targetq_ph: n_t_targetq_l} )
     print("QLearner:: loss= {}".format(loss) )
-    self.eps *= 0.95
+    self.eps *= 0.99
     log(INFO, "", eps=self.eps)
   
   def get_random_action(self, s):
+    ## Epsilon-greedy
     if random.uniform(0, 1) < self.eps:
       return np.random.randint(self.a_len, size=1)[0]
     else:
-      qa_l = self.sess.run(self.Qa_ph,
+      a_q_l = self.sess.run(self.Qa_ph,
                            feed_dict={self.s_ph: [[s]] } )
-      return np.argmax(qa_l)
+      return np.argmax(a_q_l)
+    
+    '''
+    ## Softmax with temperature parameter equal to 1
+    a_q_l = self.sess.run(self.Qa_ph,
+                          feed_dict={self.s_ph: [[s]] } )[0][0]
+    try:
+      a_q_l /= sum(a_q_l)
+      
+      a_l = list(range(self.a_len) )
+      s = sum([math.exp(a_q_l[a] ) for a in a_l] )
+      p_l = [math.exp(a_q_l[a] )/s for a in a_l]
+      dist = scipy.stats.rv_discrete(values=(a_l, p_l) )
+      return dist.rvs(size=1)[0]
+    except:
+      return np.argmax(a_q_l)
+    '''
   
   def get_max_action(self, s):
-    qa_l = self.sess.run(self.Qa_ph,
+    a_q_l = self.sess.run(self.Qa_ph,
                          feed_dict={self.s_ph: [[s]] } )
-    return np.argmax(qa_l)
+    return np.argmax(a_q_l)
   
-  def get_qa_l(self, s):
-    qa_l = self.sess.run(self.Qa_ph,
+  def get_a_q_l(self, s):
+    a_q_l = self.sess.run(self.Qa_ph,
                          feed_dict={self.s_ph: [[s]] } )
-    return qa_l
+    return a_q_l
   
 # #############################################  Test  ########################################### #
 def test():

@@ -11,7 +11,7 @@ class Mapper(object):
       self.worker_l = lambda j, w_l: self.worker_l_w_spreading(j, w_l)
   
   def __repr__(self):
-    return 'Mapper[mapping_m=\n {}]'.format(self.mapping_m)
+    return 'Mapper[mapping_m= {}]'.format(self.mapping_m)
   
   def worker_l_w_packing(self, job, w_l):
     w_l_ = []

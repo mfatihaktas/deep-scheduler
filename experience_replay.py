@@ -25,7 +25,7 @@ class ExpQueue(Queue):
       # return random.sample(list(range(len(self.l) ) ), self.batch_size)
       return random.sample(self.l, self.batch_size)
     except ValueError:
-      return None
+      return []
   
 class Cluster_wExpReplay(Cluster):
   def __init__(self, env, nworker, wcap, straggle_m, scher, M, **kwargs):
@@ -33,12 +33,12 @@ class Cluster_wExpReplay(Cluster):
     self.M = M # number of (s, a, r, snext, anext) to collect per training
     
     # self.waitfor_jid_l = []
-    self.waitforjid_begin = 1
-    self.waitforjid_end = M
+    self.waitforjid_begin = 5001 # 1
+    self.waitforjid_end = 5000 + M # M
     self.waitfor_njob = M
     self.last_sched_jid = None
     
-    self.exp_q = ExpQueue(20*M, 2*M)
+    self.exp_q = ExpQueue(100*M, M)
     self.learning_count = 0
   
   def __repr__(self):
@@ -120,31 +120,48 @@ class Cluster_wExpReplay(Cluster):
               jnextinfo_m = self.jid_info_m[t.jid + 1]
               self.exp_q.put((s, a, r, jnextinfo_m['s'], jnextinfo_m['a'] ) )
             # Train
-            log(INFO, "a_mean= {}, sl_mean= {}, sl_std= {}".format(np.mean(a_l), np.mean(sl_l), np.std(sl_l) ) )
+            print(">> learning_count= {}".format(self.learning_count) )
+            log(INFO, "a_mean= {}, sl_mean= {}, sl_std= {}, load_mean= {}".format(np.mean(a_l), np.mean(sl_l), np.std(sl_l), np.mean([w.avg_load for w in self.w_l] ) ) )
             # blog(s_a_l=s_a_l)
-            sarsa_l = self.exp_q.sample_batch()
-            if sarsa_l is not None:
-              # blog(sarsa_l=sarsa_l)
-              self.scher.learner.train_w_sarsa_l(sarsa_l)
+            sarsa_l = []
+            for _ in range(20):
+              sample_sarsa_l = self.exp_q.sample_batch()
+              if sample_sarsa_l is not None:
+                sarsa_l.extend(sample_sarsa_l)
+            self.scher.learner.train_w_sarsa_l(sarsa_l)
             
-            self.waitforjid_begin = self.last_sched_jid + 1 + self.M
+            self.waitforjid_begin = self.last_sched_jid + 1 # + self.M
             self.waitforjid_end = self.waitforjid_begin + self.M-1
             self.waitfor_njob = self.M
             
             self.learning_count += 1
             if self.learning_count % 10 == 0:
               self.scher.summarize()
+            # if self.learning_count % 20 == 0:
+            #   print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            #   eval_scher(self.scher)
+            #   # eval_sching_m_l()
+            #   print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+
+def eval_scher(scher):
+  print(">> scher= {}".format(scher) )
+  t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher)
+  print("a_mean= {}, sl_mean= {}, sl_std= {}, load_mean= {}, droprate_mean= {}".format(np.mean(t_a_l), np.mean(t_sl_l), np.std(t_sl_l), load_mean, droprate_mean) )
+
+def eval_sching_m_l():
+  for sching_m in sching_m_l:
+    eval_scher(Scher(mapping_m, sching_m) )
 
 def reward(slowdown):
   return -slowdown
 
 def slowdown(load):
-  base_Pr_straggling = 0.3
-  threshold = 0.6
+  base_Pr_straggling = 0.2
+  threshold = 0.3
   if load < threshold:
     return random.uniform(0, 0.1) if random.uniform(0, 1) < base_Pr_straggling else 1
   else:
-    p_max = 0.5
+    p_max = 0.4
     p = base_Pr_straggling + p_max/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
     return random.uniform(0, 0.1) if random.uniform(0, 1) < p else 1
 
@@ -161,7 +178,7 @@ def learn_w_experience_replay(sinfo_m, mapping_m, sching_m):
 
 if __name__ == '__main__':
   sinfo_m = {
-    'njob': -1, 'nworker': 5, 'wcap': 10, 'M': 1000,
+    'njob': 20000, 'nworker': 5, 'wcap': 10, 'M': 100,
     'totaldemand_rv': TPareto(10, 1000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 5, 1),
     'k_rv': DUniform(1, 1),
@@ -170,10 +187,16 @@ if __name__ == '__main__':
       'straggle_dur_rv': DUniform(100, 100),
       'normal_dur_rv': DUniform(1, 1) } }
   ar_ub = arrival_rate_upperbound(sinfo_m)
-  sinfo_m['ar'] = 1/4*ar_ub
+  sinfo_m['ar'] = 1/2*ar_ub
   mapping_m = {'type': 'spreading'}
   sching_m = {'a': 1, 'N': -1}
   
   blog(sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
+  
+  sching_m_l = [
+    {'type': 'plain', 'a': 0},
+    {'type': 'expand_if_totaldemand_leq', 'threshold': 20, 'a': 1},
+    {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1} ]
+  eval_sching_m_l()
   
   learn_w_experience_replay(sinfo_m, mapping_m, sching_m)

@@ -23,9 +23,9 @@ class Scher(object):
       self.schedule = self.opportunistic
   
   def __repr__(self):
-    return 'Scher[sching_m={}, \nmapper= {}]'.format(self.sching_m, self.mapper)
+    return 'Scher[sching_m={}, mapper= {}]'.format(self.sching_m, self.mapper)
   
-  def plain(self, j, w_l, expand=True):
+  def plain(self, j, w_l, cluster, expand=True):
     w_l = self.mapper.worker_l(j, w_l)
     if len(w_l) < j.k:
       return None, -1, None
@@ -34,11 +34,11 @@ class Scher(object):
     j.n = min(int(j.k*(a + 1) ), len(w_l) )
     return None, a, w_l[:j.n]
   
-  def expand_if_totaldemand_leq(self, j, w_l):
+  def expand_if_totaldemand_leq(self, j, w_l, cluster):
     expand = True if j.totaldemand < self.sching_m['threshold'] else False
-    return self.plain(j, w_l, expand)
+    return self.plain(j, w_l, cluster, expand)
   
-  def opportunistic(self, j, w_l):
+  def opportunistic(self, j, w_l, cluster):
     if self.sching_m['mapping_type'] == 'packing':
       w_l_ = []
       for w in w_l:
@@ -88,21 +88,21 @@ class RLScher():
     if STATE_LEN == 1:
       for totaldemand in totaldemand_l:
       # for totaldemand in np.linspace(1, 300, 10):
-        qa_l = self.learner.get_qa_l(state_(totaldemand) )
+        qa_l = self.learner.get_a_q_l(state_(totaldemand) )
         print("totaldemand= {}, qa_l= {}".format(totaldemand, qa_l) )
         blog(a=np.argmax(qa_l) )
     elif STATE_LEN == 3 or STATE_LEN == 3:
       for load1 in np.linspace(0, 0.9, 5):
         for load2 in np.linspace(load1, 1, 2):
           for totaldemand in totaldemand_l:
-            qa_l = self.learner.get_qa_l(state_(totaldemand, [load1, load2] ) )
+            qa_l = self.learner.get_a_q_l(state_(totaldemand, [load1, load2] ) )
             print("load1= {}, load2= {}, totaldemand= {}, qa_l= {}".format(load1, load2, totaldemand, qa_l) )
             blog(a=np.argmax(qa_l) )
     elif STATE_LEN == 4:
       load1, load2 = 0, 0
-      for cluster_qlen in range(0, 5):
+      for cluster_qlen in list(range(0, 5)) + list(range(10, 60, 10) ):
         for totaldemand in totaldemand_l:
-          qa_l = self.learner.get_qa_l(state_(totaldemand, [load1, load2], cluster_qlen) )
+          qa_l = self.learner.get_a_q_l(state_(totaldemand, [load1, load2], cluster_qlen) )
           print("cluster_qlen= {}, totaldemand= {}, qa_l= {}".format(cluster_qlen, totaldemand, qa_l) )
           blog(a=np.argmax(qa_l) )
   
