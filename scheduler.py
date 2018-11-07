@@ -2,7 +2,6 @@ import numpy as np
 import concurrent.futures
 from operator import itemgetter
 
-from learning_utils import *
 from sim_exp import arrival_rate_upperbound
 from mapper import *
 from rlearning import *
@@ -69,7 +68,8 @@ class RLScher():
     self.N, self.T = sching_m['N'], sinfo_m['njob']
     
     # self.learner = PolicyGradLearner(self.s_len, self.a_len, nn_len=10, w_actorcritic=True)
-    self.learner = QLearner(self.s_len, self.a_len, nn_len=10)
+    # self.learner = QLearner(self.s_len, self.a_len, nn_len=10)
+    self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=10)
   
   def __repr__(self):
     return 'RLScher[learner={}]'.format(self.learner)

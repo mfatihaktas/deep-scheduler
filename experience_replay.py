@@ -2,6 +2,7 @@ import random
 
 from sim_objs import *
 from scheduler import *
+from learning_utils import *
 
 # ###################################  Cluster_wExpReplay  ####################################### #
 class Queue(object):
@@ -14,6 +15,11 @@ class Queue(object):
     if len(self.l) == self.size:
       self.l.pop(0)
     self.l.append(e)
+  
+  def put_l(self, e_l):
+    if len(self.l) + len(e_l) >= self.size:
+        self.l[0:(len(e_l) + len(self.l)) - self.size] = []
+    self.l.extend(e_l)
   
 class ExpQueue(Queue):
   def __init__(self, buffer_size, batch_size):
@@ -110,7 +116,7 @@ class Cluster_wExpReplay(Cluster):
             for jid in range(self.waitforjid_begin, self.waitforjid_end):
               jinfo_m = self.jid_info_m[jid]
               s, a = jinfo_m['s'], jinfo_m['a']
-              sl = jinfo_m['run_time']/jinfo_m['expected_run_time']
+              sl = (jinfo_m['wait_time'] + jinfo_m['run_time'] )/jinfo_m['expected_run_time']
               r = reward(sl)
               
               a_l.append(a)
@@ -130,18 +136,18 @@ class Cluster_wExpReplay(Cluster):
                 sarsa_l.extend(sample_sarsa_l)
             self.scher.learner.train_w_sarsa_l(sarsa_l)
             
-            self.waitforjid_begin = self.last_sched_jid + 1 # + self.M
+            self.waitforjid_begin = self.last_sched_jid + 1 + self.M
             self.waitforjid_end = self.waitforjid_begin + self.M-1
             self.waitfor_njob = self.M
             
             self.learning_count += 1
             if self.learning_count % 10 == 0:
               self.scher.summarize()
-            # if self.learning_count % 20 == 0:
-            #   print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            #   eval_scher(self.scher)
-            #   # eval_sching_m_l()
-            #   print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+            if self.learning_count % 30 == 0:
+              print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+              eval_scher(self.scher)
+              # eval_sching_m_l()
+              print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 
 def eval_scher(scher):
   print(">> scher= {}".format(scher) )
@@ -156,13 +162,13 @@ def reward(slowdown):
   return -slowdown
 
 def slowdown(load):
-  base_Pr_straggling = 0.2
-  threshold = 0.3
+  base_Pr_straggling = 0.4
+  threshold = 0.2
   if load < threshold:
     return random.uniform(0, 0.1) if random.uniform(0, 1) < base_Pr_straggling else 1
   else:
-    p_max = 0.4
-    p = base_Pr_straggling + p_max/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
+    p_max = 0.7
+    p = base_Pr_straggling + (p_max - base_Pr_straggling)/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
     return random.uniform(0, 0.1) if random.uniform(0, 1) < p else 1
 
 def learn_w_experience_replay(sinfo_m, mapping_m, sching_m):
@@ -178,16 +184,16 @@ def learn_w_experience_replay(sinfo_m, mapping_m, sching_m):
 
 if __name__ == '__main__':
   sinfo_m = {
-    'njob': 20000, 'nworker': 5, 'wcap': 10, 'M': 100,
+    'njob': 10000, 'nworker': 6, 'wcap': 10, 'M': 100,
     'totaldemand_rv': TPareto(10, 1000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 5, 1),
     'k_rv': DUniform(1, 1),
     'straggle_m': {
       'slowdown': slowdown,
-      'straggle_dur_rv': DUniform(100, 100),
+      'straggle_dur_rv': DUniform(10, 50), # DUniform(100, 100)
       'normal_dur_rv': DUniform(1, 1) } }
   ar_ub = arrival_rate_upperbound(sinfo_m)
-  sinfo_m['ar'] = 1/2*ar_ub
+  sinfo_m['ar'] = 2/5*ar_ub
   mapping_m = {'type': 'spreading'}
   sching_m = {'a': 1, 'N': -1}
   
@@ -197,6 +203,7 @@ if __name__ == '__main__':
     {'type': 'plain', 'a': 0},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 20, 'a': 1},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1} ]
-  eval_sching_m_l()
+  # eval_sching_m_l()
   
   learn_w_experience_replay(sinfo_m, mapping_m, sching_m)
+

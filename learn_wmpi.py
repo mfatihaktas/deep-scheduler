@@ -145,42 +145,45 @@ def slowdown(load):
     # return random.uniform(0, 0.1)*random.uniform(0, 1-p) if random.uniform(0, 1) < p else 1
     return random.uniform(0, 0.1)*random.uniform(0, 1) if random.uniform(0, 1) < p else 1
   '''
-  base_Pr_straggling = 0.2
-  threshold = 0.3
+  '''
+  base_Pr_straggling = 0.3
+  threshold = 0.2
   if load < threshold:
-    return random.uniform(0, 0.1) if random.uniform(0, 1) < base_Pr_straggling else 1
+    return random.uniform(0, 0.01) if random.uniform(0, 1) < base_Pr_straggling else 1
   else:
-    p_max = 0.4
-    p = base_Pr_straggling + p_max/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
-    return random.uniform(0, 0.1) if random.uniform(0, 1) < p else 1
-
+    p_max = 0.7
+    p = base_Pr_straggling + (p_max - base_Pr_straggling)/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
+    return random.uniform(0, 0.01) if random.uniform(0, 1) < p else 1
+  '''
+  p = 0.4
+  return random.uniform(0, 0.01) if random.uniform(0, 1) < p else 1
+  
 if __name__ == "__main__":
   comm = MPI.COMM_WORLD
   num_mpiprocs = comm.Get_size()
   rank = comm.Get_rank()
   
   sinfo_m = {
-    'njob': 2000*5, 'nworker': 5, 'wcap': 10,
+    'njob': 2000*1, 'nworker': 6, 'wcap': 10,
     'totaldemand_rv': TPareto(10, 1000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 5, 1),
     'k_rv': DUniform(1, 1),
     'straggle_m': {
       'slowdown': slowdown,
-      'straggle_dur_rv': DUniform(100, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
+      'straggle_dur_rv': DUniform(10, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
       'normal_dur_rv': DUniform(1, 1) } } # TPareto(1, 10, 1)
   ar_ub = arrival_rate_upperbound(sinfo_m)
-  sinfo_m['ar'] = 1/2*ar_ub
+  sinfo_m['ar'] = 2/5*ar_ub
   mapping_m = {'type': 'spreading'}
   sching_m = {'a': 1, 'N': num_mpiprocs-1}
-  L = 150 # number of learning steps
+  L = 1000 # number of learning steps
   
   # {'type': 'plain', 'a': 1},
   # {'type': 'opportunistic', 'mapping_type': 'spreading', 'a': 1}
   sching_m_l = [
     {'type': 'plain', 'a': 0},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 20, 'a': 1},
-    {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1},
-    {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 1} ]
+    {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1} ]
   eval_wmpi(rank)
   
   learn_wmpi(rank)
