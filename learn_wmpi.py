@@ -164,18 +164,23 @@ if __name__ == "__main__":
   rank = comm.Get_rank()
   
   sinfo_m = {
-    'njob': 2000*1, 'nworker': 6, 'wcap': 10,
+    'njob': 2000*4, 'nworker': 6, 'wcap': 10,
     'totaldemand_rv': TPareto(10, 1000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 5, 1),
     'k_rv': DUniform(1, 1),
     'straggle_m': {
       'slowdown': slowdown,
-      'straggle_dur_rv': DUniform(10, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
+      'straggle_dur_rv': DUniform(20, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
       'normal_dur_rv': DUniform(1, 1) } } # TPareto(1, 10, 1)
   ar_ub = arrival_rate_upperbound(sinfo_m)
   sinfo_m['ar'] = 2/5*ar_ub
   mapping_m = {'type': 'spreading'}
   sching_m = {'a': 1, 'N': num_mpiprocs-1}
+  # sching_m.update({
+  #   'learner': 'QLearner_wTargetNet_wExpReplay',
+  #   'exp_buffer_size': 100*10**6, 'exp_batch_size': 10**3} )
+  sching_m.update({'learner': 'QLearner_wTargetNet'} )
+  
   L = 1000 # number of learning steps
   
   # {'type': 'plain', 'a': 1},
@@ -183,7 +188,8 @@ if __name__ == "__main__":
   sching_m_l = [
     {'type': 'plain', 'a': 0},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 20, 'a': 1},
-    {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1} ]
+    {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1},
+    {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 1} ]
   eval_wmpi(rank)
   
   learn_wmpi(rank)

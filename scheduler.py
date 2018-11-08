@@ -4,7 +4,8 @@ from operator import itemgetter
 
 from sim_exp import arrival_rate_upperbound
 from mapper import *
-from rlearning import *
+from policygrad_learning import *
+from q_learning import *
 
 # ############################################  Scher  ########################################### #
 class Scher(object):
@@ -67,9 +68,14 @@ class RLScher():
     self.a_len = sching_m['a'] + 1
     self.N, self.T = sching_m['N'], sinfo_m['njob']
     
-    # self.learner = PolicyGradLearner(self.s_len, self.a_len, nn_len=10, w_actorcritic=True)
-    # self.learner = QLearner(self.s_len, self.a_len, nn_len=10)
-    self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=10)
+    if sching_m['learner'] == 'PolicyGradLearner':
+      self.learner = PolicyGradLearner(self.s_len, self.a_len, nn_len=10, w_actorcritic=True)
+    elif sching_m['learner'] == 'QLearner':
+      self.learner = QLearner(self.s_len, self.a_len, nn_len=10)
+    elif sching_m['learner'] == 'QLearner_wTargetNet':
+      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=10)
+    elif sching_m['learner'] == 'QLearner_wTargetNet_wExpReplay':
+      self.learner = QLearner_wTargetNet_wExpReplay(self.s_len, self.a_len, exp_buffer_size=sching_m['exp_buffer_size'], exp_batch_size=sching_m['exp_batch_size'], nn_len=10)
   
   def __repr__(self):
     return 'RLScher[learner={}]'.format(self.learner)
@@ -81,6 +87,7 @@ class RLScher():
     return self.learner.restore(step)
   
   def summarize(self):
+    print("////////////////////////////////////////////////////")
     job_totaldemand_rv = self.sinfo_m['totaldemand_rv']
     log_intermediate_totaldemand, log_max_totaldemand = math.log10(job_totaldemand_rv.u_l/10), math.log10(job_totaldemand_rv.u_l)
     totaldemand_l = list(np.logspace(0.1, log_intermediate_totaldemand, 5, endpoint=False) ) + \
@@ -91,28 +98,31 @@ class RLScher():
         qa_l = self.learner.get_a_q_l(state_(totaldemand) )
         print("totaldemand= {}, qa_l= {}".format(totaldemand, qa_l) )
         blog(a=np.argmax(qa_l) )
-    elif STATE_LEN == 3 or STATE_LEN == 3:
+    elif STATE_LEN == 3 or STATE_LEN == 5:
       for load1 in np.linspace(0, 0.9, 5):
         for load2 in np.linspace(load1, 1, 2):
           for totaldemand in totaldemand_l:
             qa_l = self.learner.get_a_q_l(state_(totaldemand, [load1, load2] ) )
             print("load1= {}, load2= {}, totaldemand= {}, qa_l= {}".format(load1, load2, totaldemand, qa_l) )
             blog(a=np.argmax(qa_l) )
-    elif STATE_LEN == 4:
-      load1, load2 = 0, 0
-      for cluster_qlen in list(range(0, 5)) + list(range(10, 60, 10) ):
-        for totaldemand in totaldemand_l:
-          qa_l = self.learner.get_a_q_l(state_(totaldemand, [load1, load2], cluster_qlen) )
-          print("cluster_qlen= {}, totaldemand= {}, qa_l= {}".format(cluster_qlen, totaldemand, qa_l) )
-          blog(a=np.argmax(qa_l) )
+    elif STATE_LEN == 4 or STATE_LEN == 6:
+      for wload_l in [[0, 0, 0, 0, 0, 0], [0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.9, 0.9, 0.9, 0.9, 0.9, 0.9]]:
+        print(">> wload_l= {}".format(wload_l) )
+        for cluster_qlen in [0, 1, 2, 3, 10]:
+          for totaldemand in totaldemand_l:
+            qa_l = self.learner.get_a_q_l(state_(totaldemand, wload_l, cluster_qlen) )
+            print("cluster_qlen= {}, totaldemand= {}, qa_l= {}".format(cluster_qlen, totaldemand, qa_l) )
+            blog(a=np.argmax(qa_l) )
+    print("----------------------------------------------------")
   
   def schedule(self, j, w_l, cluster):
     w_l = self.mapper.worker_l(j, w_l)
     if len(w_l) < j.k:
       return None, -1, None
-    s = state(j, [w.sched_load() for w in w_l], cluster)
+    # s = state(j, [w.sched_load() for w in w_l], cluster)
+    s = state(j, [w.sched_load() for w in cluster.w_l], cluster)
     a = self.learner.get_random_action(s)
-    j.n = int(j.k*(a + 1) )
+    j.n = int(j.k + a)
     return s, a, w_l[:j.n]
   
   def train(self, nsteps):

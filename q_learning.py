@@ -18,8 +18,8 @@ class QLearner(Learner):
     hidden2 = tf.contrib.layers.fully_connected(hidden1, self.nn_len, activation_fn=tf.nn.relu)
     self.Qa_ph = tf.contrib.layers.fully_connected(hidden2, self.a_len, activation_fn=None)
     
-    self.a_ph = tf.placeholder(tf.int32, shape=(None, None, 1), name="a_ph")
-    self.targetq_ph = tf.placeholder(tf.float32, shape=(None, None, 1), name="q_ph")
+    self.a_ph = tf.placeholder(tf.int32, shape=(None, None, 1), name='a_ph')
+    self.targetq_ph = tf.placeholder(tf.float32, shape=(None, None, 1), name='q_ph')
     
     sh = tf.shape(self.Qa_ph)
     N, T = sh[0], sh[1]
@@ -33,29 +33,35 @@ class QLearner(Learner):
     self.sess = tf.Session()
     self.sess.run(tf.global_variables_initializer() )
   
+  def end_of_train(self, loss):
+    self.eps *= 0.99
+    self.num_training += 1
+    log(INFO, "{}:: loss= {}".format(self.__class__.__name__, loss), eps=self.eps, num_training=self.num_training)
+    if self.num_training % NUM_TRAINING_BEFORE_QNET_TO_TARGET == 0:
+      self.sess.run(self.update_target_graph() )
+      log(INFO, "updated TargetNet with QNet!")
+  
   def train_w_sarsa_l(self, sarsa_l):
     if len(sarsa_l) == 0:
       log(WARNING, "sarsa_l is empty, skipping.")
       return
-    s_l, a_l, targetq_l = [], [], []
+    t_s_l, t_a_l, t_targetq_l = [], [], []
     for sarsa in sarsa_l:
       s, a, r, snext = sarsa[0], sarsa[1], sarsa[2], sarsa[3]
-      s_l.append(s)
-      a_l.append([a] )
+      t_s_l.append(s)
+      t_a_l.append(a)
       
-      q_l = self.sess.run(self.Qa_ph,
-                         feed_dict={self.s_ph: [[snext]] } )[0][0]
-      targetq = r + self.gamma*max(q_l)
-      targetq_l.append([targetq] )
-      # blog(targetq_l=targetq_l)
+      a_q_l = self.sess.run(self.Qa_ph,
+                            feed_dict={self.s_ph: [[snext]] } )[0][0]
+      targetq = r + self.gamma*max(a_q_l)
+      t_targetq_l.append(targetq)
+    # blog(targetq_l=targetq_l)
     
-    loss, _ = self.sess.run([self.loss, self.train_op],
-                            feed_dict={self.s_ph: [s_l],
-                                       self.a_ph: [a_l],
-                                       self.targetq_ph: [targetq_l] } )
-    print("QLearner:: loss= {}".format(loss) )
-    self.eps *= 0.99
-    log(INFO, "", eps=self.eps)
+    loss, _ = self.sess.run([self.q_net.loss, self.q_net.train_op],
+                            feed_dict={self.q_net.s_ph: [t_s_l],
+                                       self.q_net.a_ph: [t_a_l],
+                                       self.q_net.targetq_ph: [t_targetq_l] } )
+    self.end_of_train(loss)
   
   def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)
@@ -79,9 +85,7 @@ class QLearner(Learner):
                             feed_dict={self.s_ph: n_t_s_l,
                                        self.a_ph: n_t_a_l,
                                        self.targetq_ph: n_t_targetq_l} )
-    print("QLearner:: loss= {}".format(loss) )
-    self.eps *= 0.99
-    log(INFO, "", eps=self.eps)
+    self.end_of_train(loss)
   
   def train_w_mult_trajs_(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)
@@ -115,9 +119,7 @@ class QLearner(Learner):
                             feed_dict={self.s_ph: n_t_s_l,
                                        self.a_ph: n_t_a_l,
                                        self.targetq_ph: n_t_targetq_l} )
-    print("QLearner:: loss= {}".format(loss) )
-    self.eps *= 0.99
-    log(INFO, "", eps=self.eps)
+    self.end_of_train(loss)
   
   def get_random_action(self, s):
     ## Epsilon-greedy
@@ -156,7 +158,7 @@ class QLearner(Learner):
 
 # ######################################  QLearner_wTargetNet  ################################### #
 class DQNNet:
-  def __init__(self, name, s_len, a_len, nn_len=10):
+  def __init__(self, name, s_len, a_len, nn_len):
     self.name = name
     self.s_len = s_len
     self.a_len = a_len
@@ -184,7 +186,7 @@ class DQNNet:
   def __repr__(self):
     return 'DQNNet(name= {}, s_len= {}, a_len= {})'.format(self.name, self.s_len, self.a_len)
 
-NUM_TRAINING_BEFORE_QNET_TO_TARGET = 9
+NUM_TRAINING_BEFORE_QNET_TO_TARGET = 5
 class QLearner_wTargetNet(Learner):
   def __init__(self, s_len, a_len, nn_len=10):
     super().__init__(s_len, a_len, nn_len)
@@ -192,6 +194,8 @@ class QLearner_wTargetNet(Learner):
     self.q_net = DQNNet('QNet', s_len, a_len, nn_len)
     self.target_net = DQNNet('TargetNet', s_len, a_len, nn_len)
     self.num_training = 0
+    # self.explorer = EpsGreedyExplorer(a_len)
+    self.explorer = UCBExplorer(a_len)
     
     self.sess = tf.Session()
     self.sess.run(tf.global_variables_initializer() )
@@ -219,28 +223,27 @@ class QLearner_wTargetNet(Learner):
       log(INFO, "updated TargetNet with QNet!")
   
   def train_w_sarsa_l(self, sarsa_l):
+    T = len(sarsa_l)
     if len(sarsa_l) == 0:
       log(WARNING, "sarsa_l is empty, skipping.")
       return
-    s_l, a_l, targetq_l = [], [], []
-    for sarsa in sarsa_l:
+    t_s_l, t_a_l, t_targetq_l = np.zeros((T, self.s_len)), np.zeros((T, 1)), np.zeros((T, 1))
+    for t, sarsa in enumerate(sarsa_l):
       s, a, r, snext = sarsa[0], sarsa[1], sarsa[2], sarsa[3]
-      s_l.append(s)
-      a_l.append([a] )
+      t_s_l[t, :] = s
+      t_a_l[t, :] = a
       
       a_q_l = self.sess.run(self.target_net.Qa_ph,
-                         feed_dict={self.target_net.s_ph: [[snext]] } )[0][0]
-      targetq = r + self.gamma*max(a_q_l)
-      targetq_l.append([targetq] )
-    # blog(targetq_l=targetq_l)
+                            feed_dict={self.target_net.s_ph: [[snext]] } )[0][0]
+      t_targetq_l[t, :] = r + self.gamma*max(a_q_l)
     
     loss, _ = self.sess.run([self.q_net.loss, self.q_net.train_op],
-                            feed_dict={self.q_net.s_ph: [s_l],
-                                       self.q_net.a_ph: [a_l],
-                                       self.q_net.targetq_ph: [targetq_l] } )
+                            feed_dict={self.q_net.s_ph: [t_s_l],
+                                       self.q_net.a_ph: [t_a_l],
+                                       self.q_net.targetq_ph: [t_targetq_l] } )
     self.end_of_train(loss)
   
-  def _train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
+  def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)
     T = len(n_t_s_l[0] )
     
@@ -260,7 +263,7 @@ class QLearner_wTargetNet(Learner):
                                        self.q_net.targetq_ph: n_t_targetq_l} )
     self.end_of_train(loss)
   
-  def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
+  def train_w_mult_trajs_(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)
     T = len(n_t_s_l[0] )
     
@@ -295,17 +298,13 @@ class QLearner_wTargetNet(Learner):
     self.end_of_train(loss)
   
   def get_random_action(self, s):
-    ## Epsilon-greedy
-    if random.uniform(0, 1) < self.eps:
-      return np.random.randint(self.a_len, size=1)[0]
-    else:
-      a_q_l = self.sess.run(self.q_net.Qa_ph,
-                           feed_dict={self.q_net.s_ph: [[s]] } )
-      return np.argmax(a_q_l)
+    a_q_l = self.sess.run(self.q_net.Qa_ph,
+                          feed_dict={self.q_net.s_ph: [[s]] } )
+    return self.explorer.get_action(a_q_l)
   
   def get_max_action(self, s):
     a_q_l = self.sess.run(self.q_net.Qa_ph,
-                         feed_dict={self.q_net.s_ph: [[s]] } )
+                          feed_dict={self.q_net.s_ph: [[s]] } )
     return np.argmax(a_q_l)
   
   def get_a_q_l(self, s):
@@ -313,7 +312,99 @@ class QLearner_wTargetNet(Learner):
                          feed_dict={self.q_net.s_ph: [[s]] } )
     return a_q_l
 
+class Explorer():
+  def __init__(self, a_len):
+    self.a_len = a_len
+
+class EpsGreedyExplorer(Explorer):
+  def __init__(self, a_len):
+    super().__init__(a_len)
+  
+  def get_action(a_q_l):
+    if random.uniform(0, 1) < self.eps:
+      return np.random.randint(self.a_len, size=1)[0]
+    else:
+      return np.argmax(a_q_l)
+
+class UCBExplorer(Explorer):
+  def __init__(self, a_len):
+    super().__init__(a_len)
+    
+    self.s_a_nvisit_m = {}
+    
+    jtotaldemand_step = 5
+    wload_step = 0.1
+  
+  def discretize_state(self, s):
+    jtotaldemand = int(math.floor(s[0]/jtotaldemand_step)*jtotaldemand_step)
+    if STATE_LEN == 4:
+      cluster_qlen = s[1]
+      mean_wload = round(math.floor(s[2]/wload_step)*wload_step, 1)
+      std_wload = round(math.floor(s[3]/wload_step)*wload_step, 1)
+      return (jtotaldemand, cluster_qlen, mean_wload, std_wload)
+    elif STATE_LEN == 6:
+      cluster_qlen = s[1]
+      min_wload = round(math.floor(s[2]/wload_step)*wload_step, 1)
+      max_wload = round(math.floor(s[3]/wload_step)*wload_step, 1)
+      mean_wload = round(math.floor(s[4]/wload_step)*wload_step, 1)
+      std_wload = round(math.floor(s[5]/wload_step)*wload_step, 1)
+      return (jtotaldemand, cluster_qlen, min_wload, max_wload, mean_wload, std_wload)
+    else:
+      log(ERROR, "unrecognized STATE_LEN= {}".format(STATE_LEN) )
+  
+  def get_action(s, a_q_l):
+    disc_s = self.discretize_state[s]
+    if disc_s not in self.s_a_nvisit_m:
+      self.s_a_nvisit_m[disc_s] = {a: 0 for a in range(self.a_len) }
+    a_nvisit_m = self.s_a_nvisit_m[disc_s]
+    
+    total_nvisit = 0
+    for a, nvisit in a_nvisit_m.items():
+      if a == 0:
+        a_nvisit_m[a] += 1
+        return a
+      total_nvisit += nvisit
+    
+    for a, nvisit in a_nvisit_m.items():
+      a_q_l[a] += 10*math.sqrt(2*math.log(total_nvisit)/nvisit)
+    
+    a = np.argmax(a_q_l)
+    a_nvisit_m[a] += 1
+    return a
+
 # ################################  QLearner_wTargetNet_wExpReplay  ############################## #
+class Queue(object):
+  def __init__(self, size):
+    self.size = size
+    
+    self.l = []
+  
+  def put(self, e):
+    if len(self.l) == self.size:
+      self.l.pop(0)
+    self.l.append(e)
+  
+  def put_l(self, e_l):
+    if len(self.l) + len(e_l) >= self.size:
+        self.l[0:(len(e_l) + len(self.l)) - self.size] = []
+    self.l.extend(e_l)
+  
+class ExpQueue(Queue):
+  def __init__(self, buffer_size, batch_size):
+    super().__init__(buffer_size)
+    self.buffer_size = buffer_size
+    self.batch_size = batch_size
+  
+  def __repr__(self):
+    return 'ExpQueue(buffer_size= {}, batch_size= {})'.format(self.buffer_size, self.batch_size)
+  
+  def sample_batch(self):
+    try:
+      # return random.sample(list(range(len(self.l) ) ), self.batch_size)
+      return random.sample(self.l, self.batch_size)
+    except ValueError:
+      return []
+
 class QLearner_wTargetNet_wExpReplay(QLearner_wTargetNet):
   def __init__(self, s_len, a_len, exp_buffer_size, exp_batch_size, nn_len=10):
     super().__init__(s_len, a_len, nn_len)
@@ -322,9 +413,9 @@ class QLearner_wTargetNet_wExpReplay(QLearner_wTargetNet):
     
     self.exp_q = ExpQueue(exp_buffer_size, exp_batch_size)
     self.learning_count = 0
-    
+  
   def __repr__(self):
-    return 'QLearner_wTargetNet_wExpReplay(s_len= {}, a_len= {}, exp_buffer_size= {}, exp_batch_size= {})'.format(self.s_len, self.a_len, self.exp_buffer_size, self.exp_batch_size)
+    return 'QLearner_wTargetNet_wExpReplay(s_len= {}, a_len= {}, exp_q= {})'.format(self.s_len, self.a_len, self.exp_q)
   
   def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)
@@ -333,10 +424,14 @@ class QLearner_wTargetNet_wExpReplay(QLearner_wTargetNet):
     sarsa_l = []
     for n in range(N):
       for t in range(T-1):
-        s, a, r = n_t_s_l[n, t, 0], n_t_a_l[n, t, 0], n_t_r_l[n, t, 0]
-        snext, anext = n_t_s_l[n, t+1, 0], n_t_a_l[n, t+1, 0]
+        s, a, r = n_t_s_l[n, t], n_t_a_l[n, t], n_t_r_l[n, t]
+        snext, anext = n_t_s_l[n, t+1], n_t_a_l[n, t+1]
         sarsa_l.append((s, a, r, snext, anext) )
-    
+    # blog(sarsa_l=sarsa_l)
     self.exp_q.put_l(sarsa_l)
-    self.train_w_sarsa_l(self.exp_q.sample_batch() )
+    
+    sarsa_l = []
+    for _ in range(10):
+      sarsa_l.extend(self.exp_q.sample_batch() )
+    self.train_w_sarsa_l(sarsa_l)
   

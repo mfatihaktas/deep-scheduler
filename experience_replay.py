@@ -2,37 +2,8 @@ import random
 
 from sim_objs import *
 from scheduler import *
-from learning_utils import *
 
 # ###################################  Cluster_wExpReplay  ####################################### #
-class Queue(object):
-  def __init__(self, size):
-    self.size = size
-    
-    self.l = []
-  
-  def put(self, e):
-    if len(self.l) == self.size:
-      self.l.pop(0)
-    self.l.append(e)
-  
-  def put_l(self, e_l):
-    if len(self.l) + len(e_l) >= self.size:
-        self.l[0:(len(e_l) + len(self.l)) - self.size] = []
-    self.l.extend(e_l)
-  
-class ExpQueue(Queue):
-  def __init__(self, buffer_size, batch_size):
-    super().__init__(buffer_size)
-    self.batch_size = batch_size
-  
-  def sample_batch(self):
-    try:
-      # return random.sample(list(range(len(self.l) ) ), self.batch_size)
-      return random.sample(self.l, self.batch_size)
-    except ValueError:
-      return []
-  
 class Cluster_wExpReplay(Cluster):
   def __init__(self, env, nworker, wcap, straggle_m, scher, M, **kwargs):
     super().__init__(env, float('Inf'), nworker, wcap, straggle_m, scher)
@@ -111,32 +82,25 @@ class Cluster_wExpReplay(Cluster):
           # log(WARNING, "completed jid= {}".format(t.jid), waitforjid_begin=self.waitforjid_begin, waitforjid_end=self.waitforjid_end)
           self.waitfor_njob -= 1
           if self.waitfor_njob == 0:
-            a_l, sl_l = [], []
-            s_a_l = []
-            for jid in range(self.waitforjid_begin, self.waitforjid_end):
+            t_sl_l = []
+            T = self.waitforjid_end - self.waitforjid_begin + 1
+            t_s_l, t_a_l, t_r_l = np.zeros((T, self.scher.s_len)), np.zeros((T, 1)), np.zeros((T, 1))
+            for t, jid in enumerate(list(range(self.waitforjid_begin, self.waitforjid_end+1) ) ):
               jinfo_m = self.jid_info_m[jid]
               s, a = jinfo_m['s'], jinfo_m['a']
               sl = (jinfo_m['wait_time'] + jinfo_m['run_time'] )/jinfo_m['expected_run_time']
-              r = reward(sl)
-              
-              a_l.append(a)
-              sl_l.append(sl)
-              s_a_l.append((s, a))
-              
-              jnextinfo_m = self.jid_info_m[t.jid + 1]
-              self.exp_q.put((s, a, r, jnextinfo_m['s'], jnextinfo_m['a'] ) )
+              t_sl_l.append(sl)
+              # blog(s=s, a=a)
+              t_s_l[t, :] = s
+              t_a_l[t, :] = a
+              t_r_l[t, :] = reward(sl)
+            
             # Train
             print(">> learning_count= {}".format(self.learning_count) )
-            log(INFO, "a_mean= {}, sl_mean= {}, sl_std= {}, load_mean= {}".format(np.mean(a_l), np.mean(sl_l), np.std(sl_l), np.mean([w.avg_load for w in self.w_l] ) ) )
-            # blog(s_a_l=s_a_l)
-            sarsa_l = []
-            for _ in range(20):
-              sample_sarsa_l = self.exp_q.sample_batch()
-              if sample_sarsa_l is not None:
-                sarsa_l.extend(sample_sarsa_l)
-            self.scher.learner.train_w_sarsa_l(sarsa_l)
+            log(INFO, "a_mean= {}, sl_mean= {}, sl_std= {}, load_mean= {}".format(np.mean(t_a_l), np.mean(t_sl_l), np.std(t_sl_l), np.mean([w.avg_load for w in self.w_l] ) ) )
+            self.scher.learner.train_w_mult_trajs(np.array([t_s_l]), np.array([t_a_l]), np.array([t_r_l]) )
             
-            self.waitforjid_begin = self.last_sched_jid + 1 + self.M
+            self.waitforjid_begin = self.last_sched_jid + 1 # + self.M
             self.waitforjid_end = self.waitforjid_begin + self.M-1
             self.waitfor_njob = self.M
             
@@ -162,6 +126,7 @@ def reward(slowdown):
   return -slowdown
 
 def slowdown(load):
+  '''
   base_Pr_straggling = 0.4
   threshold = 0.2
   if load < threshold:
@@ -170,27 +135,35 @@ def slowdown(load):
     p_max = 0.7
     p = base_Pr_straggling + (p_max - base_Pr_straggling)/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
     return random.uniform(0, 0.1) if random.uniform(0, 1) < p else 1
+  '''
+  p = 0.4
+  return random.uniform(0, 0.01) if random.uniform(0, 1) < p else 1
 
 def learn_w_experience_replay(sinfo_m, mapping_m, sching_m):
+  M = 1000
+  # sching_m.update({
+  #   'learner': 'QLearner_wTargetNet_wExpReplay',
+  #   'exp_buffer_size': 100*M, 'exp_batch_size': M} )
+  sching_m.update({'learner': 'QLearner_wTargetNet'} )
   scher = RLScher(sinfo_m, mapping_m, sching_m)
   N, T, s_len = scher.N, scher.T, scher.s_len
   log(INFO, "starting;", scher=scher)
   
   env = simpy.Environment()
-  cl = Cluster_wExpReplay(env, scher=scher, **sinfo_m)
+  cl = Cluster_wExpReplay(env, scher=scher, M=M, **sinfo_m)
   jg = JobGen(env, out=cl, **sinfo_m)
   env.run(until=cl.wait_for_alljobs)
   log(INFO, "done.")
 
 if __name__ == '__main__':
   sinfo_m = {
-    'njob': 10000, 'nworker': 6, 'wcap': 10, 'M': 100,
+    'njob': 10000, 'nworker': 6, 'wcap': 10,
     'totaldemand_rv': TPareto(10, 1000, 1.1),
     'demandperslot_mean_rv': TPareto(0.1, 5, 1),
     'k_rv': DUniform(1, 1),
     'straggle_m': {
       'slowdown': slowdown,
-      'straggle_dur_rv': DUniform(10, 50), # DUniform(100, 100)
+      'straggle_dur_rv': DUniform(10, 100),
       'normal_dur_rv': DUniform(1, 1) } }
   ar_ub = arrival_rate_upperbound(sinfo_m)
   sinfo_m['ar'] = 2/5*ar_ub
