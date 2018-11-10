@@ -3,6 +3,7 @@ import numpy as np
 from rvs import *
 from sim_objs import *
 from sim_objs_lessreal import *
+from scheduler import *
 
 def arrival_rate_upperbound(sinfo_m):
   return sinfo_m['nworker']*sinfo_m['wcap']/sinfo_m['totaldemand_rv'].mean()/sinfo_m['k_rv'].mean()
@@ -42,6 +43,7 @@ def sim(sinfo_m, mapping_m, sching_m):
     'avg_utilization': np.mean(avg_schedload_l) }
 
 def slowdown(load):
+  '''
   base_Pr_straggling = 0.3
   threshold = 0.6
   if load < threshold:
@@ -50,6 +52,8 @@ def slowdown(load):
     p_max = 0.5
     p = base_Pr_straggling + p_max/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
     return random.uniform(0, 0.1) if random.uniform(0, 1) < p else 1
+  '''
+  return random.uniform(0.1, 1) if random.uniform(0, 1) < load else 1
 
 def exp():
   sinfo_m = {

@@ -191,7 +191,7 @@ if __name__ == "__main__":
     {'type': 'expand_if_totaldemand_leq', 'threshold': 20, 'a': 1},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 1} ]
-  # eval_wmpi(rank)
+  eval_wmpi(rank)
   
   learn_wmpi(rank)
   

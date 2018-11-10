@@ -63,30 +63,34 @@ class Worker_LessReal():
       rem_lifetime_l = [t.rem_lifetime for t in self.t_l]
       serv_time = min(rem_lifetime_l)
       i_min = rem_lifetime_l.index(serv_time)
-      # slog(DEBUG, self.env, self, "back to serv; serv_time= ".format(serv_time), None)
+      slog(DEBUG, self.env, self, "back to serv; serv_time= {}".format(serv_time), self.t_l[i_min] )
       start_t = self.env.now
       
       self.sinterrupt = self.env.event()
       yield (self.sinterrupt | self.env.timeout(serv_time) )
       serv_time_ = self.env.now - start_t
-      for t in self.t_l:
-        t.rem_lifetime -= serv_time_
-      
       if self.add_to_serv:
-        # slog(DEBUG, self.env, self, "new task added to serv", None)
+        for t in self.t_l[:-1]:
+          t.rem_lifetime -= serv_time_
+      else:
+        for t in self.t_l:
+          t.rem_lifetime -= serv_time_
+      # 
+      if self.add_to_serv:
+        slog(DEBUG, self.env, self, "new task added to serv", None)
         self.sinterrupt = None
         self.add_to_serv = False
       elif self.cancel:
         for t in self.t_l:
           if t.jid == self.cancel_jid:
-            # slog(DEBUG, self.env, self, "cancelled task in serv", t)
+            slog(DEBUG, self.env, self, "cancelled task in serv", t)
             self.t_l.remove(t)
             break
         self.sinterrupt = None
         self.cancel = False
       else:
         t = self.t_l.pop(i_min)
-        # slog(DEBUG, self.env, self, "serv done", t)
+        slog(DEBUG, self.env, self, "serv done", t)
         
         t.run_time = self.env.now - t.binding_time
         t.prev_hop_id = self._id
@@ -94,6 +98,7 @@ class Worker_LessReal():
         slog(DEBUG, self.env, self, "finished", t)
   
   def put(self, t):
+    slog(DEBUG, self.env, self, "put:: starting;", t)
     avail_cap = self.nonsched_cap()
     if t.type_ == 's' and t.reqed > avail_cap:
       tred_l = [t for t in self.t_l if t.type_ == 'r']
@@ -129,10 +134,27 @@ class Worker_LessReal():
     else:
       log(ERROR, "Unrecognized message;", m=m)
 
-class Cluster_LessReal(Cluster):
+class Cluster_LessReal():
   def __init__(self, env, njob, nworker, wcap, straggle_m, scher, **kwargs):
-    super().__init__()(env, njob, nworker, wcap, straggle_m, scher, **kwargs)
-  
+    self.env = env
+    self.njob = njob
+    self.nworker = nworker
+    self.wcap = wcap
+    self.straggle_m = straggle_m
+    self.scher = scher
+    
+    self.w_l = [Worker_LessReal(env, i, wcap, self, straggle_m) for i in range(nworker) ]
+    
+    self.store = simpy.Store(env)
+    env.process(self.run() )
+    
+    self.njob_finished = 0
+    self.store_c = simpy.Store(env)
+    self.wait_for_alljobs = env.process(self.run_c() )
+    
+    self.jid__t_l_m = {}
+    self.jid_info_m = {}
+    
   def __repr__(self):
     return 'Cluster_LessReal'
   
@@ -154,6 +176,7 @@ class Cluster_LessReal(Cluster):
       for i, w in enumerate(w_l):
         type_ = 's' if i < j.k else 'r'
         w.put(Task_LessReal(i+1, j._id, j.reqed, lifetime, j.k, type_) )
+        yield self.env.timeout(0.01)
         wid_l.append(w._id)
       
       self.jid__t_l_m[j._id] = []
@@ -161,4 +184,48 @@ class Cluster_LessReal(Cluster):
         'expected_run_time': j.totaldemand/j.demandperslot_rv.mean(),
         'wid_l': wid_l,
         's': s, 'a': a} )
-    
+  
+  def put(self, j):
+    slog(DEBUG, self.env, self, "received", j)
+    j.arrival_time = self.env.now
+    return self.store.put(j)
+  
+  def run_c(self):
+    while True:
+      t = yield self.store_c.get()
+      try:
+        self.jid__t_l_m[t.jid].append(t)
+      except KeyError: # may happen due to a task completion after the corresponding job finishes
+        continue
+      
+      t_l = self.jid__t_l_m[t.jid]
+      if len(t_l) > t.k:
+        log(ERROR, "len(t_l)= {} > k= {}".format(len(t_l), t.k) )
+      elif len(t_l) < t.k:
+        continue
+      else:
+        t_l = self.jid__t_l_m[t.jid]
+        wrecvedfrom_id_l = [t.prev_hop_id for t in t_l]
+        wsentto_id_l = self.jid_info_m[t.jid]['wid_l']
+        for w in self.w_l:
+          if w._id in wsentto_id_l and w._id not in wrecvedfrom_id_l:
+            w.put_c({'message': 'remove', 'jid': t.jid} )
+        
+        self.jid_info_m[t.jid].update({
+          'fate': 'finished',
+          'run_time': max([t.run_time for t in self.jid__t_l_m[t.jid] ] ) } )
+        self.jid__t_l_m.pop(t.jid, None)
+        slog(DEBUG, self.env, self, "finished jid= {}".format(t.jid), t)
+        
+        ## This causes (s1, a1, r1), (s2, a2, r2) to be interleaved by more than one job
+        # self.njob_finished += 1
+        if t.jid <= self.njob:
+          self.njob_finished += 1
+          # log(WARNING, "job completion;", jid=t.jid, njob=self.njob, njob_finished=self.njob_finished)
+          if self.njob_finished >= self.njob:
+            return
+  
+  def put_c(self, t):
+    slog(DEBUG, self.env, self, "received", t)
+    return self.store_c.put(t)
+  

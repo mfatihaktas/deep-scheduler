@@ -99,7 +99,7 @@ class Worker(object):
     env.process(self.straggle() )
     
     self.ntimeslots = 0
-    self.avg_load = 0
+    self._avg_load = 0
   
   def straggle(self):
     sl = self.straggle_m['slowdown']
@@ -126,10 +126,10 @@ class Worker(object):
     return self.sched_cap()/self.cap
   
   def update_avg_load(self, load):
-    self.avg_load = (self.avg_load*(self.ntimeslots-1) + load)/self.ntimeslots
+    self._avg_load = (self._avg_load*(self.ntimeslots-1) + load)/self.ntimeslots
   
   def avg_load(self):
-    return self.avg_load
+    return self._avg_load
   
   def run(self):
     while True:
