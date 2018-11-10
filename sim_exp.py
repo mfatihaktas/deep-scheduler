@@ -2,6 +2,7 @@ import numpy as np
 
 from rvs import *
 from sim_objs import *
+from sim_objs_lessreal import *
 
 def arrival_rate_upperbound(sinfo_m):
   return sinfo_m['nworker']*sinfo_m['wcap']/sinfo_m['totaldemand_rv'].mean()/sinfo_m['k_rv'].mean()
@@ -11,15 +12,16 @@ def offered_load(sinfo_m):
 
 def sim(sinfo_m, mapping_m, sching_m):
   env = simpy.Environment()
-  cl = Cluster(env, scher=Scher(mapping_m, sching_m), **sinfo_m)
+  # cl = Cluster(env, scher=Scher(mapping_m, sching_m), **sinfo_m)
+  cl = Cluster_LessReal(env, scher=Scher(mapping_m, sching_m), **sinfo_m)
   jg = JobGen(env, out=cl, **sinfo_m)
   env.run(until=cl.wait_for_alljobs)
   # env.run(until=sinfo_m['njob']/sinfo_m['ar'] )
   
   avg_schedload_l = []
   for i, w in enumerate(cl.w_l):
-    print("w._id= {}, w.avg_load= {}".format(w._id, w.avg_load) )
-    avg_schedload_l.append(w.avg_load)
+    print("w._id= {}, w.avg_load= {}".format(w._id, w.avg_load() ) )
+    avg_schedload_l.append(w.avg_load() )
   
   njobs_wfate, ndropped = 0, 0
   slowdown_l = []

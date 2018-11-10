@@ -121,6 +121,7 @@ def learn_wmpi(rank):
       scher.restore(sim_step)
       t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher)
       print("rank= {}, sim_step= {}, a_mean= {}, r_mean= {}, sl_mean= {}, load_mean= {}, droprate_mean= {}".format(rank, sim_step, np.mean(t_a_l), np.mean(t_r_l), np.mean(t_sl_l), load_mean, droprate_mean) )
+      scher.learner.explorer.refine()
       comm.Send([t_s_l.flatten(), MPI.FLOAT], dest=0)
       comm.Send([t_a_l.flatten(), MPI.FLOAT], dest=0)
       comm.Send([t_r_l.flatten(), MPI.FLOAT], dest=0)
@@ -176,10 +177,10 @@ if __name__ == "__main__":
   sinfo_m['ar'] = 2/5*ar_ub
   mapping_m = {'type': 'spreading'}
   sching_m = {'a': 1, 'N': num_mpiprocs-1}
-  # sching_m.update({
-  #   'learner': 'QLearner_wTargetNet_wExpReplay',
-  #   'exp_buffer_size': 100*10**6, 'exp_batch_size': 10**3} )
-  sching_m.update({'learner': 'QLearner_wTargetNet'} )
+  sching_m.update({
+    'learner': 'QLearner_wTargetNet_wExpReplay',
+    'exp_buffer_size': 100*10**6, 'exp_batch_size': 10**3} )
+  # sching_m.update({'learner': 'QLearner_wTargetNet'} )
   
   L = 1000 # number of learning steps
   
@@ -190,7 +191,7 @@ if __name__ == "__main__":
     {'type': 'expand_if_totaldemand_leq', 'threshold': 20, 'a': 1},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 1} ]
-  eval_wmpi(rank)
+  # eval_wmpi(rank)
   
   learn_wmpi(rank)
   

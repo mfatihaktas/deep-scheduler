@@ -2,6 +2,7 @@ import numpy as np
 import mpmath
 
 from rvs import *
+from plot_utils import *
 
 '''
 Kubernetes architecture; master assigning jobs to distributed workers.
@@ -26,6 +27,7 @@ def E_slowdown(ar, N, Cap, k, D, S_gen, d=None, r=None):
   
   if d is not None:
     Pr_kD_leq_d = sum([D.cdf(d/i)*k.pdf(i) for i in range(k.l_l, k.u_l+1) ] )
+    blog(Pr_kD_leq_d=Pr_kD_leq_d)
   def ro_(ro):
     S = S_gen(ro)
     if d is not None:
@@ -43,6 +45,7 @@ def E_slowdown(ar, N, Cap, k, D, S_gen, d=None, r=None):
       ## kD > d
       EC_given_kD_g_d = ES*sum([i*E_D_given_D_g_doverk(i)*k.pdf(i) for i in range(k.l_l, k.u_l+1) ] )
       
+      # log(INFO, "d= {}, ro= {}".format(d, ro), EC_given_kD_leq_d=EC_given_kD_leq_d, EC_given_kD_g_d=EC_given_kD_g_d, Pr_kD_leq_d=Pr_kD_leq_d)
       EA = EC_given_kD_leq_d*Pr_kD_leq_d + \
            EC_given_kD_g_d*(1 - Pr_kD_leq_d)
     else:
@@ -78,13 +81,14 @@ def arrival_rate_for_load_ro(ro, N, Cap, k, D, S_gen):
 
 def plot_slowdown():
   N, Cap = 10, 100
-  D = TPareto(1, 10000, 2) # Pareto(10, 2)
+  D = TPareto(1, 1000, 1) # Pareto(10, 2)
   k = BZipf(1, 10)
   r = 1
   
   # S_gen = lambda ro: TPareto(1, 40, 2/ro)
   def S_gen(ro):
-    a = 1.5 - math.sqrt(ro) # 2 - ro
+    # a = 2 - ro # 1.5 - math.sqrt(ro)
+    a = 1/ro
     return TPareto(1, 100, a)
   ar_ub = arrival_rate_ub(N, Cap, k, D, S_gen)
   print("ar_ub= {}".format(ar_ub) )
@@ -103,13 +107,26 @@ def plot_slowdown():
   E_sl = E_slowdown(ar, N, Cap, k, D, S_gen)
   print("E_sl= {}".format(E_sl) )
   
+  d_l, E_sl_wred_l = [], []
   for d in np.logspace(math.log10(l), math.log10(u), 10):
+  # for d in [l, u]:
     print("\n>> d= {}".format(d) )
+    d_l.append(d)
+    
     E_sl_wred = E_slowdown(ar, N, Cap, k, D, S_gen, d, r)
     blog(E_sl=E_sl, E_sl_wred=E_sl_wred)
+    E_sl_wred_l.append(E_sl_wred)
     # if E_sl_wred is None:
     #   break
   
+  plot.axhline(y=E_sl, label=r'w/o red', c=next(darkcolor_c) )
+  plot.plot(d_l, E_sl_wred_l, label=r'w/ red', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=2)
+  plot.legend()
+  plot.xlabel('d', fontsize=14)
+  plot.ylabel('Average slowdown', fontsize=14)
+  plot.title('N= {}, Cap= {}, D$\sim {}$\n'.format(N, Cap, D.tolatex() ) + 'k$\sim${}, r= {}'.format(k, r) )
+  plot.savefig('plot_slowdown.png')
+  plot.gcf().clear()
   log(INFO, "done.")
 
 if __name__ == "__main__":

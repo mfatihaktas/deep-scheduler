@@ -141,10 +141,10 @@ def slowdown(load):
 
 def learn_w_experience_replay(sinfo_m, mapping_m, sching_m):
   M = 1000
-  # sching_m.update({
-  #   'learner': 'QLearner_wTargetNet_wExpReplay',
-  #   'exp_buffer_size': 100*M, 'exp_batch_size': M} )
-  sching_m.update({'learner': 'QLearner_wTargetNet'} )
+  sching_m.update({
+    'learner': 'QLearner_wTargetNet_wExpReplay',
+    'exp_buffer_size': 100*M, 'exp_batch_size': M} )
+  # sching_m.update({'learner': 'QLearner_wTargetNet'} )
   scher = RLScher(sinfo_m, mapping_m, sching_m)
   N, T, s_len = scher.N, scher.T, scher.s_len
   log(INFO, "starting;", scher=scher)

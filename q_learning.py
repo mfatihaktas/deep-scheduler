@@ -1,15 +1,125 @@
 from rlearning import *
 
+# ##########################################  Explorer  ########################################## #
+class Explorer():
+  def __init__(self, a_len):
+    self.a_len = a_len
+  
+  def refine(self):
+    pass
+
+class EpsGreedyExplorer(Explorer):
+  def __init__(self, a_len):
+    super().__init__(a_len)
+    
+    self.eps = 0.1
+  
+  def __repr__(self):
+    return 'EpsGreedyExplorer'
+  
+  def get_action(self, s, a_q_l):
+    if random.uniform(0, 1) < self.eps:
+      return np.random.randint(self.a_len, size=1)[0]
+    else:
+      return np.argmax(a_q_l)
+  
+  def refine(self):
+    self.eps *= 0.99
+    blog(eps=self.eps)
+
+class SoftMaxExplorer(Explorer):
+  def __init__(self, a_len):
+    super().__init__(a_len)
+  
+  def __repr__(self):
+    return 'SoftMaxExplorer'
+  
+  def get_action(self, s, a_q_l):
+    ## Softmax with temperature parameter equal to 1
+    try:
+      a_q_l /= sum(a_q_l)
+      
+      a_l = list(range(self.a_len) )
+      s = sum([math.exp(a_q_l[a] ) for a in a_l] )
+      p_l = [math.exp(a_q_l[a] )/s for a in a_l]
+      dist = scipy.stats.rv_discrete(values=(a_l, p_l) )
+      return dist.rvs(size=1)[0]
+    except:
+      return np.argmax(a_q_l)
+
+class UCBExplorer(Explorer):
+  def __init__(self, a_len):
+    super().__init__(a_len)
+    
+    self.s_a_nvisit_m = {}
+    
+    self.jtotaldemand_step = 20
+    self.wload_step = 0.1
+    
+    self.a_for_uncertain_q = Queue(1000)
+  
+  def __repr__(self):
+    return 'UCBExplorer'
+  
+  def refine(self):
+    # blog(s_a_nvisit_m=self.s_a_nvisit_m)
+    blog(frac_a_for_uncertain=np.mean(self.a_for_uncertain_q.l) )
+  
+  def discretize_state(self, s):
+    jtotaldemand = int(math.floor(s[0]/self.jtotaldemand_step)*self.jtotaldemand_step)
+    if STATE_LEN == 4:
+      cluster_qlen = s[1]
+      mean_wload = round(math.floor(s[2]/self.wload_step)*self.wload_step, 1)
+      std_wload = round(math.floor(s[3]/self.wload_step)*self.wload_step, 1)
+      return (jtotaldemand, cluster_qlen, mean_wload, std_wload)
+    elif STATE_LEN == 6:
+      cluster_qlen = s[1]
+      min_wload = round(math.floor(s[2]/self.wload_step)*self.wload_step, 1)
+      max_wload = round(math.floor(s[3]/self.wload_step)*self.wload_step, 1)
+      mean_wload = round(math.floor(s[4]/self.wload_step)*self.wload_step, 1)
+      std_wload = round(math.floor(s[5]/self.wload_step)*self.wload_step, 1)
+      return (jtotaldemand, cluster_qlen, min_wload, max_wload, mean_wload, std_wload)
+    else:
+      log(ERROR, "unrecognized STATE_LEN= {}".format(STATE_LEN) )
+  
+  def get_action(self, s, a_q_l):
+    disc_s = self.discretize_state(s)
+    if disc_s not in self.s_a_nvisit_m:
+      self.s_a_nvisit_m[disc_s] = {a: 0 for a in range(self.a_len) }
+    a_nvisit_m = self.s_a_nvisit_m[disc_s]
+    # log(INFO, "", s_a_nvisit_m=self.s_a_nvisit_m)
+    
+    total_nvisit = 0
+    for a, nvisit in a_nvisit_m.items():
+      if nvisit == 0:
+        a_nvisit_m[a] += 1
+        self.a_for_uncertain_q.put(1)
+        return a
+      total_nvisit += nvisit
+    
+    _a = np.argmax(a_q_l)
+    for a, nvisit in a_nvisit_m.items():
+      a_q_l[a] += 10*math.sqrt(2*math.log(total_nvisit)/nvisit)
+    
+    a = np.argmax(a_q_l)
+    a_nvisit_m[a] += 1
+    if a == _a:
+      self.a_for_uncertain_q.put(0)
+    else:
+      self.a_for_uncertain_q.put(1)
+    return a
+
 # ###########################################  Q Learning  ####################################### #
 class QLearner(Learner):
   def __init__(self, s_len, a_len, nn_len=10):
     super().__init__(s_len, a_len, nn_len)
-    self.eps = 0.1
     self.init()
+    # self.explorer = EpsGreedyExplorer(a_len)
+    self.explorer = UCBExplorer(a_len)
     self.saver = tf.train.Saver(max_to_keep=5)
     
   def __repr__(self):
-    return 'QLearner(s_len= {}, a_len= {})'.format(self.s_len, self.a_len)
+    return 'QLearner(s_len= {}, a_len= {}, explorer= {})'.format(self.s_len, self.a_len, self.explorer)
   
   def init(self):
     # N x T x s_len
@@ -34,9 +144,9 @@ class QLearner(Learner):
     self.sess.run(tf.global_variables_initializer() )
   
   def end_of_train(self, loss):
-    self.eps *= 0.99
+    self.explorer.refine()
     self.num_training += 1
-    log(INFO, "{}:: loss= {}".format(self.__class__.__name__, loss), eps=self.eps, num_training=self.num_training)
+    log(INFO, "{}:: loss= {}".format(self.__class__.__name__, loss), num_training=self.num_training)
     if self.num_training % NUM_TRAINING_BEFORE_QNET_TO_TARGET == 0:
       self.sess.run(self.update_target_graph() )
       log(INFO, "updated TargetNet with QNet!")
@@ -122,38 +232,18 @@ class QLearner(Learner):
     self.end_of_train(loss)
   
   def get_random_action(self, s):
-    ## Epsilon-greedy
-    if random.uniform(0, 1) < self.eps:
-      return np.random.randint(self.a_len, size=1)[0]
-    else:
-      a_q_l = self.sess.run(self.Qa_ph,
-                           feed_dict={self.s_ph: [[s]] } )
-      return np.argmax(a_q_l)
-    
-    '''
-    ## Softmax with temperature parameter equal to 1
-    a_q_l = self.sess.run(self.Qa_ph,
-                          feed_dict={self.s_ph: [[s]] } )[0][0]
-    try:
-      a_q_l /= sum(a_q_l)
-      
-      a_l = list(range(self.a_len) )
-      s = sum([math.exp(a_q_l[a] ) for a in a_l] )
-      p_l = [math.exp(a_q_l[a] )/s for a in a_l]
-      dist = scipy.stats.rv_discrete(values=(a_l, p_l) )
-      return dist.rvs(size=1)[0]
-    except:
-      return np.argmax(a_q_l)
-    '''
+    a_q_l = self.sess.run(self.q_net.Qa_ph,
+                          feed_dict={self.q_net.s_ph: [[s]] } )[0][0]
+    return self.explorer.get_action(s, a_q_l)
   
   def get_max_action(self, s):
     a_q_l = self.sess.run(self.Qa_ph,
-                         feed_dict={self.s_ph: [[s]] } )
+                         feed_dict={self.s_ph: [[s]] } )[0][0]
     return np.argmax(a_q_l)
   
   def get_a_q_l(self, s):
     a_q_l = self.sess.run(self.Qa_ph,
-                         feed_dict={self.s_ph: [[s]] } )
+                         feed_dict={self.s_ph: [[s]] } )[0][0]
     return a_q_l
 
 # ######################################  QLearner_wTargetNet  ################################### #
@@ -190,7 +280,6 @@ NUM_TRAINING_BEFORE_QNET_TO_TARGET = 5
 class QLearner_wTargetNet(Learner):
   def __init__(self, s_len, a_len, nn_len=10):
     super().__init__(s_len, a_len, nn_len)
-    self.eps = 0.1
     self.q_net = DQNNet('QNet', s_len, a_len, nn_len)
     self.target_net = DQNNet('TargetNet', s_len, a_len, nn_len)
     self.num_training = 0
@@ -202,7 +291,7 @@ class QLearner_wTargetNet(Learner):
     self.saver = tf.train.Saver(max_to_keep=5)
   
   def __repr__(self):
-    return 'QLearner_wTargetNet(s_len= {}, a_len= {})'.format(self.s_len, self.a_len)
+    return 'QLearner_wTargetNet(s_len= {}, a_len= {}, explorer= {})'.format(self.s_len, self.a_len, self.explorer)
   
   def update_target_graph(self):
     from_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'QNet')
@@ -215,12 +304,12 @@ class QLearner_wTargetNet(Learner):
     return op_holder
   
   def end_of_train(self, loss):
-    self.eps *= 0.99
+    self.explorer.refine()
     self.num_training += 1
-    log(INFO, "{}:: loss= {}".format(self.__class__.__name__, loss), eps=self.eps, num_training=self.num_training)
+    log(INFO, "{}:: loss= {}".format(self.__class__.__name__, loss), num_training=self.num_training)
     if self.num_training % NUM_TRAINING_BEFORE_QNET_TO_TARGET == 0:
       self.sess.run(self.update_target_graph() )
-      log(INFO, "updated TargetNet with QNet!")
+      log(INFO, "updated TargetNet with QNet!\n")
   
   def train_w_sarsa_l(self, sarsa_l):
     T = len(sarsa_l)
@@ -299,78 +388,18 @@ class QLearner_wTargetNet(Learner):
   
   def get_random_action(self, s):
     a_q_l = self.sess.run(self.q_net.Qa_ph,
-                          feed_dict={self.q_net.s_ph: [[s]] } )
-    return self.explorer.get_action(a_q_l)
+                          feed_dict={self.q_net.s_ph: [[s]] } )[0][0]
+    return self.explorer.get_action(s, a_q_l)
   
   def get_max_action(self, s):
     a_q_l = self.sess.run(self.q_net.Qa_ph,
-                          feed_dict={self.q_net.s_ph: [[s]] } )
+                          feed_dict={self.q_net.s_ph: [[s]] } )[0][0]
     return np.argmax(a_q_l)
   
   def get_a_q_l(self, s):
     a_q_l = self.sess.run(self.q_net.Qa_ph,
-                         feed_dict={self.q_net.s_ph: [[s]] } )
+                         feed_dict={self.q_net.s_ph: [[s]] } )[0][0]
     return a_q_l
-
-class Explorer():
-  def __init__(self, a_len):
-    self.a_len = a_len
-
-class EpsGreedyExplorer(Explorer):
-  def __init__(self, a_len):
-    super().__init__(a_len)
-  
-  def get_action(a_q_l):
-    if random.uniform(0, 1) < self.eps:
-      return np.random.randint(self.a_len, size=1)[0]
-    else:
-      return np.argmax(a_q_l)
-
-class UCBExplorer(Explorer):
-  def __init__(self, a_len):
-    super().__init__(a_len)
-    
-    self.s_a_nvisit_m = {}
-    
-    jtotaldemand_step = 5
-    wload_step = 0.1
-  
-  def discretize_state(self, s):
-    jtotaldemand = int(math.floor(s[0]/jtotaldemand_step)*jtotaldemand_step)
-    if STATE_LEN == 4:
-      cluster_qlen = s[1]
-      mean_wload = round(math.floor(s[2]/wload_step)*wload_step, 1)
-      std_wload = round(math.floor(s[3]/wload_step)*wload_step, 1)
-      return (jtotaldemand, cluster_qlen, mean_wload, std_wload)
-    elif STATE_LEN == 6:
-      cluster_qlen = s[1]
-      min_wload = round(math.floor(s[2]/wload_step)*wload_step, 1)
-      max_wload = round(math.floor(s[3]/wload_step)*wload_step, 1)
-      mean_wload = round(math.floor(s[4]/wload_step)*wload_step, 1)
-      std_wload = round(math.floor(s[5]/wload_step)*wload_step, 1)
-      return (jtotaldemand, cluster_qlen, min_wload, max_wload, mean_wload, std_wload)
-    else:
-      log(ERROR, "unrecognized STATE_LEN= {}".format(STATE_LEN) )
-  
-  def get_action(s, a_q_l):
-    disc_s = self.discretize_state[s]
-    if disc_s not in self.s_a_nvisit_m:
-      self.s_a_nvisit_m[disc_s] = {a: 0 for a in range(self.a_len) }
-    a_nvisit_m = self.s_a_nvisit_m[disc_s]
-    
-    total_nvisit = 0
-    for a, nvisit in a_nvisit_m.items():
-      if a == 0:
-        a_nvisit_m[a] += 1
-        return a
-      total_nvisit += nvisit
-    
-    for a, nvisit in a_nvisit_m.items():
-      a_q_l[a] += 10*math.sqrt(2*math.log(total_nvisit)/nvisit)
-    
-    a = np.argmax(a_q_l)
-    a_nvisit_m[a] += 1
-    return a
 
 # ################################  QLearner_wTargetNet_wExpReplay  ############################## #
 class Queue(object):
@@ -415,7 +444,7 @@ class QLearner_wTargetNet_wExpReplay(QLearner_wTargetNet):
     self.learning_count = 0
   
   def __repr__(self):
-    return 'QLearner_wTargetNet_wExpReplay(s_len= {}, a_len= {}, exp_q= {})'.format(self.s_len, self.a_len, self.exp_q)
+    return 'QLearner_wTargetNet_wExpReplay(s_len= {}, a_len= {}, exp_q= {}, explorer= {})'.format(self.s_len, self.a_len, self.exp_q, self.explorer)
   
   def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)

@@ -78,7 +78,7 @@ class RLScher():
       self.learner = QLearner_wTargetNet_wExpReplay(self.s_len, self.a_len, exp_buffer_size=sching_m['exp_buffer_size'], exp_batch_size=sching_m['exp_batch_size'], nn_len=10)
   
   def __repr__(self):
-    return 'RLScher[learner={}]'.format(self.learner)
+    return 'RLScher[learner= {}]'.format(self.learner)
   
   def save(self, step):
     return self.learner.save(step)

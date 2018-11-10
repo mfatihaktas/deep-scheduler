@@ -128,6 +128,9 @@ class Worker(object):
   def update_avg_load(self, load):
     self.avg_load = (self.avg_load*(self.ntimeslots-1) + load)/self.ntimeslots
   
+  def avg_load(self):
+    return self.avg_load
+  
   def run(self):
     while True:
       yield (self.env.timeout(self.timeslot) )
@@ -251,7 +254,7 @@ class Cluster(object):
       self.jid_info_m[j._id] = {'wait_time': self.env.now - j.arrival_time}
       wid_l = []
       for i, w in enumerate(w_l):
-        type_ = 's' if i+1 <= j.k else 'r'
+        type_ = 's' if i < j.k else 'r'
         w.put(Task(i+1, j._id, j.reqed, j.demandperslot_rv, j.totaldemand, j.k, type_) )
         wid_l.append(w._id)
       

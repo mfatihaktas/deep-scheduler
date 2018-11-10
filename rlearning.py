@@ -6,7 +6,7 @@ from log_utils import *
 from sim_objs import *
 
 LEARNING_RATE = 0.01 # 0.0001
-STATE_LEN = 6
+STATE_LEN = 4 # 6
 def state(j, wload_l=None, cluster=None):
   if STATE_LEN == 1:
     return [j.totaldemand] # j.k
@@ -73,7 +73,7 @@ def sample_traj(sinfo_m, scher):
     t_sl_l[t, :] = sl
   
   return t_s_l, t_a_l, t_r_l, t_sl_l, \
-         np.mean([w.avg_load for w in cl.w_l] ), \
+         np.mean([w.avg_load() for w in cl.w_l] ), \
          0
          # sum([1 for _, jinfo_m in cl.jid_info_m.items() if 'fate' in jinfo_m and jinfo_m['fate'] == 'dropped'] )/len(cl.jid_info_m)
 
