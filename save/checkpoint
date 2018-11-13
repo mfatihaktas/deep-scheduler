@@ -1,2 +1,6 @@
-model_checkpoint_path: "QLearner_wTargetNet(s_len= 6, a_len= 2, explorer= UCBExplorer)-0"
-all_model_checkpoint_paths: "QLearner_wTargetNet(s_len= 6, a_len= 2, explorer= UCBExplorer)-0"
+model_checkpoint_path: "QLearner_wTargetNet(s_len= 6, a_len= 2, explorer= UCBExplorer)-281"
+all_model_checkpoint_paths: "QLearner_wTargetNet(s_len= 6, a_len= 2, explorer= UCBExplorer)-277"
+all_model_checkpoint_paths: "QLearner_wTargetNet(s_len= 6, a_len= 2, explorer= UCBExplorer)-278"
+all_model_checkpoint_paths: "QLearner_wTargetNet(s_len= 6, a_len= 2, explorer= UCBExplorer)-279"
+all_model_checkpoint_paths: "QLearner_wTargetNet(s_len= 6, a_len= 2, explorer= UCBExplorer)-280"
+all_model_checkpoint_paths: "QLearner_wTargetNet(s_len= 6, a_len= 2, explorer= UCBExplorer)-281"

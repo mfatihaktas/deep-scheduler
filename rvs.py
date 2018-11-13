@@ -398,13 +398,14 @@ class BZipf(RV):
     super().__init__(l_l=lb, u_l=ub)
     self.a = a
     
-    self.v = numpy.arange(self.l_l, self.u_l+1) # values
-    w_l = [float(v)**(-a) for v in self.v] # self.v**(-a) # weights
-    self.p = [w/sum(w_l) for w in w_l]
-    self.dist = scipy.stats.rv_discrete(name='bounded_zipf', values=(self.v, self.p) )
+    self.v_l = numpy.arange(self.l_l, self.u_l+1) # values
+    w_l = [float(v)**(-a) for v in self.v_l] # self.v**(-a) # weights
+    sum_w_l = sum(w_l)
+    self.p_l = [w/sum_w_l for w in w_l]
+    self.dist = scipy.stats.rv_discrete(name='bounded_zipf', values=(self.v_l, self.p_l) )
   
   def __repr__(self):
-    return "BZipf([{}, {}], a= {})".format(self.l_l, self.u_l, self.a)
+    return "BZipf([{}, {}], tail_index= {})".format(self.l_l, self.u_l, self.a)
   
   def pdf(self, x):
     return self.dist.pmf(x)
@@ -525,7 +526,9 @@ def mean(X, given_X_leq_x=None, x=None):
   if given_X_leq_x is None:
     return EX
   
-  s = float(mpmath.quad(lambda x: X.tail(x), [0, x] ) )
+  # s = float(mpmath.quad(X.tail, [0, x] ) )
+  s, abserr = scipy.integrate.quad(X.tail, 0, x)
+  
   Pr_X_leq_x = X.cdf(x)
   if given_X_leq_x:
     if Pr_X_leq_x == 0:
