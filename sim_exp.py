@@ -39,8 +39,9 @@ def sim(sinfo_m, mapping_m, sching_m):
   
   return {
     'drop_rate': ndropped/len(cl.jid_info_m),
-    'avg_slowdown': np.mean(slowdown_l),
-    'avg_utilization': np.mean(avg_schedload_l) }
+    'sl_mean': np.mean(slowdown_l),
+    'sl_std': np.std(slowdown_l),
+    'util_mean': np.mean(avg_schedload_l) }
 
 def slowdown(load):
   '''
@@ -67,8 +68,8 @@ def exp():
       'normal_dur_rv': DUniform(1, 1) } } # TPareto(1, 10, 1)
   ar_ub = arrival_rate_upperbound(sinfo_m)
   mapping_m = {'type': 'spreading'}
-  # sching_m = {'a': 1, 'N': num_mpiprocs-1}
-  sching_m = {'type': 'expand_if_totaldemand_leq', 'threshold': 10, 'a': 1}
+  sching_m = {'type': 'plain', 'a': 1, 'N': num_mpiprocs-1}
+  # sching_m = {'type': 'expand_if_totaldemand_leq', 'threshold': 10, 'a': 1}
   blog(ar_ub=ar_ub, sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
   
   def wrt_ar():

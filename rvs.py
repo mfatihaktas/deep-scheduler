@@ -232,8 +232,18 @@ class TPareto(RV): # Truncated
     if k == self.a:
       return math.log(self.u_l/self.l)
     else:
-      return self.a*self.l**k/(self.a-k) * \
-             (1 - (self.l/self.u)**(self.a-k))/(1 - (self.l/self.u)**self.a)
+      try:
+        r = self.l/self.u
+        return self.a*self.l**k/(self.a-k) * \
+               (1 - r**(self.a-k))/(1 - r**self.a)
+      except:
+        # x = math.log(self.l) - math.log(self.u)
+        # return self.a*self.l**k/(self.a-k) * \
+        #       (1 - math.exp((self.a-k)*x) )/(1 - math.exp(self.a*x) )
+        r = self.l/self.u
+        log(INFO, "", r=r, a=self.a, k=k)
+        return self.a*self.l**k/(self.a-k) * \
+               (r**k - r**self.a)/(r**k - r**(self.a + k) )
   
   def sample(self):
     r = random.uniform(0, 1)

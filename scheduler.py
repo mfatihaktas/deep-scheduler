@@ -31,7 +31,7 @@ class Scher(object):
       return None, -1, None
     
     a = self.sching_m['a'] if expand else 0
-    j.n = min(int(j.k*(a + 1) ), len(w_l) )
+    j.n = min(int(j.k + a), len(w_l) )
     return None, a, w_l[:j.n]
   
   def expand_if_totaldemand_leq(self, j, w_l, cluster):
@@ -55,7 +55,7 @@ class Scher(object):
     
     if len(w_l_) < j.k:
       return None, -1, None
-    return None, 1, w_l_[:j.k*(self.sching_m['a'] + 1) ]
+    return None, 1, w_l_[:int(j.k + self.sching_m['a'] ) ]
 
 # ###########################################  RLScher  ########################################## #
 class RLScher():
@@ -73,7 +73,7 @@ class RLScher():
     elif sching_m['learner'] == 'QLearner':
       self.learner = QLearner(self.s_len, self.a_len, nn_len=10)
     elif sching_m['learner'] == 'QLearner_wTargetNet':
-      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=10)
+      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=50)
     elif sching_m['learner'] == 'QLearner_wTargetNet_wExpReplay':
       self.learner = QLearner_wTargetNet_wExpReplay(self.s_len, self.a_len, exp_buffer_size=sching_m['exp_buffer_size'], exp_batch_size=sching_m['exp_batch_size'], nn_len=10)
   

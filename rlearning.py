@@ -6,7 +6,7 @@ from log_utils import *
 from sim_objs import *
 
 LEARNING_RATE = 0.01 # 0.0001
-STATE_LEN = 4 # 6
+STATE_LEN = 6 # 4
 def state(j, wload_l=None, cluster=None):
   if STATE_LEN == 1:
     return [j.totaldemand] # j.k
@@ -14,7 +14,8 @@ def state(j, wload_l=None, cluster=None):
     return [j.totaldemand, min(wload_l), max(wload_l) ]
     # return [j.totaldemand, np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 4:
-    return [j.totaldemand, min(wload_l), max(wload_l), len(cluster.store.items) ]
+    # return [j.totaldemand, len(cluster.store.items), min(wload_l), max(wload_l) ]
+    return [j.totaldemand, len(cluster.store.items), np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 5:
     return [j.totaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 6:

@@ -16,7 +16,7 @@ elif [ $1 = 'r' ]; then
 #SBATCH --ntasks=$NTASKS             # Total # of tasks across all nodes
 #SBATCH --cpus-per-task=1            # Cores per task (>1 if multithread tasks)
 #SBATCH --mem=24000                  # Real memory (RAM) required (MB)
-#SBATCH --time=12:00:00               # Total run time limit (HH:MM:SS)
+#SBATCH --time=24:00:00               # Total run time limit (HH:MM:SS)
 #SBATCH --export=ALL                 # Export your current env to the job env
 #SBATCH --output=log/slurm.%N.%j.out
 

@@ -53,7 +53,7 @@ class UCBExplorer(Explorer):
     
     self.s_a_nvisit_m = {}
     
-    self.jtotaldemand_step = 20
+    self.jtotaldemand_step = 5
     self.wload_step = 0.1
     
     self.a_for_uncertain_q = Queue(1000)

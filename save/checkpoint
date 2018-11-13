@@ -1,6 +1,2 @@
-model_checkpoint_path: "QLearner_wTargetNet_wExpReplay(s_len= 4, a_len= 2, exp_q= ExpQueue(buffer_size= 100000000, batch_size= 1000), explorer= UCBExplorer)-57"
-all_model_checkpoint_paths: "QLearner_wTargetNet_wExpReplay(s_len= 4, a_len= 2, exp_q= ExpQueue(buffer_size= 100000000, batch_size= 1000), explorer= UCBExplorer)-53"
-all_model_checkpoint_paths: "QLearner_wTargetNet_wExpReplay(s_len= 4, a_len= 2, exp_q= ExpQueue(buffer_size= 100000000, batch_size= 1000), explorer= UCBExplorer)-54"
-all_model_checkpoint_paths: "QLearner_wTargetNet_wExpReplay(s_len= 4, a_len= 2, exp_q= ExpQueue(buffer_size= 100000000, batch_size= 1000), explorer= UCBExplorer)-55"
-all_model_checkpoint_paths: "QLearner_wTargetNet_wExpReplay(s_len= 4, a_len= 2, exp_q= ExpQueue(buffer_size= 100000000, batch_size= 1000), explorer= UCBExplorer)-56"
-all_model_checkpoint_paths: "QLearner_wTargetNet_wExpReplay(s_len= 4, a_len= 2, exp_q= ExpQueue(buffer_size= 100000000, batch_size= 1000), explorer= UCBExplorer)-57"
+model_checkpoint_path: "QLearner_wTargetNet(s_len= 6, a_len= 2, explorer= UCBExplorer)-0"
+all_model_checkpoint_paths: "QLearner_wTargetNet(s_len= 6, a_len= 2, explorer= UCBExplorer)-0"
