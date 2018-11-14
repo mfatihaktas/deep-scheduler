@@ -522,7 +522,8 @@ def binomial(n, k):
   return scipy.special.binom(n, k)
 
 def mean(X, given_X_leq_x=None, x=None):
-  EX = moment_ith(1, X)
+  # EX = moment_ith(1, X)
+  EX = X.mean()
   if given_X_leq_x is None:
     return EX
   

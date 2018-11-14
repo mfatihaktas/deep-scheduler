@@ -177,10 +177,10 @@ if __name__ == "__main__":
   sinfo_m['ar'] = 2/5*ar_ub
   mapping_m = {'type': 'spreading'}
   sching_m = {'a': 1, 'N': num_mpiprocs-1}
-  # sching_m.update({
-  #   'learner': 'QLearner_wTargetNet_wExpReplay',
-  #   'exp_buffer_size': 100*10**6, 'exp_batch_size': 10**3} )
-  sching_m.update({'learner': 'QLearner_wTargetNet'} )
+  sching_m.update({
+    'learner': 'QLearner_wTargetNet_wExpReplay',
+    'exp_buffer_size': 10**2*10*10**3, 'exp_batch_size': 10*10**3} )
+  # sching_m.update({'learner': 'QLearner_wTargetNet'} )
   
   L = 1000 # number of learning steps
   
