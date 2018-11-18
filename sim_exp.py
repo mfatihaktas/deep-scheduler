@@ -25,7 +25,7 @@ def sim(sinfo_m, mapping_m, sching_m):
     avg_schedload_l.append(w.avg_load() )
   
   njobs_wfate, ndropped = 0, 0
-  slowdown_l = []
+  sl_l, serv_sl_l = [], []
   for jid, info in cl.jid_info_m.items():
     if 'fate' in info:
       njobs_wfate += 1
@@ -33,15 +33,17 @@ def sim(sinfo_m, mapping_m, sching_m):
       if fate == 'dropped':
         ndropped += 1
       elif fate == 'finished':
-        slowdown_l.append(
+        serv_sl_l.append(info['run_time']/info['expected_run_time'] )
+        sl_l.append(
           (info['wait_time'] + info['run_time'] )/info['expected_run_time'] )
   blog(ndropped=ndropped, njobs_wfate=njobs_wfate)
   
   return {
     'drop_rate': ndropped/len(cl.jid_info_m),
-    'sl_mean': np.mean(slowdown_l),
-    'sl_std': np.std(slowdown_l),
-    'util_mean': np.mean(avg_schedload_l) }
+    'sl_mean': np.mean(sl_l),
+    'sl_std': np.std(sl_l),
+    'serv_sl_mean': np.mean(serv_sl_l),
+    'load_mean': np.mean(avg_schedload_l) }
 
 def slowdown(load):
   '''
@@ -74,7 +76,7 @@ def exp():
   
   def wrt_ar():
     # for ar in np.linspace(ar_ub/3, ar_ub*3/4, 3):
-    for ar in [ar_ub*1/4]:
+    for ar in [ar_ub*1/2]:
     # for ar in [0.1]:
       print("\nar= {}".format(ar) )
       

@@ -46,7 +46,8 @@ def sample_traj(sinfo_m, scher):
     # else:
     #   return -slowdown
     
-    return -slowdown
+    # return -slowdown
+    return -slowdown**2
     
     # if slowdown < 2:
     #   return 10/slowdown

@@ -3,7 +3,8 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 matplotlib.use('Agg')
 import matplotlib.pyplot as plot
-import math, random, numpy, scipy
+import math, random, scipy
+import numpy as np
 from scipy.stats import *
 import mpmath
 
@@ -157,12 +158,12 @@ class Pareto(RV):
     return r'Pareto(\min= {}, \alpha= {})'.format(self.loc, self.a)
   
   def tail(self, x):
-    if x <= self.l_l:
+    if x < self.l_l:
       return 1
     return (self.loc/x)**self.a
   
   def cdf(self, x):
-    if x <= self.l_l:
+    if x < self.l_l:
       return 0
     return 1 - (self.loc/x)**self.a
   
@@ -191,8 +192,8 @@ class Pareto(RV):
       return self.a*self.loc**2 / (self.a-1)**2/(self.a-2)
   
   def sample(self):
-    return ((numpy.random.pareto(self.a, 1) + 1)*self.loc)[0]
-    # return pareto.ppf(numpy.random.uniform(0, 1), b=self.a, scale=self.loc)
+    return ((np.random.pareto(self.a, 1) + 1)*self.loc)[0]
+    # return pareto.ppf(np.random.uniform(0, 1), b=self.a, scale=self.loc)
 
 class TPareto(RV): # Truncated
   def __init__(self, l, u, a):
@@ -274,7 +275,7 @@ class Dolly(RV):
   def __init__(self):
     super().__init__(l_l=1, u_l=12)
     
-    self.v = numpy.arange(1, 13)
+    self.v = np.arange(1, 13)
     self.p = [0.23, 0.14, 0.09, 0.03, 0.08, 0.1, 0.04, 0.14, 0.12, 0.021, 0.007, 0.002]
     self.dist = scipy.stats.rv_discrete(name='dolly', values=(self.v, self.p) )
   
@@ -353,6 +354,10 @@ class Uniform(RV):
   def __repr__(self):
     return 'Uniform[{}, {}]'.format(self.l_l, self.u_l)
   
+  def mean(self):
+    # return self.dist.mean()
+    return (self.l_l + self.u_l)/2
+  
   def sample(self):
     return self.dist.rvs()
 
@@ -360,7 +365,7 @@ class DUniform(RV):
   def __init__(self, lb, ub):
     super().__init__(l_l=lb, u_l=ub)
     
-    self.v = numpy.arange(self.l_l, self.u_l+1)
+    self.v = np.arange(self.l_l, self.u_l+1)
     w_l = [1 for v in self.v]
     self.p = [w/sum(w_l) for w in w_l]
     self.dist = scipy.stats.rv_discrete(name='duniform', values=(self.v, self.p) )
@@ -398,14 +403,14 @@ class BZipf(RV):
     super().__init__(l_l=lb, u_l=ub)
     self.a = a
     
-    self.v_l = numpy.arange(self.l_l, self.u_l+1) # values
+    self.v_l = np.arange(self.l_l, self.u_l+1) # values
     w_l = [float(v)**(-a) for v in self.v_l] # self.v**(-a) # weights
     sum_w_l = sum(w_l)
     self.p_l = [w/sum_w_l for w in w_l]
     self.dist = scipy.stats.rv_discrete(name='bounded_zipf', values=(self.v_l, self.p_l) )
   
   def __repr__(self):
-    return "BZipf([{}, {}], tail_index= {})".format(self.l_l, self.u_l, self.a)
+    return "BZipf([{}, {}], tail index= {})".format(self.l_l, self.u_l, self.a)
   
   def pdf(self, x):
     return self.dist.pmf(x)
@@ -477,7 +482,7 @@ class Gamma(RV):
     super().__init__(l_l=0, u_l=float('Inf') )
     
     self.shape, self.scale = num_exp, 1/rate
-    # self.dist = numpy.random.gamma(shape, scale, size=1)
+    # self.dist = np.random.gamma(shape, scale, size=1)
     self.dist = scipy.stats.gamma(self.shape, self.scale)
   
   def __repr__(self):
@@ -522,6 +527,32 @@ def binomial(n, k):
   return scipy.special.binom(n, k)
 
 def mean(X, given_X_leq_x=None, x=None):
+  EX = X.mean()
+  if given_X_leq_x is None:
+    return EX
+  
+  # s = float(mpmath.quad(X.tail, [0, x] ) )
+  # s, abserr = scipy.integrate.quad(X.tail, 0, x)
+  s, abserr = scipy.integrate.quad(lambda y: y*X.pdf(y), 0, x)
+  
+  Pr_X_leq_x = X.cdf(x)
+  if given_X_leq_x:
+    if Pr_X_leq_x == 0:
+      # log(WARNING, "X.cdf(x) = 0!", X=X, x=x)
+      return 0
+    elif Pr_X_leq_x == 1:
+      return EX
+    return s/Pr_X_leq_x
+  else:
+    Pr_X_g_x = 1 - Pr_X_leq_x
+    if Pr_X_g_x == 0:
+      # log(WARNING, "X.tail(x) = 0!", X=X, x=x)
+      return 0
+    elif Pr_X_g_x == 1:
+      return EX
+    return (EX - s)/Pr_X_g_x
+
+def _mean(X, given_X_leq_x=None, x=None):
   # EX = moment_ith(1, X)
   EX = X.mean()
   if given_X_leq_x is None:
@@ -529,18 +560,23 @@ def mean(X, given_X_leq_x=None, x=None):
   
   # s = float(mpmath.quad(X.tail, [0, x] ) )
   s, abserr = scipy.integrate.quad(X.tail, 0, x)
+  # s, abserr = scipy.integrate.quad(lambda y: y*X.pdf(y), 0, x)
   
   Pr_X_leq_x = X.cdf(x)
   if given_X_leq_x:
     if Pr_X_leq_x == 0:
       # log(WARNING, "X.cdf(x) = 0!", X=X, x=x)
       return 0
+    elif Pr_X_leq_x == 1:
+      return EX
     return s/Pr_X_leq_x
   else:
     Pr_X_g_x = 1 - Pr_X_leq_x
     if Pr_X_g_x == 0:
       # log(WARNING, "X.tail(x) = 0!", X=X, x=x)
       return 0
+    elif Pr_X_g_x == 1:
+      return EX
     return (EX - s)/Pr_X_g_x
 
 def moment_ith(i, X):
@@ -589,7 +625,7 @@ class MixedRVs():
     self.p_l = p_l
     self.rv_l = rv_l
     self.dist_to_select_rv = scipy.stats.rv_discrete(
-      name='mixed', values=(numpy.arange(0, len(p_l) ), p_l) )
+      name='mixed', values=(np.arange(0, len(p_l) ), p_l) )
   
   def __repr__(self):
     return 'MixOfRVs:\n' + \
@@ -608,7 +644,7 @@ if __name__ == "__main__":
   # D = Dolly()
   # # print("Dolly sample= {}".format(D.sample() ) )
   # x_l, cdf_l = [], []
-  # for x in numpy.linspace(0, 20, 100):
+  # for x in np.linspace(0, 20, 100):
   #   x_l.append(x)
   #   cdf_l.append(D.cdf(x) )
   # plot.plot(x_l, cdf_l, label=r'CDF of Dolly', marker=next(marker), linestyle=':', mew=2)
@@ -620,6 +656,27 @@ if __name__ == "__main__":
   
   # D = Dolly()
   # print("ED= {}".format(D.mean() ) )
-  V = TPareto(1, 100, 1.1)
-  print("EV= {}".format(V.mean() ) )
+  # V = TPareto(1, 100, 1.1)
+  # print("EV= {}".format(V.mean() ) )
   
+  b = BZipf(1, 1)
+  print("b.mean= {}".format(b.mean() ) )
+  
+  # d = DUniform(1, 1)
+  # for _ in range(100):
+  #   print("d.sample= {}".format(d.sample() ) )
+  
+  '''
+  X = Pareto(40, 2)
+  def test(x):
+    print(">> x= {}".format(x) )
+    Pr_X_leq_x = X.cdf(x)
+    _EX_given_x_leq_x = _mean(X, given_X_leq_x=True, x=x)
+    _EX_given_x_g_x = _mean(X, given_X_leq_x=False, x=x)
+    EX_given_x_leq_x = mean(X, given_X_leq_x=True, x=x)
+    EX_given_x_g_x = mean(X, given_X_leq_x=False, x=x)
+    blog(_EX_given_x_leq_x=_EX_given_x_leq_x, _EX_given_x_g_x=_EX_given_x_g_x, EX_given_x_leq_x=EX_given_x_leq_x, EX_given_x_g_x=EX_given_x_g_x)
+    # print("X.mean= {}, Pr_X_leq_x*EX_given_x_leq_x + (1-Pr_X_leq_x)*EX_given_x_g_x= {}".format(X.mean(), Pr_X_leq_x*EX_given_x_leq_x + (1-Pr_X_leq_x)*EX_given_x_g_x) )
+  for x in np.linspace(0, 400, 20):
+    test(x)
+  '''

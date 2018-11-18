@@ -257,9 +257,13 @@ class DQNNet:
     with tf.variable_scope(name):
       # N x T x s_len
       self.s_ph = tf.placeholder(tf.float32, shape=(None, None, s_len) )
+      # hidden1 = tf.contrib.layers.fully_connected(self.s_ph, nn_len, activation_fn=tf.nn.relu)
+      # hidden2 = tf.contrib.layers.fully_connected(hidden1, nn_len, activation_fn=tf.nn.relu)
+      # self.Qa_ph = tf.contrib.layers.fully_connected(hidden2, a_len, activation_fn=None)
       hidden1 = tf.contrib.layers.fully_connected(self.s_ph, nn_len, activation_fn=tf.nn.relu)
       hidden2 = tf.contrib.layers.fully_connected(hidden1, nn_len, activation_fn=tf.nn.relu)
-      self.Qa_ph = tf.contrib.layers.fully_connected(hidden2, a_len, activation_fn=None)
+      hidden3 = tf.contrib.layers.fully_connected(hidden2, nn_len, activation_fn=tf.nn.relu)
+      self.Qa_ph = tf.contrib.layers.fully_connected(hidden3, a_len, activation_fn=None)
       
       self.a_ph = tf.placeholder(tf.int32, shape=(None, None, 1), name="a_ph")
       self.targetq_ph = tf.placeholder(tf.float32, shape=(None, None, 1), name="q_ph")

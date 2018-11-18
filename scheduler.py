@@ -73,7 +73,7 @@ class RLScher():
     elif sching_m['learner'] == 'QLearner':
       self.learner = QLearner(self.s_len, self.a_len, nn_len=10)
     elif sching_m['learner'] == 'QLearner_wTargetNet':
-      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=50)
+      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=10)
     elif sching_m['learner'] == 'QLearner_wTargetNet_wExpReplay':
       self.learner = QLearner_wTargetNet_wExpReplay(self.s_len, self.a_len, exp_buffer_size=sching_m['exp_buffer_size'], exp_batch_size=sching_m['exp_batch_size'], nn_len=10)
   

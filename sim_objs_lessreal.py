@@ -1,4 +1,7 @@
+import collections
+
 from sim_objs import *
+from mapper import *
 
 class Task_LessReal():
   def __init__(self, _id, jid, reqed, lifetime, k, type_=None):
@@ -17,6 +20,41 @@ class Task_LessReal():
   def __repr__(self):
     return "Task_LessReal[id= {}, jid= {}, rem_lifetime= {}]".format(self._id, self.jid, self.rem_lifetime)
 
+class JobGen_LessReal(object):
+  def __init__(self, env, ar, demandperslot_mean_rv, totaldemand_rv, k_rv, njob, out, **kwargs):
+    self.env = env
+    self.ar = ar
+    self.demandperslot_mean_rv = demandperslot_mean_rv
+    self.totaldemand_rv = totaldemand_rv
+    self.k_rv = k_rv
+    self.njob = njob
+    self.out = out
+    
+    self.nsent = 0
+    
+    self.action = self.env.process(self.run_poisson() )
+  
+  def run_poisson(self):
+    while 1:
+      yield self.env.timeout(random.expovariate(self.ar) )
+      self.nsent += 1
+      k = self.k_rv.sample()
+      demandmean = self.demandperslot_mean_rv.sample()
+      coeff_var = 0.7
+      self.out.put(Job(
+        _id = self.nsent,
+        k = k, n = k,
+        demandperslot_rv = Uniform(demandmean, demandmean),
+        totaldemand = self.totaldemand_rv.sample() ) )
+
+def map_to_key__val_l(m):
+  m = collections.OrderedDict(sorted(m.items() ) )
+  k_l, v_l = [], []
+  for k, v in m.items():
+    k_l.append(k)
+    v_l.append(v)
+  return k_l, v_l
+
 class Worker_LessReal():
   def __init__(self, env, _id, cap, out_c, straggle_m):
     self.env = env
@@ -34,6 +72,7 @@ class Worker_LessReal():
     env.process(self.run() )
     
     self.sl = self.straggle_m['slowdown']
+    self.t_load_m = {}
     
   def __repr__(self):
     return "Worker_LessReal[id= {}]".format(self._id)
@@ -50,15 +89,27 @@ class Worker_LessReal():
     return self.sched_cap()/self.cap
   
   def avg_load(self):
-    return self.sched_load()
+    t_load_m = collections.OrderedDict(sorted(self.t_load_m.items() ) )
+    load_weighted_sum = 0
+    _t, t, _load = 0, 1, 0
+    for t, load in t_load_m.items():
+      load_weighted_sum += (t - _t)*_load
+      _t, _load = t, load
+    return load_weighted_sum/t
+    # t_l, load_l = map_to_key__val_l(self.t_load_m)
+    # return np.mean(load_l)
   
   def run(self):
     while True:
       if len(self.t_l) == 0:
+        time_gotidle = self.env.now
         self.got_busy = self.env.event()
         yield (self.got_busy)
         self.got_busy = None
         slog(DEBUG, self.env, self, "got busy!", None)
+        
+        self.t_load_m[time_gotidle] = 0
+        self.t_load_m[self.env.now] = 0
       
       rem_lifetime_l = [t.rem_lifetime for t in self.t_l]
       serv_time = min(rem_lifetime_l)
@@ -66,6 +117,7 @@ class Worker_LessReal():
       slog(DEBUG, self.env, self, "back to serv; serv_time= {}".format(serv_time), self.t_l[i_min] )
       start_t = self.env.now
       
+      self.t_load_m[self.env.now] = self.sched_load()
       self.sinterrupt = self.env.event()
       yield (self.sinterrupt | self.env.timeout(serv_time) )
       serv_time_ = self.env.now - start_t
@@ -116,7 +168,7 @@ class Worker_LessReal():
     
     _l = len(self.t_l)
     t.binding_time = self.env.now
-    t.rem_lifetime = t.lifetime/self.sl(self.sched_load() )
+    t.rem_lifetime = t.lifetime*self.sl(self.sched_load() )
     self.t_l.append(t)
     if _l == 0:
       self.got_busy.succeed()
@@ -163,16 +215,16 @@ class Cluster_LessReal():
       j = yield self.store.get()
       
       while True:
-        s, a, w_l = self.scher.schedule(j, self.w_l, self)
-        if a == -1:
-          slog(DEBUG, self.env, self, "a = -1", j)
-          yield self.env.timeout(0.1)
+        s, r, w_l = self.scher.schedule(j, self.w_l, self)
+        if r == -1:
+          slog(DEBUG, self.env, self, "r= -1", j)
+          yield self.env.timeout(0.01)
         else:
           break
       
       self.jid_info_m[j._id] = {'wait_time': self.env.now - j.arrival_time}
       wid_l = []
-      lifetime = j.totaldemand/j.demandperslot_rv.mean()
+      lifetime = j.totaldemand/j.reqed
       for i, w in enumerate(w_l):
         type_ = 's' if i < j.k else 'r'
         w.put(Task_LessReal(i+1, j._id, j.reqed, lifetime, j.k, type_) )
@@ -181,9 +233,9 @@ class Cluster_LessReal():
       
       self.jid__t_l_m[j._id] = []
       self.jid_info_m[j._id].update({
-        'expected_run_time': j.totaldemand/j.demandperslot_rv.mean(),
+        'expected_run_time': j.totaldemand/j.reqed,
         'wid_l': wid_l,
-        's': s, 'a': a} )
+        's': s, 'r': r} )
   
   def put(self, j):
     slog(DEBUG, self.env, self, "received", j)
@@ -218,14 +270,43 @@ class Cluster_LessReal():
         slog(DEBUG, self.env, self, "finished jid= {}".format(t.jid), t)
         
         ## This causes (s1, a1, r1), (s2, a2, r2) to be interleaved by more than one job
-        # self.njob_finished += 1
-        if t.jid <= self.njob:
-          self.njob_finished += 1
-          # log(WARNING, "job completion;", jid=t.jid, njob=self.njob, njob_finished=self.njob_finished)
-          if self.njob_finished >= self.njob:
-            return
+        self.njob_finished += 1
+        # blog(njob_finished=self.njob_finished)
+        if self.njob_finished >= self.njob:
+          return
+        # if t.jid <= self.njob:
+        #   self.njob_finished += 1
+        #   # log(WARNING, "job completion;", jid=t.jid, njob=self.njob, njob_finished=self.njob_finished)
+        #   if self.njob_finished >= self.njob:
+        #     return
   
   def put_c(self, t):
     slog(DEBUG, self.env, self, "received", t)
     return self.store_c.put(t)
+
+# ############################################  Scher  ########################################### #
+class Scher_wMultiplicativeExpansion(object):
+  def __init__(self, mapping_m, sching_m):
+    self.sching_m = sching_m
+    self.mapper = Mapper(mapping_m)
+    
+    if sching_m['type'] == 'plain':
+      self.schedule = self.plain
+    elif sching_m['type'] == 'expand_if_totaldemand_leq':
+      self.schedule = self.expand_if_totaldemand_leq
+  
+  def __repr__(self):
+    return 'Scher_wMultiplicativeExpansion[sching_m={}, mapper= {}]'.format(self.sching_m, self.mapper)
+  
+  def plain(self, j, w_l, cluster, expand=True):
+    r = self.sching_m['r'] if expand else 1
+    j.n = int(j.k*r)
+    w_l = self.mapper.worker_l(j, w_l)
+    if len(w_l) < j.n:
+      return None, -1, None
+    return None, r, w_l[:j.n]
+  
+  def expand_if_totaldemand_leq(self, j, w_l, cluster):
+    expand = True if j.k*j.totaldemand < self.sching_m['threshold'] else False
+    return self.plain(j, w_l, cluster, expand)
   
