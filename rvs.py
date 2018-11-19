@@ -659,8 +659,13 @@ if __name__ == "__main__":
   # V = TPareto(1, 100, 1.1)
   # print("EV= {}".format(V.mean() ) )
   
-  b = BZipf(1, 1)
-  print("b.mean= {}".format(b.mean() ) )
+  # b = BZipf(1, 1)
+  # print("b.mean= {}".format(b.mean() ) )
+  
+  u = Uniform(0.25, 0.75)
+  print("u.mean= {}".format(u.mean() ) )
+  for i in range(100):
+    print("{}th sample= {}".format(i, u.sample() ) )
   
   # d = DUniform(1, 1)
   # for _ in range(100):

@@ -20,12 +20,23 @@ class Task_LessReal():
   def __repr__(self):
     return "Task_LessReal[id= {}, jid= {}, rem_lifetime= {}]".format(self._id, self.jid, self.rem_lifetime)
 
+class Job_LessReal(object):
+  def __init__(self, _id, k, n, reqed, lifetime):
+    self._id = _id
+    self.k = k
+    self.n = n
+    self.reqed = reqed
+    self.lifetime = lifetime
+    
+  def __repr__(self):
+    return "Job_LessReal[id= {}, k= {}, reqed= {}, lifetime= {}]".format(self._id, self.k, self.reqed, self.lifetime)
+
 class JobGen_LessReal(object):
-  def __init__(self, env, ar, demandperslot_mean_rv, totaldemand_rv, k_rv, njob, out, **kwargs):
+  def __init__(self, env, ar, reqed_rv, lifetime_rv, k_rv, njob, out, **kwargs):
     self.env = env
     self.ar = ar
-    self.demandperslot_mean_rv = demandperslot_mean_rv
-    self.totaldemand_rv = totaldemand_rv
+    self.reqed_rv = reqed_rv
+    self.lifetime_rv = lifetime_rv
     self.k_rv = k_rv
     self.njob = njob
     self.out = out
@@ -39,13 +50,11 @@ class JobGen_LessReal(object):
       yield self.env.timeout(random.expovariate(self.ar) )
       self.nsent += 1
       k = self.k_rv.sample()
-      demandmean = self.demandperslot_mean_rv.sample()
-      coeff_var = 0.7
-      self.out.put(Job(
+      self.out.put(Job_LessReal(
         _id = self.nsent,
         k = k, n = k,
-        demandperslot_rv = Uniform(demandmean, demandmean),
-        totaldemand = self.totaldemand_rv.sample() ) )
+        reqed = self.reqed_rv.sample(),
+        lifetime = self.lifetime_rv.sample() ) )
 
 def map_to_key__val_l(m):
   m = collections.OrderedDict(sorted(m.items() ) )
@@ -96,8 +105,6 @@ class Worker_LessReal():
       load_weighted_sum += (t - _t)*_load
       _t, _load = t, load
     return load_weighted_sum/t
-    # t_l, load_l = map_to_key__val_l(self.t_load_m)
-    # return np.mean(load_l)
   
   def run(self):
     while True:
@@ -224,16 +231,15 @@ class Cluster_LessReal():
       
       self.jid_info_m[j._id] = {'wait_time': self.env.now - j.arrival_time}
       wid_l = []
-      lifetime = j.totaldemand/j.reqed
       for i, w in enumerate(w_l):
         type_ = 's' if i < j.k else 'r'
-        w.put(Task_LessReal(i+1, j._id, j.reqed, lifetime, j.k, type_) )
+        w.put(Task_LessReal(i+1, j._id, j.reqed, j.lifetime, j.k, type_) )
         yield self.env.timeout(0.01)
         wid_l.append(w._id)
       
       self.jid__t_l_m[j._id] = []
       self.jid_info_m[j._id].update({
-        'expected_run_time': j.totaldemand/j.reqed,
+        'expected_run_time': j.lifetime,
         'wid_l': wid_l,
         's': s, 'r': r} )
   
