@@ -99,6 +99,10 @@ class Exp(RV):
     return 1/self.mu**2
   
   def moment(self, i):
+    if i == 1:
+      return self.mean()
+    elif i == 2:
+      return 1/self.mu**2 + self.mean()**2
     return moment_ith(i, self)
   
   def laplace(self, s):
@@ -357,6 +361,13 @@ class Uniform(RV):
   def mean(self):
     # return self.dist.mean()
     return (self.l_l + self.u_l)/2
+  
+  def moment(self, i):
+    if i == 1:
+      return self.mean()
+    elif i == 2:
+      return (self.u_l - self.l_l)/12 + self.mean()**2
+    return self.dist.moment(i)
   
   def sample(self):
     return self.dist.rvs()
