@@ -26,11 +26,40 @@ def B(m, n, u_l=1):
   # else:
   #   return I(u_l, m, n)*B(m, n)
 
+def E_X_i_j_pareto(n, i, j, loc, a):
+  if i > j:
+    _j = j
+    j = i
+    i = _j
+  if a <= max(2/(n-i+1), 1/(n-j+1) ):
+    return 0 # None
+  return loc**2*G(n+1)/G(n+1-2/a) * G(n-i+1-2/a)/G(n-i+1-1/a) * G(n-j+1-1/a)/G(n-j+1)
+
 def ET_k_c_pareto(k, c, loc, a):
   return loc*G(k+1)*G(1-1/(c+1)/a)/G(k+1-1/(c+1)/a)
 
 def EC_k_c_pareto(k, c, loc, a):
   return k*(c+1) * a*(c+1)*loc/(a*(c+1)-1)
+
+def ET2_k_c_pareto(k, c, loc, a):
+  a_ = (c+1)*a
+  if a_ > 1:
+    return E_X_i_j_pareto(k, k, k, loc, a_)
+  else:
+    return None
+
+def EC2_k_c_pareto(k, c, loc, a):
+  a_ = (c+1)*a
+  # if a_ > 2:
+  #   return (k*(c+1))**2 * loc**2*a_/(a_-2)
+  # else:
+  #   None
+  EC2 = 0
+  for i in range(1, k+1):
+    for j in range(1, k+1):
+      EC2 += E_X_i_j_pareto(k, i, j, loc, a_)
+
+  return (c+1)**2 * EC2
 
 def ET_k_n_pareto(k, n, loc, a):
   if k == 0:
@@ -45,6 +74,19 @@ def EC_k_n_pareto(k, n, loc, a):
   if n > 170:
     return loc/(a-1) * (a*n - (n-k)*((n+1)/(n-k+1))**(1/a) )
   return loc*n/(a-1) * (a - G(n)/G(n-k)*G(n-k+1-1/a)/G(n+1-1/a) )
+
+def ET2_k_n_pareto(k, n, loc, a):
+  return E_X_i_j_pareto(n, k, k, loc, a)
+
+def EC2_k_n_pareto(k, n, loc, a):
+  EC2 = (n-k)**2*E_X_i_j_pareto(n, k, k, loc, a)
+  for i in range(1, k+1):
+    EC2 += 2*(n-k)*E_X_i_j_pareto(n, i, k, loc, a)
+  for i in range(1, k+1):
+    for j in range(1, k+1):
+      EC2 += E_X_i_j_pareto(n, i, j, loc, a)
+  
+  return EC2
 
 # #########################################  Modeling  ########################################### #
 '''
@@ -115,20 +157,20 @@ def test():
     E_kD_given_kD_leq_d = scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, d)[0] \
                         / Pr_kD_leq_d if Pr_kD_leq_d != 0 else 0
     
-    # E_D_given_D_g_doverk = lambda k: mean(D, given_X_leq_x=False, x=d/k)
-    # E_kD_given_kD_g_d = sum([i*E_D_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
-    E_kD_given_kD_g_d = (Ek*ED - scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, d)[0] ) \
+    # ED_given_D_g_doverk = lambda k: mean(D, given_X_leq_x=False, x=d/k)
+    # EkD_given_kD_g_d = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
+    EkD_given_kD_g_d = (Ek*ED - scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, d)[0] ) \
                       / (1 - Pr_kD_leq_d) if Pr_kD_leq_d != 0 else Ek*ED
     
-    log(INFO, "", diff=(Ek*ED - (E_kD_given_kD_leq_d*Pr_kD_leq_d + E_kD_given_kD_g_d*(1 - Pr_kD_leq_d) ) ) )
-    blog(E_kD_given_kD_leq_d=E_kD_given_kD_leq_d, E_kD_given_kD_g_d=E_kD_given_kD_g_d, Pr_kD_leq_d=Pr_kD_leq_d)
+    log(INFO, "", diff=(Ek*ED - (E_kD_given_kD_leq_d*Pr_kD_leq_d + EkD_given_kD_g_d*(1 - Pr_kD_leq_d) ) ) )
+    blog(E_kD_given_kD_leq_d=E_kD_given_kD_leq_d, EkD_given_kD_g_d=EkD_given_kD_g_d, Pr_kD_leq_d=Pr_kD_leq_d)
     
     # Using law of total expectation
-    E_D_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
-    E_kD_given_kD_leq_d_ = sum([i*E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
-    E_D_given_D_g_doverk = lambda k: mean(D, given_X_leq_x=False, x=d/k)
-    E_kD_given_kD_g_d_ = sum([i*E_D_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
-    blog(E_kD_given_kD_leq_d_=E_kD_given_kD_leq_d_, E_kD_given_kD_g_d_=E_kD_given_kD_g_d_)
+    ED_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
+    EkD_given_kD_leq_d_ = sum([i*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+    ED_given_D_g_doverk = lambda k: mean(D, given_X_leq_x=False, x=d/k)
+    EkD_given_kD_g_d_ = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
+    blog(EkD_given_kD_leq_d_=EkD_given_kD_leq_d_, EkD_given_kD_g_d_=EkD_given_kD_g_d_)
   
     sim_E_kD_given_kD_leq_d = gen_sim_E_kD_given_kD_leq_d(d)
     blog(sim_E_kD_given_kD_leq_d=sim_E_kD_given_kD_leq_d)
@@ -150,48 +192,68 @@ def EC_exact_pareto(k, r, b, beta, a, alpha, d, red):
   ES = S.mean()
   ED = D.mean() # b/(1 - 1/beta)
   
-  E_D_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
+  ED_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
   if red == 'Coding':
-    EC_given_kD_leq_d = sum([EC_k_n_pareto(i, i*r, a, alpha)*E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+    EC_given_kD_leq_d = sum([EC_k_n_pareto(i, i*r, a, alpha)*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
   elif red == 'Rep':
-    EC_given_kD_leq_d = sum([EC_k_c_pareto(i, r - 1, a, alpha)*E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+    EC_given_kD_leq_d = sum([EC_k_c_pareto(i, r - 1, a, alpha)*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
   # return EC_given_kD_leq_d
   
   Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
-  E_kD_given_kD_leq_d = sum([i*E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+  E_kD_given_kD_leq_d = sum([i*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
   # def Pr_kD(x):
   #   return sum([D.pdf(x/i)*k.pdf(i) for i in k.v_l] )
   # mpmath.quad(lambda x: x*Pr_kD(x), [0, d] ) \
   # E_kD_given_kD_leq_d = scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, d)[0] \
   #                     / Pr_kD_leq_d if Pr_kD_leq_d != 0 else Ek*ED
   
-  E_D_given_D_g_doverk = lambda k: mean(D, given_X_leq_x=False, x=d/k)
-  # E_kD_given_kD_g_d = sum([i*E_D_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
-  E_kD_given_kD_g_d = (Ek*ED - Pr_kD_leq_d*E_kD_given_kD_leq_d)/(1 - Pr_kD_leq_d)
+  ED_given_D_g_doverk = lambda k: mean(D, given_X_leq_x=False, x=d/k)
+  # EkD_given_kD_g_d = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
+  EkD_given_kD_g_d = (Ek*ED - Pr_kD_leq_d*E_kD_given_kD_leq_d)/(1 - Pr_kD_leq_d)
   
-  # E_kD_given_kD_g_d = (Ek*ED - scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, d)[0] ) \
+  # EkD_given_kD_g_d = (Ek*ED - scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, d)[0] ) \
   #                   / (1 - Pr_kD_leq_d) if Pr_kD_leq_d != 0 else Ek*ED
   # def Pr_kD_leq_x(x):
   #   return sum([D.cdf(x/i)*k.pdf(i) for i in k.v_l] )
-  # E_kD_given_kD_g_d = (Ek*ED - mpmath.quad(lambda x: 1 - Pr_kD_leq_x(x), [0, d] ) )/(1 - Pr_kD_leq_d)
+  # EkD_given_kD_g_d = (Ek*ED - mpmath.quad(lambda x: 1 - Pr_kD_leq_x(x), [0, d] ) )/(1 - Pr_kD_leq_d)
   
   # return EC_given_kD_g_d
   # log(INFO, "***", EC_given_kD_leq_d=EC_given_kD_leq_d, EC_given_kD_g_d=EC_given_kD_g_d)
   
   
   # E_kD_given_kD_leq_d = mpmath.quad(lambda x: 1 - Pr_kD_leq_x(x), [0, d] )/Pr_kD_leq_d if Pr_kD_leq_d != 0 else Ek*ED
-  # E_kD_given_kD_g_d = (Ek*ED - mpmath.quad(lambda x: 1 - Pr_kD_leq_x(x), [0, d] ) )/(1 - Pr_kD_leq_d) if Pr_kD_leq_d != 0 else Ek*ED
+  # EkD_given_kD_g_d = (Ek*ED - mpmath.quad(lambda x: 1 - Pr_kD_leq_x(x), [0, d] ) )/(1 - Pr_kD_leq_d) if Pr_kD_leq_d != 0 else Ek*ED
   
   # E_kD_given_kD_leq_d = sum([mpmath.quad(lambda x: D.tail(x), [0, d/i] )*i*k.pdf(i) for i in k.v_l] ) \
   #                     / Pr_kD_leq_d if Pr_kD_leq_d != 0 else Ek*ED
-  # E_kD_given_kD_g_d = (Ek*ED - sum([mpmath.quad(lambda x: D.tail(x), [0, d/i] )*i*k.pdf(i) for i in k.v_l] ) ) \
+  # EkD_given_kD_g_d = (Ek*ED - sum([mpmath.quad(lambda x: D.tail(x), [0, d/i] )*i*k.pdf(i) for i in k.v_l] ) ) \
   #                   / (1 - Pr_kD_leq_d) if Pr_kD_leq_d != 0 else Ek*ED
   
-  # E_kD_given_kD_g_d = (Ek*ED - E_kD_given_kD_leq_d*Pr_kD_leq_d)/(1 - Pr_kD_leq_d)
-  EC_given_kD_g_d = ES*E_kD_given_kD_g_d
+  # EkD_given_kD_g_d = (Ek*ED - E_kD_given_kD_leq_d*Pr_kD_leq_d)/(1 - Pr_kD_leq_d)
+  EC_given_kD_g_d = ES*EkD_given_kD_g_d
   
-  # log(INFO, "", diff=(Ek*ED - (E_kD_given_kD_leq_d*Pr_kD_leq_d + E_kD_given_kD_g_d*(1 - Pr_kD_leq_d) ) ) )
-  # blog(E_kD_given_kD_leq_d=E_kD_given_kD_leq_d, E_kD_given_kD_g_d=E_kD_given_kD_g_d, Pr_kD_leq_d=Pr_kD_leq_d)
+  # log(INFO, "", diff=(Ek*ED - (E_kD_given_kD_leq_d*Pr_kD_leq_d + EkD_given_kD_g_d*(1 - Pr_kD_leq_d) ) ) )
+  # blog(E_kD_given_kD_leq_d=E_kD_given_kD_leq_d, EkD_given_kD_g_d=EkD_given_kD_g_d, Pr_kD_leq_d=Pr_kD_leq_d)
+  
+  return EC_given_kD_leq_d*Pr_kD_leq_d + \
+         EC_given_kD_g_d*(1 - Pr_kD_leq_d)
+
+def EC2_exact_pareto(k, r, b, beta, a, alpha, d, red):
+  D = Pareto(b, beta)
+  S = Pareto(a, alpha)
+  if d is None:
+    return k.moment(2)*S.moment(2)*D.moment(2)
+  
+  ED2_given_D_leq_doverk = lambda k: moment(D, 2, given_X_leq_x=True, x=d/k)
+  if red == 'Coding':
+    EC_given_kD_leq_d = sum([EC2_k_n_pareto(i, i*r, a, alpha)*ED2_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+  elif red == 'Rep':
+    EC_given_kD_leq_d = sum([EC2_k_c_pareto(i, r - 1, a, alpha)*ED2_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+  
+  Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
+  Ek2D2_given_kD_leq_d = sum([i**2*ED2_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+  Ek2D2_given_kD_g_d = (k.moment(2)*D.moment(2) - Pr_kD_leq_d*Ek2D2_given_kD_leq_d)/(1 - Pr_kD_leq_d)
+  EC_given_kD_g_d = S.moment(2)*Ek2D2_given_kD_g_d
   
   return EC_given_kD_leq_d*Pr_kD_leq_d + \
          EC_given_kD_g_d*(1 - Pr_kD_leq_d)
@@ -204,28 +266,28 @@ def EC_model_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   if d is None:
     return Ek*ES*ED
   
-  def E_D_given_D_leq_doverk(k):
+  def ED_given_D_leq_doverk(k):
     if b >= d/k:
       return 0
     else:
       return beta*b**(beta)/(beta - 1) * (b**(1-beta) - (d/k)**(1-beta) ) / (1 - (b*k/d)**beta)
   if red == 'Coding':
-    EC_given_kD_leq_d = sum([EC_k_n_pareto(i, i*r, a, alpha)*E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+    EC_given_kD_leq_d = sum([EC_k_n_pareto(i, i*r, a, alpha)*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
   elif red == 'Rep':
-    EC_given_kD_leq_d = sum([EC_k_c_pareto(i, r - 1, a, alpha)*E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+    EC_given_kD_leq_d = sum([EC_k_c_pareto(i, r - 1, a, alpha)*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
   # return EC_given_kD_leq_d
   
-  def E_D_given_D_g_doverk(k):
+  def ED_given_D_g_doverk(k):
     ED = b/(1 - 1/beta)
     if b > d/k:
       return ED
     else:
       return (ED - beta*b**(beta)/(beta - 1) * (b**(1-beta) - (d/k)**(1-beta) ) ) / (b*k/d)**beta
   Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
-  E_kD_given_kD_leq_d = sum([i*E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
-  # E_kD_given_kD_g_d = sum([i*E_D_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
-  E_kD_given_kD_g_d = (Ek*ED - Pr_kD_leq_d*E_kD_given_kD_leq_d)/(1 - Pr_kD_leq_d)
-  EC_given_kD_g_d = ES*E_kD_given_kD_g_d
+  E_kD_given_kD_leq_d = sum([i*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+  # EkD_given_kD_g_d = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
+  EkD_given_kD_g_d = (Ek*ED - Pr_kD_leq_d*E_kD_given_kD_leq_d)/(1 - Pr_kD_leq_d)
+  EC_given_kD_g_d = ES*EkD_given_kD_g_d
   # return EC_given_kD_g_d
   # log(INFO, "***", EC_given_kD_leq_d=EC_given_kD_leq_d, EC_given_kD_g_d=EC_given_kD_g_d)
   
@@ -240,18 +302,18 @@ def EC_approx_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   if d is None:
     return Ek*ES*ED
   
-  E_D_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
-  E_kD_given_kD_leq_d = sum([i*E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+  ED_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
+  E_kD_given_kD_leq_d = sum([i*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
   Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
   
-  def E_D_given_D_g_doverk(k):
+  def ED_given_D_g_doverk(k):
     ED = b/(1 - 1/beta)
     if b > d/k:
       return ED
     else:
       return (ED - beta*b**(beta)/(beta - 1) * (b**(1-beta) - (d/k)**(1-beta) ) ) / (b*k/d)**beta
-  # E_kD_given_kD_g_d = sum([i*E_D_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
-  E_kD_given_kD_g_d = (Ek*ED - Pr_kD_leq_d*E_kD_given_kD_leq_d)/(1 - Pr_kD_leq_d)
+  # EkD_given_kD_g_d = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
+  EkD_given_kD_g_d = (Ek*ED - Pr_kD_leq_d*E_kD_given_kD_leq_d)/(1 - Pr_kD_leq_d)
   
   def f():
     if red == 'Coding':
@@ -259,34 +321,34 @@ def EC_approx_pareto(k, r, b, beta, a, alpha, d=None, red=None):
     elif red == 'Rep':
       return a*r*alpha*r/(alpha*r - 1)
   E_kD = Ek*ED
-  E_kD_ = E_kD_given_kD_leq_d*Pr_kD_leq_d + E_kD_given_kD_g_d*(1 - Pr_kD_leq_d)
+  E_kD_ = E_kD_given_kD_leq_d*Pr_kD_leq_d + EkD_given_kD_g_d*(1 - Pr_kD_leq_d)
   log(INFO, "E_kD= {}, E_kD_= {}".format(E_kD, E_kD_) )
   
-  # return f()*E_kD_given_kD_leq_d*Pr_kD_leq_d + ES*E_kD_given_kD_g_d*(1 - Pr_kD_leq_d)
+  # return f()*E_kD_given_kD_leq_d*Pr_kD_leq_d + ES*EkD_given_kD_g_d*(1 - Pr_kD_leq_d)
   return Ek*ES*ED + E_kD_given_kD_leq_d*Pr_kD_leq_d*(f() - ES)
   
   '''
   # Debugging
-  # EC_given_kD_leq_d = sum([i*f()*E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
-  # EC_given_kD_leq_d = sum([EC_k_c_pareto(i, int(r)-1, a, alpha) * E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+  # EC_given_kD_leq_d = sum([i*f()*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+  # EC_given_kD_leq_d = sum([EC_k_c_pareto(i, int(r)-1, a, alpha) * ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
   # def EC_k_c_pareto(k, c, loc, a):
   #   return k*(c+1) * a*(c+1)*loc/(a*(c+1)-1)
-  # EC_given_kD_leq_d = sum([i*r * alpha*r*a/(alpha*r-1) * E_D_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+  # EC_given_kD_leq_d = sum([i*r * alpha*r*a/(alpha*r-1) * ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
   
   EC_given_kD_leq_d = f()*E_kD_given_kD_leq_d
   
-  def E_D_given_D_g_doverk(k):
+  def ED_given_D_g_doverk(k):
     if b > d/k:
       # return b/(1 - 1/beta) - d/k
       return ED
     else:
       return d/(beta-1)/k
-  E_kD_given_kD_g_d = sum([i*E_D_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
-  EC_given_kD_g_d = ES*E_kD_given_kD_g_d
+  EkD_given_kD_g_d = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
+  EC_given_kD_g_d = ES*EkD_given_kD_g_d
   
   ED = b/(1 - 1/beta)
-  log(INFO, "", diff=(Ek*ED - (E_kD_given_kD_leq_d*Pr_kD_leq_d + E_kD_given_kD_g_d*(1 - Pr_kD_leq_d) ) ) )
-  blog(E_kD_given_kD_leq_d=E_kD_given_kD_leq_d, E_kD_given_kD_g_d=E_kD_given_kD_g_d, Pr_kD_leq_d=Pr_kD_leq_d)
+  log(INFO, "", diff=(Ek*ED - (E_kD_given_kD_leq_d*Pr_kD_leq_d + EkD_given_kD_g_d*(1 - Pr_kD_leq_d) ) ) )
+  blog(E_kD_given_kD_leq_d=E_kD_given_kD_leq_d, EkD_given_kD_g_d=EkD_given_kD_g_d, Pr_kD_leq_d=Pr_kD_leq_d)
   
   return EC_given_kD_leq_d*Pr_kD_leq_d + \
          EC_given_kD_g_d*(1 - Pr_kD_leq_d)
@@ -297,15 +359,16 @@ def compare_EC_exact_approx():
   red = 'Rep' # 'Coding'
   k = BZipf(1, 10)
   r = 2
-  b, beta = 10, 1.1
-  a, alpha = 1, 2
+  b, beta = 10, 3 # 1.1
+  a, alpha = 1, 3 # 2
   log(INFO, "", red=red, k=k, r=r, b=b, beta=beta, a=a, alpha=alpha)
   
   for d in [None, *np.linspace(0.1, 10, 4), *np.linspace(100, 1000, 20) ]:
     print(">> d= {}".format(d) )
     blog(EC_exact=EC_exact_pareto(k, r, b, beta, a, alpha, d, red),
          EC_model=EC_model_pareto(k, r, b, beta, a, alpha, d, red),
-         EC_approx=EC_approx_pareto(k, r, b, beta, a, alpha, d, red) )
+         EC_approx=EC_approx_pareto(k, r, b, beta, a, alpha, d, red),
+         EC2_exact=EC2_exact_pareto(k, r, b, beta, a, alpha, d, red) )
 
 def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   def func_ro(ro):
@@ -472,7 +535,7 @@ def sim(sinfo_m, mapping_m, sching_m, plotname_suffix=''):
   
   njobs_wfate, ndropped = 0, 0
   njobs_waited_inq = 0
-  waittime_l = []
+  waittime_l, waittime_givenqed_l = [], []
   sl_l, serv_sl_l = [], []
   for jid, info in cl.jid_info_m.items():
     if 'fate' in info:
@@ -485,8 +548,9 @@ def sim(sinfo_m, mapping_m, sching_m, plotname_suffix=''):
         sl_l.append(
           (info['wait_time'] + info['run_time'] )/info['expected_run_time'] )
         waittime_l.append(info['wait_time'] )
-        if info['wait_time'] > 0:
+        if info['wait_time'] > 0: # 0.01:
           njobs_waited_inq += 1
+          waittime_givenqed_l.append(info['wait_time'] )
   frac_jobs_waited_inq = njobs_waited_inq/len(cl.jid_info_m)
   blog(ndropped=ndropped, njobs_wfate=njobs_wfate, frac_jobs_waited_inq=frac_jobs_waited_inq)
   
@@ -496,7 +560,9 @@ def sim(sinfo_m, mapping_m, sching_m, plotname_suffix=''):
     'sl_mean': np.mean(sl_l),
     'sl_std': np.std(sl_l),
     'serv_sl_mean': np.mean(serv_sl_l),
-    'load_mean': np.mean(avg_schedload_l) }
+    'load_mean': np.mean(avg_schedload_l),
+    'frac_jobs_waited_inq': frac_jobs_waited_inq,
+    'waittime_givenqed_mean': np.mean(waittime_givenqed_l) }
 
 def plot_sim():
   blog(sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
@@ -604,7 +670,7 @@ if __name__ == "__main__":
   # plot_slowdown()
   
   # test()
-  # compare_EC_exact_approx()
+  compare_EC_exact_approx()
   # plot_ro_Esl()
   
-  plot_sim()
+  # plot_sim()

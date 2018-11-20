@@ -234,7 +234,7 @@ class Cluster_LessReal():
       for i, w in enumerate(w_l):
         type_ = 's' if i < j.k else 'r'
         w.put(Task_LessReal(i+1, j._id, j.reqed, j.lifetime, j.k, type_) )
-        yield self.env.timeout(0.01)
+        yield self.env.timeout(0.0001)
         wid_l.append(w._id)
       
       self.jid__t_l_m[j._id] = []

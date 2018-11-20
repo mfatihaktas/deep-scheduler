@@ -23,37 +23,42 @@ def check_MGc_assumption():
   r = 1
   L = Exp(1, 1)
   S = DUniform(1, 1)
-  sinfo_m['njob'] = 2000*20
+  sinfo_m['njob'] = 2000*10
   sching_m = {'type': 'plain', 'r': r}
   blog(N_times_Cap=N_times_Cap, sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
   
-  def run(ro, N, R, L, S):
+  def run(ro, N, k, R, L, S, r=1):
     Cap = int(N_times_Cap/N)
     print("\n")
-    log(INFO, "ro= {}, N= {}, Cap= {}, R= {}, L= {}".format(ro, N, Cap, R, L) )
+    log(INFO, "ro= {}, N= {}, Cap= {}, k= {}, R= {}, L= {}, S= {}, r= {}".format(ro, N, Cap, k, R, L, S, r) )
     
     ar = round(ar_for_ro(ro, N, Cap, k, R, L, S), 2)
     sinfo_m.update({
       'nworker': N, 'wcap': Cap, 'ar': ar,
+      'k_rv': k,
       'reqed_rv': R,
       'lifetime_rv': L,
       'straggle_m': {'slowdown': lambda load: S.sample() } } )
+    sching_m['r'] = r
     sim_m = sim(sinfo_m, mapping_m, sching_m, "N{}_C{}".format(N, Cap) )
     blog(sim_m=sim_m)
     
-    c = int(N*Cap/R.mean() ) # N*Cap
-    print("c= {}".format(c) )
-    EW = EW_MGc(ar, L, c)
-    sim_EW = sim_m['waittime_mean']
-    print("sim_EW= {}, M/G/c_EW= {}".format(sim_EW, EW) )
-    return sim_EW
+    # c = int(N*Cap/R.mean() ) # N*Cap
+    # print("c= {}".format(c) )
+    # EW = EW_MGc(ar, L, c)
+    # print("M/G/c_EW= {}".format(EW) )
+    return {
+      'ar': ar,
+      'EW': sim_m['waittime_mean'],
+      'pblocking': sim_m['frac_jobs_waited_inq'],
+      'EW_givenqed': sim_m['waittime_givenqed_mean'] }
   
   def test(ro, R=DUniform(1, 1) ):
     print("---------------")
-    run(ro, 1, R, L, S)
-    # run(ro, 2, R, L, S)
-    # run(ro, 5, R, L, S)
-    # run(ro, 10, R, L, S)
+    run(ro, 1, k, R, L, S)
+    # run(ro, 2, k, R, L, S)
+    # run(ro, 5, k, R, L, S)
+    # run(ro, 10, k, R, L, S)
   
   def check_EW_scaling_wrt_ro(N, R):
     log(INFO, "", N=N, R=R)
@@ -62,7 +67,7 @@ def check_MGc_assumption():
     ro_l, EW_l = [], []
     for ro in np.linspace(0.1, 0.9, 9):
       ro = round(ro, 2)
-      EW = run(ro, N, R, L, S)
+      ar, EW, pblocking = run(ro, N, k, R, L, S)
       print("ro= {}, EW= {}".format(ro, EW) )
       
       ro_l.append(ro)
@@ -86,7 +91,7 @@ def check_MGc_assumption():
     for mu in np.linspace(0.1, 1, 10):
       L = Exp(mu, 1)
       EL2_over_EL = round(L.moment(2)/L.moment(1), 2)
-      EW = run(ro, N, R, L, S)
+      ar, EW, pblocking = run(ro, N, k, R, L, S)
       print("EL2_over_EL= {}, EW= {}".format(EL2_over_EL, EW) )
       
       EL2_over_EL_l.append(EL2_over_EL)
@@ -108,7 +113,7 @@ def check_MGc_assumption():
     for u in np.linspace(0.1, 1, 10):
       R = Uniform(0.1, u)
       ER2_over_ER = round(R.moment(2)/R.moment(1), 2)
-      EW = run(ro, N, R, L, S)
+      ar, EW, pblocking = run(ro, N, k, R, L, S)
       print("ER2_over_ER= {}, EW= {}".format(ER2_over_ER, EW) )
       
       ER2_over_ER_l.append(ER2_over_ER)
@@ -129,7 +134,7 @@ def check_MGc_assumption():
     for u in range(1, 10):
       k = DUniform(1, u)
       Ek2_over_Ek = round(k.moment(2)/k.moment(1), 2)
-      EW = run(ro, N, R, L, S)
+      ar, EW, pblocking = run(ro, N, k, R, L, S)
       print("Ek2_over_Ek= {}, EW= {}".format(Ek2_over_Ek, EW) )
       
       Ek2_over_Ek_l.append(Ek2_over_Ek)
@@ -145,29 +150,77 @@ def check_MGc_assumption():
   
   def check_EW_scaling_wrt_model(N, k, R, L, S):
     log(INFO, "", N=N, k=k, R=R, L=L, S=S)
+    sinfo_m['njob'] = 2000*10
     
-    def model(ro):
-      return ro/(1-ro) \
-             * k.moment(2)*R.moment(2)*L.moment(2)*S.moment(2) \
-             / (k.moment(1)*R.moment(1)*L.moment(1)*S.moment(1) ) / 2
+    ET = L.mean()*sum([X_n_k(S, i, i).mean()*k.pdf(i) for i in k.v_l] )
+    ET2 = L.moment(2)*sum([X_n_k(S, i, i).moment(2)*k.pdf(i) for i in k.v_l] )
+    EL, EL2 = L.mean(), L.moment(2)
+    blog(ET=ET, ET2=ET2, EL=EL, EL2=EL2)
     
-    model_l, EW_l = [], []
-    for ro in np.linspace(0.1, 0.9, 9):
-      ro = round(ro, 2)
-      m = model(ro)
-      EW = run(ro, N, R, L, S)
-      print("m= {}, EW= {}".format(m, EW) )
+    C_moment = lambda i: k.moment(i)*R.moment(i)*L.moment(i)*S.moment(i)
+    print(">> C_moment(1)= {}, C_moment(2)= {}".format(C_moment(1), C_moment(2) ) )
+    
+    def Pr_blocking(ar, ro):
+      # narr_atleast_forblocking = (1-ro)*N_times_Cap/(k.moment(1)*R.moment(1) ) - 1
+      # blog(narr_atleast_forblocking=narr_atleast_forblocking)
+      # ar_ = ar*L.tail(ET)*ET # *L.u_l/10
+      # return max(0, \
+      #   1 - math.exp(-ar_)*sum([ar_**i/math.factorial(i) for i in range(int(narr_atleast_forblocking) ) ] ) )
       
-      model_l.append(m)
-      EW_l.append(EW)
-    blog(model_l=model_l, EW_l=EW_l)
+      alpha = 0.9 # 1/2 # L.cdf(L.u_l/10) # L.cdf(10*EL) # 1/2 # L.cdf(EL)
+      # print("alpha= {}".format(alpha) )
+      long_jlifetime = EL + math.sqrt((EL2 - EL**2)*alpha/(1-alpha) ) # ET + math.sqrt((ET2 - ET**2)*alpha/(1-alpha) )
+      ro_short = ar*L.cdf(long_jlifetime)*C_moment(1)/N_times_Cap
+      narr_atleast_forblocking = (1-ro_short)*N_times_Cap / (k.moment(1)*R.moment(1) ) - 1
+      blog(narr_atleast_forblocking=narr_atleast_forblocking)
+      ar_long = ar*L.tail(long_jlifetime)*long_jlifetime
+      return max(0, \
+        1 - math.exp(-ar_long)*sum([ar_long**i/math.factorial(i) for i in range(int(narr_atleast_forblocking) ) ] ) )
     
-    print("ratio = EW/model")
-    for i, EW in enumerate(EW_l):
-      m = model_l[i]
-      ratio = EW/m
-      print("model= {}, ratio= {}".format(m, ratio) )
+    def EW_givenqed_model(ro):
+      return ro/(1-ro) * C_moment(2)/C_moment(1)
+    
+    def EW_model(ar, ro, pblocking=None):
+      if pblocking is None:
+        pblocking = Pr_blocking(ar, ro)
+      print("pblocking= {}".format(pblocking) )
+      return ro/(1-ro) * C_moment(2)/C_moment(1) / 2 * pblocking
+    
+    EW_l, sim_EW_l = [], []
+    # for ro in np.linspace(0.1, 0.9, 9):
+    for ro in np.linspace(0.7, 0.9, 3):
+      ro = round(ro, 2)
+      m = run(ro, N, k, R, L, S)
+      ar, sim_EW, sim_pblocking = m['ar'], m['EW'], m['pblocking']
+      print("ar= {}, ro= {}".format(ar, ro) )
+      
+      pblocking = Pr_blocking(ar, ro)
+      print("sim_pblocking= {}, pblocking= {}".format(sim_pblocking, pblocking) )
+      EW = EW_model(ar, ro, pblocking)
+      print("sim_EW= {}, EW= {}".format(sim_EW, EW) )
+      sim_EW_l.append(sim_EW)
+      EW_l.append(EW)
+      
+      sim_EW_givenqed = m['EW_givenqed']
+      EW_givenqed = EW_givenqed_model(ro)
+      print("sim_EW_givenqed= {}, EW_givenqed= {}".format(sim_EW_givenqed, EW_givenqed) )
+    blog(EW_l=EW_l, sim_EW_l=sim_EW_l)
+    
+    # print("ratio = sim_EW/model")
+    # for i, sim_EW in enumerate(sim_EW_l):
+    #   EW = EW_l[i]
+    #   ratio = sim_EW/EW
+    #   print("EW= {}, ratio= {}".format(EW, ratio) )
     log(INFO, "done.")
+  
+  def check_EW_scaling_w_increasing_r(N, k, R, L, S, ro):
+    log(INFO, "", N=N, k=k, R=R, L=L, S=S, ro=ro)
+    
+    # for r in np.linspace(1, 2, 3):
+    for r in range(1, 4):
+      m = run(ro, N, k, R, L, S, r)
+      ar, sim_EW, sim_pblocking = m['ar'], m['EW'], m['pblocking']
+      print("ar= {}, ro= {}".format(ar, ro) )
   
   # test(ro=0.4)
   # test(ro=0.65)
@@ -189,10 +242,10 @@ def check_MGc_assumption():
   # L = Exp(0.1, 1) # Uniform(1, 1)
   # check_EW_scaling_wrt_Ek2_over_Ek(N, R, L, ro=0.85)
   
-  k = DUniform(1, 4)
-  R = Uniform(1, 1) # Uniform(1, 1)
-  L = Exp(0.1, 1) # Uniform(1, 1)
-  S = Uniform(1, 4)
+  k = BZipf(1, 10) # DUniform(1, 1) # DUniform(1, 4)
+  R = Uniform(1, 1)
+  L = TPareto(10, 10**6, 4) # Exp(0.1, 1) # Uniform(1, 1)
+  S = TPareto(1, 10, 2) # Uniform(1, 1)
   check_EW_scaling_wrt_model(N, k, R, L, S)
   
   log(INFO, "done.")

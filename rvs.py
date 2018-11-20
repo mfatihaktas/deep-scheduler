@@ -183,10 +183,15 @@ class Pareto(RV):
   
   def mean(self):
     if self.a <= 1:
-      log(WARNING, "Mean is Infinity; a= {} <= 1".format(self.a) )
+      log(WARNING, "Mean is infinite; a= {} <= 1".format(self.a) )
       return float("inf")
-    else:
-      return self.loc*self.a/(self.a-1)
+    return self.loc*self.a/(self.a-1)
+  
+  def moment(self, i):
+    if self.a <= i:
+      log(WARNING, "{}th moment is infinite; a= {} <= {}".format(i, self.a, i) )
+      return float("inf")
+    return self.loc**i*self.a/(self.a-i)
   
   def var(self):
     if self.a <= 2:
@@ -358,6 +363,17 @@ class Uniform(RV):
   def __repr__(self):
     return 'Uniform[{}, {}]'.format(self.l_l, self.u_l)
   
+  def cdf(self, x):
+    if x < self.l_l:
+      return 0
+    elif x > self.u_l:
+      return 1
+    # return self.dist.cdf(x)
+    return (x - self.l_l)/self.u_l
+  
+  def tail(self, x):
+    return 1 - self.cdf(x)
+  
   def mean(self):
     # return self.dist.mean()
     return (self.l_l + self.u_l)/2
@@ -376,10 +392,10 @@ class DUniform(RV):
   def __init__(self, lb, ub):
     super().__init__(l_l=lb, u_l=ub)
     
-    self.v = np.arange(self.l_l, self.u_l+1)
-    w_l = [1 for v in self.v]
-    self.p = [w/sum(w_l) for w in w_l]
-    self.dist = scipy.stats.rv_discrete(name='duniform', values=(self.v, self.p) )
+    self.v_l = np.arange(self.l_l, self.u_l+1)
+    w_l = [1 for v in self.v_l]
+    self.p_l = [w/sum(w_l) for w in w_l]
+    self.dist = scipy.stats.rv_discrete(name='duniform', values=(self.v_l, self.p_l) )
   
   def __repr__(self):
     return 'DUniform[{}, {}]'.format(self.l_l, self.u_l)
@@ -442,6 +458,9 @@ class BZipf(RV):
   def mean(self):
     # return sum([v*self.p(i) for i,v in enumerate(self.v) ] )
     return self.dist.mean()
+  
+  def moment(self, i):
+    return self.dist.moment(i)
   
   def sample(self):
     return self.dist.rvs(size=1)[0]
@@ -538,14 +557,14 @@ def binomial(n, k):
   return scipy.special.binom(n, k)
 
 def mean(X, given_X_leq_x=None, x=None):
-  EX = X.mean()
+  return moment(X, 1, given_X_leq_x, x)
+
+def moment(X, i=1, given_X_leq_x=None, x=None):
+  EXi = X.moment(i)
   if given_X_leq_x is None:
-    return EX
+    return EXi
   
-  # s = float(mpmath.quad(X.tail, [0, x] ) )
-  # s, abserr = scipy.integrate.quad(X.tail, 0, x)
-  s, abserr = scipy.integrate.quad(lambda y: y*X.pdf(y), 0, x)
-  
+  s, abserr = scipy.integrate.quad(lambda y: y**2*X.pdf(y), 0, x)
   Pr_X_leq_x = X.cdf(x)
   if given_X_leq_x:
     if Pr_X_leq_x == 0:
@@ -563,6 +582,7 @@ def mean(X, given_X_leq_x=None, x=None):
       return EX
     return (EX - s)/Pr_X_g_x
 
+''' This function computes conditional expectation wrong! '''
 def _mean(X, given_X_leq_x=None, x=None):
   # EX = moment_ith(1, X)
   EX = X.mean()
@@ -673,10 +693,10 @@ if __name__ == "__main__":
   # b = BZipf(1, 1)
   # print("b.mean= {}".format(b.mean() ) )
   
-  u = Uniform(0.25, 0.75)
-  print("u.mean= {}".format(u.mean() ) )
-  for i in range(100):
-    print("{}th sample= {}".format(i, u.sample() ) )
+  # u = Uniform(0.25, 0.75)
+  # print("u.mean= {}".format(u.mean() ) )
+  # for i in range(100):
+  #   print("{}th sample= {}".format(i, u.sample() ) )
   
   # d = DUniform(1, 1)
   # for _ in range(100):

@@ -17,8 +17,8 @@ elif [ $1 = 'r' ]; then
 elif [ $1 = 'p' ]; then
   $PY plot_scher.py
 elif [ $1 = 'm' ]; then
-  # $PY modeling.py
-  $PY mgn_model.py
+  $PY modeling.py
+  # $PY mgn_model.py
 else
   echo "Arg did not match!"
 fi
