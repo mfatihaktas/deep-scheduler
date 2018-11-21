@@ -313,6 +313,6 @@ class Scher_wMultiplicativeExpansion(object):
     return None, r, w_l[:j.n]
   
   def expand_if_totaldemand_leq(self, j, w_l, cluster):
-    expand = True if j.k*j.totaldemand < self.sching_m['threshold'] else False
+    expand = True if j.k*j.reqed*j.lifetime < self.sching_m['threshold'] else False
     return self.plain(j, w_l, cluster, expand)
   

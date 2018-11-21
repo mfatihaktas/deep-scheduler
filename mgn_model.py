@@ -250,13 +250,82 @@ def check_MGc_assumption():
   
   log(INFO, "done.")
 
+def plot_ET_wrt_d():
+  N, Cap = 10, 10
+  k = BZipf(1, 1) # DUniform(1, 1)
+  R = Uniform(1, 1)
+  b, beta = 10, 4
+  L = Pareto(b, beta) # TPareto(10, 10**6, 4)
+  a, alpha = 1, 4
+  S = Pareto(a, alpha) # Uniform(1, 1)
+  def alpha_gen(ro):
+    return alpha
+  ro = 0.55
+  red, r = 'Coding', 2
+  print("ro= {}".format(ro) )
+  
+  ar = round(ar_for_ro(ro, N, Cap, k, R, L, S), 2)
+  sinfo_m.update({
+    'njob': 2000*10,
+    'nworker': N, 'wcap': Cap, 'ar': ar,
+    'k_rv': k,
+    'reqed_rv': R,
+    'lifetime_rv': L,
+    'straggle_m': {'slowdown': lambda load: S.sample() } } )
+  sching_m = {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold': None}
+  log(INFO, "", sinfo_m=sinfo_m, sching_m=sching_m, mapping_m=mapping_m)
+  
+  def run(d):
+    sching_m['threshold'] = d
+    sim_m = sim(sinfo_m, mapping_m, sching_m, "N{}_C{}".format(N, Cap) )
+    blog(sim_m=sim_m)
+    return sim_m['responsetime_mean'], sim_m['waittime_mean']
+  
+  sim_ET0, sim_EW0 = 0, 0 # run(d=0)
+  # print("** sim_ET0= {}, sim_EW0= {}".format(sim_ET0, sim_EW0) )
+  
+  l = L.l_l*S.l_l
+  u = 50*L.mean()*S.mean()
+  d_l, sim_ET_l, ET_l = [], [], []
+  for d in np.logspace(math.log10(l), math.log10(u), 10):
+    print(">> d= {}".format(d) )
+    sim_ET, sim_EW = 0 ,0 # run(d)
+    print("** sim_ET= {}, sim_EW= {}".format(sim_ET, sim_EW) )
+    
+    ET, EW = ET_EW_pareto(ro, sim_EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+    print("** ET= {}, EW= {}".format(ET, EW) )
+    
+    # ET_dummy, EW_dummy = ET_EW_pareto(ro, sim_EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=1)
+    # print("** ET_dummy= {}, EW_dummy= {}".format(ET_dummy, EW_dummy) )
+    # print("EW_dummy/sim_EW= {}".format(EW_dummy/sim_EW) )
+    
+    d_l.append(d)
+    sim_ET_l.append(sim_ET)
+    ET_l.append(ET)
+    
+    if sim_ET > 3*sim_ET0:
+      break
+  plot.plot(d_l, sim_ET_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
+  plot.plot(d_l, ET_l, label='Model', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
+  prettify(plot.gca() )
+  plot.legend()
+  plot.xscale('log')
+  fontsize = 14
+  plot.xlabel('d', fontsize=fontsize)
+  plot.ylabel('E[T]', fontsize=fontsize)
+  plot.title(r'$N= {}$, $C= {}$, $\rho_0= {}$, $r= {}$, $k \sim$ {}'.format(N, Cap, ro, r, k) + '\n' + r'$R \sim$ {}, $L \sim$ {}, $S \sim$ {}'.format(R, L, S) )
+  plot.gcf().set_size_inches(5, 5)
+  plot.savefig('plot_ET_wrt_d.png', bbox_inches='tight')
+  plot.gcf().clear()
+  log(INFO, "done.")
+
 if __name__ == "__main__":
   N, Cap = 10, 1
   b, beta = 10, 5
   a, alpha = 1, 1000 # 2
   k = BZipf(1, 1)
   r = 1
-  log(INFO, "", k=k, r=r, b=b, beta=beta, a=a, alpha=alpha)
+  # log(INFO, "", k=k, r=r, b=b, beta=beta, a=a, alpha=alpha)
   def alpha_gen(ro):
     return alpha
   S = Pareto(a, alpha)
@@ -272,4 +341,5 @@ if __name__ == "__main__":
   sching_m = {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold': None}
   # blog(sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
   
-  check_MGc_assumption()
+  # check_MGc_assumption()
+  plot_ET_wrt_d()

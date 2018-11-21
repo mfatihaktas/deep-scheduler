@@ -182,7 +182,41 @@ def test():
   
   log(INFO, "done.")
 
-def EC_exact_pareto(k, r, b, beta, a, alpha, d, red):
+def sim_red(k, r, L, S, d, red, nrun=10000):
+  if d is None:
+    d = 0
+  T_l, C_l, T2_l, C2_l = [], [], [], []
+  for i in range(nrun):
+    k_ = k.sample()
+    L_ = L.sample()
+    
+    if red == 'Coding':
+      n = int(k_*r) if k_*L_ <= d else k_
+      LS_l = sorted([L_*S.sample() for i in range(n) ] )
+      T = LS_l[k_-1]
+      T_l.append(T)
+      T2_l.append(T**2)
+      
+      C = sum([min(ls, ET) for ls in LS_l] )
+      C_l.append(C)
+      C2_l.append(C**2)
+    if red == 'Rep':
+      c = int(r) if k_*L_ <= d else 1
+      LS_l = sorted([L_*min([S.sample() for j in range(c) ] ) for i in range(k_) ] )
+      T = LS_l[-1]
+      T_l.append(T)
+      T2_l.append(T**2)
+      
+      C = sum([ls*c for ls in LS_l] )
+      C_l.append(C)
+      C2_l.append(C**2)
+  return {
+    'ET': np.mean(T_l),
+    'ET2': np.mean(T2_l),
+    'EC': np.mean(C_l),
+    'EC2': np.mean(C2_l) }
+
+def EC_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   D = Pareto(b, beta)
   S = Pareto(a, alpha)
   if d is None:
@@ -238,7 +272,7 @@ def EC_exact_pareto(k, r, b, beta, a, alpha, d, red):
   return EC_given_kD_leq_d*Pr_kD_leq_d + \
          EC_given_kD_g_d*(1 - Pr_kD_leq_d)
 
-def EC2_exact_pareto(k, r, b, beta, a, alpha, d, red):
+def EC2_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   D = Pareto(b, beta)
   S = Pareto(a, alpha)
   if d is None:
@@ -322,7 +356,7 @@ def EC_approx_pareto(k, r, b, beta, a, alpha, d=None, red=None):
       return a*r*alpha*r/(alpha*r - 1)
   E_kD = Ek*ED
   E_kD_ = E_kD_given_kD_leq_d*Pr_kD_leq_d + EkD_given_kD_g_d*(1 - Pr_kD_leq_d)
-  log(INFO, "E_kD= {}, E_kD_= {}".format(E_kD, E_kD_) )
+  # log(INFO, "E_kD= {}, E_kD_= {}".format(E_kD, E_kD_) )
   
   # return f()*E_kD_given_kD_leq_d*Pr_kD_leq_d + ES*EkD_given_kD_g_d*(1 - Pr_kD_leq_d)
   return Ek*ES*ED + E_kD_given_kD_leq_d*Pr_kD_leq_d*(f() - ES)
@@ -363,18 +397,26 @@ def compare_EC_exact_approx():
   a, alpha = 1, 3 # 2
   log(INFO, "", red=red, k=k, r=r, b=b, beta=beta, a=a, alpha=alpha)
   
-  for d in [None, *np.linspace(0.1, 10, 4), *np.linspace(100, 1000, 20) ]:
+  L = Pareto(b, beta)
+  Sl = Pareto(a, alpha)
+  # for d in [None, *np.linspace(0.1, 10, 4), *np.linspace(100, 1000, 20) ]:
+  l = a*b
+  for d in np.logspace(math.log10(l), math.log10(100*l), 20):
     print(">> d= {}".format(d) )
+    
+    sim_m = sim_red(k, r, L, Sl, d, red, nrun=10**5)
+    
     blog(EC_exact=EC_exact_pareto(k, r, b, beta, a, alpha, d, red),
          EC_model=EC_model_pareto(k, r, b, beta, a, alpha, d, red),
          EC_approx=EC_approx_pareto(k, r, b, beta, a, alpha, d, red),
-         EC2_exact=EC2_exact_pareto(k, r, b, beta, a, alpha, d, red) )
+         EC2_exact=EC2_exact_pareto(k, r, b, beta, a, alpha, d, red),
+         sim_EC = sim_m['ET'] )
 
 def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   def func_ro(ro):
-    # return ar/N/Cap * EC_exact_pareto(k, r, b, beta, a, alpha_gen(ro), d)
-    return ar/N/Cap * EC_model_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
-    # return ar/N/Cap * EC_approx_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
+    # return ar/N/Cap * EC_exact_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
+    # return ar/N/Cap * EC_model_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
+    return ar/N/Cap * EC_approx_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
   
   eq = lambda ro: ro - func_ro(ro)
   l, u = 0.0001, 1
@@ -421,18 +463,126 @@ def Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   # log(INFO, "", d=d, Pr_kD_leq_d=Pr_kD_leq_d)
   
   # S = Pareto(a, alpha_gen(ro) )
-  # E_S_given_kD_g_d = sum([X_n_k(S, i, i).mean()*k.pdf(i) for i in k.v_l] )
-  # E_S_given_kD_leq_d = sum([X_n_k(S, int(i*r), i).mean()*k.pdf(i) for i in k.v_l] )
-  # return E_S_given_kD_leq_d*Pr_kD_leq_d + \
-  #       E_S_given_kD_g_d*(1 - Pr_kD_leq_d)
+  # ES_given_kD_g_d = sum([X_n_k(S, i, i).mean()*k.pdf(i) for i in k.v_l] )
+  # ES_given_kD_leq_d = sum([X_n_k(S, int(i*r), i).mean()*k.pdf(i) for i in k.v_l] )
+  # return ES_given_kD_leq_d*Pr_kD_leq_d + \
+  #       ES_given_kD_g_d*(1 - Pr_kD_leq_d)
   
-  E_S_given_kD_g_d = sum([ET_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+  ES_given_kD_g_d = sum([ET_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
   if red == 'Coding':
-    E_S_given_kD_leq_d = sum([ET_k_n_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
+    ES_given_kD_leq_d = sum([ET_k_n_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
   elif red == 'Rep':
-    E_S_given_kD_leq_d = sum([ET_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
-  return E_S_given_kD_leq_d*Pr_kD_leq_d + \
-         E_S_given_kD_g_d*(1 - Pr_kD_leq_d)
+    ES_given_kD_leq_d = sum([ET_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
+  return ES_given_kD_leq_d*Pr_kD_leq_d + \
+         ES_given_kD_g_d*(1 - Pr_kD_leq_d)
+
+def Esl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
+  alpha = alpha_gen(ro)
+  if d is None:
+    return sum([ET_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+  
+  Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
+  
+  ES2_given_kD_g_d = sum([ET2_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+  if red == 'Coding':
+    ES2_given_kD_leq_d = sum([ET2_k_n_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
+  elif red == 'Rep':
+    ES2_given_kD_leq_d = sum([ET2_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
+  return ES2_given_kD_leq_d*Pr_kD_leq_d + \
+         ES2_given_kD_g_d*(1 - Pr_kD_leq_d)
+
+def ET_EW_pareto(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None):
+  if K is None:
+    alpha0 = alpha_gen(ro0)
+    K = EW0/(ro0/(1-ro0)*EC2_exact_pareto(k, r, b, beta, a, alpha0)/EC_exact_pareto(k, r, b, beta, a, alpha0) )
+  
+  ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
+  ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  if ro is None:
+    return None, None
+  alpha = alpha_gen(ro)
+  
+  L = Pareto(b, beta) # Take D as the lifetime; D = LR, R = 1
+  ES = L.mean()*Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES2 = L.moment(2)*Esl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  print("ES= {}, ES2= {}".format(ES, ES2) )
+  EC = EC_exact_pareto(k, r, b, beta, a, alpha, d, red)
+  EC2 = EC2_exact_pareto(k, r, b, beta, a, alpha, d, red)
+  print("EC= {}, EC2= {}".format(EC, EC2) )
+  def Pr_blocking(ar, ro):
+    Pr_shortjob = 0.9 # L.cdf(10*L.mean() ) # 0.9 # 1/2
+    long_jlifetime = ES # + math.sqrt((ES2 - ES**2)*Pr_shortjob/(1-Pr_shortjob) ) # 10*L.mean()
+    # narr_atleast_forblocking = (1 - L.cdf(long_jlifetime)*ro)*N*Cap / (k.moment(1) ) - 1
+    # ar_long = ar*L.tail(long_jlifetime)*long_jlifetime
+    
+    narr_atleast_forblocking = (1 - ro)*N*Cap/k.moment(1) - 1
+    ar_long = ar*ES
+    
+    blog(Pr_shortjob=Pr_shortjob, long_jlifetime=long_jlifetime, narr_atleast_forblocking=narr_atleast_forblocking, ar_long=ar_long)
+    return 1 - math.exp(-ar_long)*sum([ar_long**i/math.factorial(i) for i in range(int(narr_atleast_forblocking)+1) ] )
+  
+  pblocking = Pr_blocking(ar, ro) # K
+  # EW = ro/(1-ro)*EC2/EC * pblocking
+  
+  def EW_MGc(ar, c, EX, EX2):
+    def EW_MMc(ar, EX, c):
+      ro = ar*EX/c
+      log(INFO, "ro= {}".format(ro) )
+      C = 1/(1 + (1-ro)*G(c+1)/(c*ro)**c * sum([(c*ro)**k/G(k+1) for k in range(c) ] ) )
+      # EN = ro/(1-ro)*C + c*ro
+      return C/(c/EX - ar)
+    try:
+      CoeffVar = math.sqrt(EX2 - EX**2)/EX
+    except ValueError:
+      CoeffVar = 0
+    return (1 + CoeffVar**2)/2 * EW_MMc(ar, EX, c)
+  print("ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
+  EW = EW_MGc(ar, int(N*Cap*ES/EC), ES, ES2)
+  
+  ET = ES + EW
+  log(INFO, "d= {}, ro= {}, EW= {}, ES= {}, ET= {}, pblocking= {}".format(d, ro, EW, ES, ET, pblocking) )
+  return ET, EW
+
+def plot_ET():
+  N, Cap = 10, 100
+  b, beta = 10, 3
+  a, alpha = 1, 3
+  # D = Pareto(b, beta)
+  # S = Pareto(a, alpha)
+  k = BZipf(1, 10)
+  def alpha_gen(ro):
+    return alpha
+  ro0, EW0 = 0.55, 20
+  
+  fontsize = 14
+  def plot_(red, r):
+    log(INFO, "red= {}, r= {}".format(red, r) )
+    d_l, ET_l = [], []
+    l = a*b # D.mean()*S.mean()
+    for d in np.logspace(math.log10(l), math.log10(100*l), 20):
+      print(">> d= {}".format(d) )
+      ET, EW = ET_EW_pareto(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+      print("ET= {}".format(ET) )
+      d_l.append(d)
+      ET_l.append(ET)
+    plot.plot(d_l, ET_l, label='w/ {}, r={}'.format(red, r), c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
+  
+  plot_('Rep', 2)
+  plot_('Coding', 2)
+  plot_('Rep', 3)
+  plot_('Coding', 3)
+  
+  prettify(plot.gca() )
+  plot.legend()
+  plot.xscale('log')
+  plot.xlabel('d', fontsize=fontsize)
+  plot.ylabel('E[T]', fontsize=fontsize)
+  
+  plot.title(r'$N= {}$, $C= {}$, $k \sim$ {}'.format(N, Cap, k) + '\n' + r'$\rho_0= {}$, $E[W_0]= {}$, $b= {}$, $\beta= {}$, $a= {}$, $\alpha= {}$'.format(ro0, EW0, b, beta, a, alpha) )
+  plot.gcf().set_size_inches(5, 5)
+  plot.savefig('plot_ET.png', bbox_inches='tight')
+  plot.gcf().clear()
+  log(INFO, "done.")
 
 def plot_ro_Esl():
   N, Cap = 10, 100
@@ -532,10 +682,12 @@ def sim(sinfo_m, mapping_m, sching_m, plotname_suffix=''):
   fig.set_size_inches(2*8, len(cl.w_l)*4)
   plot.subplots_adjust(hspace=0.25, wspace=0.25)
   plot.savefig('plot_wloadovertime_{}_{}.png'.format(sching_m['type'], plotname_suffix), bbox_inches='tight')
+  plot.gcf().clear()
   
   njobs_wfate, ndropped = 0, 0
   njobs_waited_inq = 0
   waittime_l, waittime_givenqed_l = [], []
+  responsetime_l = []
   sl_l, serv_sl_l = [], []
   for jid, info in cl.jid_info_m.items():
     if 'fate' in info:
@@ -548,6 +700,7 @@ def sim(sinfo_m, mapping_m, sching_m, plotname_suffix=''):
         sl_l.append(
           (info['wait_time'] + info['run_time'] )/info['expected_run_time'] )
         waittime_l.append(info['wait_time'] )
+        responsetime_l.append(info['wait_time'] + info['run_time'] )
         if info['wait_time'] > 0: # 0.01:
           njobs_waited_inq += 1
           waittime_givenqed_l.append(info['wait_time'] )
@@ -562,7 +715,8 @@ def sim(sinfo_m, mapping_m, sching_m, plotname_suffix=''):
     'serv_sl_mean': np.mean(serv_sl_l),
     'load_mean': np.mean(avg_schedload_l),
     'frac_jobs_waited_inq': frac_jobs_waited_inq,
-    'waittime_givenqed_mean': np.mean(waittime_givenqed_l) }
+    'waittime_givenqed_mean': np.mean(waittime_givenqed_l),
+    'responsetime_mean': np.mean(responsetime_l) }
 
 def plot_sim():
   blog(sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
@@ -674,3 +828,4 @@ if __name__ == "__main__":
   # plot_ro_Esl()
   
   # plot_sim()
+  # plot_ET()
