@@ -415,8 +415,8 @@ def compare_EC_exact_approx():
 def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   def func_ro(ro):
     # return ar/N/Cap * EC_exact_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
-    # return ar/N/Cap * EC_model_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
-    return ar/N/Cap * EC_approx_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
+    return ar/N/Cap * EC_model_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
+    # return ar/N/Cap * EC_approx_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
   
   eq = lambda ro: ro - func_ro(ro)
   l, u = 0.0001, 1
@@ -491,6 +491,34 @@ def Esl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   return ES2_given_kD_leq_d*Pr_kD_leq_d + \
          ES2_given_kD_g_d*(1 - Pr_kD_leq_d)
 
+def ET_EW_pareto_w_MGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
+  ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
+  ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  if ro is None:
+    return None, None
+  alpha = alpha_gen(ro)
+  
+  def EW_MGc(ar, c, EX, EX2):
+    def EW_MMc(ar, EX, c):
+      ro = ar*EX/c
+      log(INFO, "ro= {}".format(ro) )
+      C = 1/(1 + (1-ro)*G(c+1)/(c*ro)**c * sum([(c*ro)**k/G(k+1) for k in range(c) ] ) )
+      # EN = ro/(1-ro)*C + c*ro
+      return C/(c/EX - ar)
+    # CoeffVar = math.sqrt(EX2 - EX**2)/EX
+    # return (1 + CoeffVar**2)/2 * EW_MMc(ar, EX, c)
+    return (1 + (EX2 - EX**2)/EX**2)/2 * EW_MMc(ar, EX, c)
+  L = Pareto(b, beta)
+  ES = L.mean()*Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES2 = L.moment(2)*Esl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  EC = EC_exact_pareto(k, r, b, beta, a, alpha, d, red)
+  
+  print("ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
+  EW = EW_MGc(ar, int(N*Cap*ES/EC), ES, ES2)
+  ET = ES + EW
+  log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
+  return ET, EW
+
 def ET_EW_pareto(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None):
   if K is None:
     alpha0 = alpha_gen(ro0)
@@ -510,37 +538,21 @@ def ET_EW_pareto(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None):
   EC2 = EC2_exact_pareto(k, r, b, beta, a, alpha, d, red)
   print("EC= {}, EC2= {}".format(EC, EC2) )
   def Pr_blocking(ar, ro):
-    Pr_shortjob = 0.9 # L.cdf(10*L.mean() ) # 0.9 # 1/2
-    long_jlifetime = ES # + math.sqrt((ES2 - ES**2)*Pr_shortjob/(1-Pr_shortjob) ) # 10*L.mean()
-    # narr_atleast_forblocking = (1 - L.cdf(long_jlifetime)*ro)*N*Cap / (k.moment(1) ) - 1
-    # ar_long = ar*L.tail(long_jlifetime)*long_jlifetime
-    
-    narr_atleast_forblocking = (1 - ro)*N*Cap/k.moment(1) - 1
-    ar_long = ar*ES
+    Pr_shortjob = L.cdf(5*L.mean() ) # 0.9 # 1/2
+    long_jlifetime = ES + math.sqrt((ES2 - ES**2)*Pr_shortjob/(1-Pr_shortjob) ) # 10*L.mean()
+    narr_atleast_forblocking = (1 - L.cdf(long_jlifetime)*ro)*N*Cap / (EC/ES) - 1
+    ar_long = ar*L.tail(long_jlifetime)*long_jlifetime
+    # narr_atleast_forblocking = (1 - ro)*N*Cap/k.moment(1) - 1
+    # ar_long = ar*ES
     
     blog(Pr_shortjob=Pr_shortjob, long_jlifetime=long_jlifetime, narr_atleast_forblocking=narr_atleast_forblocking, ar_long=ar_long)
     return 1 - math.exp(-ar_long)*sum([ar_long**i/math.factorial(i) for i in range(int(narr_atleast_forblocking)+1) ] )
   
-  pblocking = Pr_blocking(ar, ro) # K
-  # EW = ro/(1-ro)*EC2/EC * pblocking
-  
-  def EW_MGc(ar, c, EX, EX2):
-    def EW_MMc(ar, EX, c):
-      ro = ar*EX/c
-      log(INFO, "ro= {}".format(ro) )
-      C = 1/(1 + (1-ro)*G(c+1)/(c*ro)**c * sum([(c*ro)**k/G(k+1) for k in range(c) ] ) )
-      # EN = ro/(1-ro)*C + c*ro
-      return C/(c/EX - ar)
-    try:
-      CoeffVar = math.sqrt(EX2 - EX**2)/EX
-    except ValueError:
-      CoeffVar = 0
-    return (1 + CoeffVar**2)/2 * EW_MMc(ar, EX, c)
-  print("ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
-  EW = EW_MGc(ar, int(N*Cap*ES/EC), ES, ES2)
+  pblocking = K # Pr_blocking(ar, ro)
+  EW = ro/(1-ro)*EC2/EC * pblocking
   
   ET = ES + EW
-  log(INFO, "d= {}, ro= {}, EW= {}, ES= {}, ET= {}, pblocking= {}".format(d, ro, EW, ES, ET, pblocking) )
+  log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}, pblocking= {}".format(d, ro, ES, EW, ET, pblocking) )
   return ET, EW
 
 def plot_ET():
