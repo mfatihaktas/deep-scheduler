@@ -182,7 +182,7 @@ def test():
   
   log(INFO, "done.")
 
-def sim_red(k, r, L, S, d, red, nrun=10000):
+def sim_red(k, r, L, Sl, d, red, nrun=10000):
   if d is None:
     d = 0
   T_l, C_l, T2_l, C2_l = [], [], [], []
@@ -192,7 +192,7 @@ def sim_red(k, r, L, S, d, red, nrun=10000):
     
     if red == 'Coding':
       n = int(k_*r) if k_*L_ <= d else k_
-      LS_l = sorted([L_*S.sample() for i in range(n) ] )
+      LS_l = sorted([L_*Sl.sample() for i in range(n) ] )
       T = LS_l[k_-1]
       T_l.append(T)
       T2_l.append(T**2)
@@ -202,7 +202,7 @@ def sim_red(k, r, L, S, d, red, nrun=10000):
       C2_l.append(C**2)
     if red == 'Rep':
       c = int(r) if k_*L_ <= d else 1
-      LS_l = sorted([L_*min([S.sample() for j in range(c) ] ) for i in range(k_) ] )
+      LS_l = sorted([L_*min([Sl.sample() for j in range(c) ] ) for i in range(k_) ] )
       T = LS_l[-1]
       T_l.append(T)
       T2_l.append(T**2)
@@ -401,16 +401,16 @@ def compare_EC_exact_approx():
   Sl = Pareto(a, alpha)
   # for d in [None, *np.linspace(0.1, 10, 4), *np.linspace(100, 1000, 20) ]:
   l = a*b
-  for d in np.logspace(math.log10(l), math.log10(100*l), 20):
+  for d in [None, *np.logspace(math.log10(l), math.log10(100*l), 20) ]:
     print(">> d= {}".format(d) )
     
-    sim_m = sim_red(k, r, L, Sl, d, red, nrun=10**5)
+    sim_m = sim_red(k, r, L, Sl, d, red, nrun=2*10**4)
     
     blog(EC_exact=EC_exact_pareto(k, r, b, beta, a, alpha, d, red),
          EC_model=EC_model_pareto(k, r, b, beta, a, alpha, d, red),
          EC_approx=EC_approx_pareto(k, r, b, beta, a, alpha, d, red),
          EC2_exact=EC2_exact_pareto(k, r, b, beta, a, alpha, d, red),
-         sim_EC = sim_m['ET'] )
+         sim_EC = sim_m['EC'] )
 
 def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   def func_ro(ro):

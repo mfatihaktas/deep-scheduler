@@ -564,14 +564,14 @@ def moment(X, i=1, given_X_leq_x=None, x=None):
   if given_X_leq_x is None:
     return EXi
   
-  s, abserr = scipy.integrate.quad(lambda y: y**2*X.pdf(y), 0, x)
+  s, abserr = scipy.integrate.quad(lambda y: y**i*X.pdf(y), 0, x)
   Pr_X_leq_x = X.cdf(x)
   if given_X_leq_x:
     if Pr_X_leq_x == 0:
       # log(WARNING, "X.cdf(x) = 0!", X=X, x=x)
       return 0
     elif Pr_X_leq_x == 1:
-      return EX
+      return EXi
     return s/Pr_X_leq_x
   else:
     Pr_X_g_x = 1 - Pr_X_leq_x
@@ -579,11 +579,11 @@ def moment(X, i=1, given_X_leq_x=None, x=None):
       # log(WARNING, "X.tail(x) = 0!", X=X, x=x)
       return 0
     elif Pr_X_g_x == 1:
-      return EX
-    return (EX - s)/Pr_X_g_x
+      return EXi
+    return (EXi - s)/Pr_X_g_x
 
 ''' This function computes conditional expectation wrong! '''
-def _mean(X, given_X_leq_x=None, x=None):
+def wrong_mean(X, given_X_leq_x=None, x=None):
   # EX = moment_ith(1, X)
   EX = X.mean()
   if given_X_leq_x is None:
@@ -609,6 +609,16 @@ def _mean(X, given_X_leq_x=None, x=None):
     elif Pr_X_g_x == 1:
       return EX
     return (EX - s)/Pr_X_g_x
+
+def sim_EX(X, given_X_leq_x, x, nrun=10**4):
+  x_l = []
+  for _ in range(nrun):
+    s = X.sample()
+    if given_X_leq_x and s <= x:
+      x_l.append(s)
+    elif not given_X_leq_x and s > x:
+      x_l.append(s)
+  return np.mean(x_l)
 
 def moment_ith(i, X):
   # return float(mpmath.quad(lambda x: i*x**(i-1) * X.tail(x), [0, X.u_l] ) ) # mpmath.inf 10000*10
@@ -702,17 +712,20 @@ if __name__ == "__main__":
   # for _ in range(100):
   #   print("d.sample= {}".format(d.sample() ) )
   
-  '''
-  X = Pareto(40, 2)
+  # '''
+  X = Exp(0.1, 10) # Pareto(40, 2)
   def test(x):
     print(">> x= {}".format(x) )
     Pr_X_leq_x = X.cdf(x)
-    _EX_given_x_leq_x = _mean(X, given_X_leq_x=True, x=x)
-    _EX_given_x_g_x = _mean(X, given_X_leq_x=False, x=x)
+    _EX_given_x_leq_x = wrong_mean(X, given_X_leq_x=True, x=x)
+    _EX_given_x_g_x = wrong_mean(X, given_X_leq_x=False, x=x)
     EX_given_x_leq_x = mean(X, given_X_leq_x=True, x=x)
     EX_given_x_g_x = mean(X, given_X_leq_x=False, x=x)
+    sim_EX_given_x_leq_x = sim_EX(X, given_X_leq_x=True, x=x, nrun=10**5)
+    sim_EX_given_x_g_x = sim_EX(X, given_X_leq_x=False, x=x, nrun=10**5)
     blog(_EX_given_x_leq_x=_EX_given_x_leq_x, _EX_given_x_g_x=_EX_given_x_g_x, EX_given_x_leq_x=EX_given_x_leq_x, EX_given_x_g_x=EX_given_x_g_x)
+    blog(sim_EX_given_x_leq_x=sim_EX_given_x_leq_x, sim_EX_given_x_g_x=sim_EX_given_x_g_x)
     # print("X.mean= {}, Pr_X_leq_x*EX_given_x_leq_x + (1-Pr_X_leq_x)*EX_given_x_g_x= {}".format(X.mean(), Pr_X_leq_x*EX_given_x_leq_x + (1-Pr_X_leq_x)*EX_given_x_g_x) )
-  for x in np.linspace(0, 400, 20):
+  for x in np.linspace(X.l_l, 10*X.l_l, 10):
     test(x)
-  '''
+  # '''
