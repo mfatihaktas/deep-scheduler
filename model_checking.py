@@ -256,17 +256,17 @@ def plot_ET_wrt_d():
   R = Uniform(1, 1)
   b, beta = 10, 4
   L = Pareto(b, beta) # TPareto(10, 10**6, 4)
-  a, alpha = 1, 4
+  a, alpha = 1, 3 # 1, 4
   S = Pareto(a, alpha) # Uniform(1, 1)
   def alpha_gen(ro):
     return alpha
-  ro = 0.55
+  ro = 0.6
   red, r = 'Coding', 2
   print("ro= {}".format(ro) )
   
   ar = round(ar_for_ro(ro, N, Cap, k, R, L, S), 2)
   sinfo_m.update({
-    'njob': 2000*100, # 2000*10,
+    'njob': 5000*N,
     'nworker': N, 'wcap': Cap, 'ar': ar,
     'k_rv': k,
     'reqed_rv': R,
@@ -275,45 +275,49 @@ def plot_ET_wrt_d():
   sching_m = {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold': None}
   log(INFO, "", sinfo_m=sinfo_m, sching_m=sching_m, mapping_m=mapping_m)
   
-  def run(d):
+  def run(d, nrun=3):
     sching_m['threshold'] = d
-    sim_m = sim(sinfo_m, mapping_m, sching_m, "N{}_C{}".format(N, Cap) )
-    blog(sim_m=sim_m)
-    return sim_m['responsetime_mean'], sim_m['waittime_mean']
-  
-  sim_ET0, sim_EW0 = run(d=0) # 0, 0
-  print("** sim_ET0= {}, sim_EW0= {}".format(sim_ET0, sim_EW0) )
+    sum_ET, sum_EW = 0, 0
+    for i in range(nrun):
+      print("> i= {}".format(i) )
+      sim_m = sim(sinfo_m, mapping_m, sching_m, "N{}_C{}".format(N, Cap) )
+      blog(sim_m=sim_m)
+      sum_ET += sim_m['responsetime_mean']
+      sum_EW += sim_m['waittime_mean']
+    return sum_ET/nrun, sum_EW/nrun
   
   l = L.l_l*S.l_l
-  u = 50*L.mean()*S.mean()
-  d_l, sim_ET_l, ET_w_MGc_l, ET_l = [], [], [], []
-  for d in np.logspace(math.log10(l), math.log10(u), 10):
+  u = 20*L.mean()*S.mean()
+  d_l, sim_ET_l, ET_w_MGc_l, approx_ET_w_MGc_l, ET_l = [], [], [], [], []
+  for d in [0, *np.logspace(math.log10(l), math.log10(u), 10) ]:
+  # for d in np.logspace(math.log10(l), math.log10(u), 40):
     print("\n>> d= {}".format(d) )
-    sim_ET, sim_EW = run(d) # 0 ,0
-    print("** sim_ET= {}, sim_EW= {}".format(sim_ET, sim_EW) )
+    sim_ET, sim_EW = run(d) # 0, 0
+    if d == 0:
+      sim_ET0 = sim_ET
     
+    print("*** sim_ET= {}, sim_EW= {}".format(sim_ET, sim_EW) )
     ET_w_MGc, EW_w_MGc = ET_EW_pareto_w_MGc(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-    print("** ET_w_MGc= {}, EW_w_MGc= {}".format(ET_w_MGc, EW_w_MGc) )
-    
-    ET, EW = ET_EW_pareto(ro, sim_EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-    print("** ET= {}, EW= {}".format(ET, EW) )
-    
-    # ET_dummy, EW_dummy = ET_EW_pareto(ro, sim_EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=1)
-    # print("** ET_dummy= {}, EW_dummy= {}".format(ET_dummy, EW_dummy) )
-    # print("EW_dummy/sim_EW= {}".format(EW_dummy/sim_EW) )
+    print("*** ET_w_MGc= {}, EW_w_MGc= {}".format(ET_w_MGc, EW_w_MGc) )
+    approx_ET_w_MGc, approx_EW_w_MGc = approx_ET_EW_pareto_w_MGc(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+    print("*** approx_ET_w_MGc= {}, approx_EW_w_MGc= {}".format(approx_ET_w_MGc, approx_EW_w_MGc) )
+    # ET, EW = ET_EW_pareto(ro, sim_EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+    # print("*** ET= {}, EW= {}".format(ET, EW) )
     
     d_l.append(d)
     sim_ET_l.append(sim_ET)
     ET_w_MGc_l.append(ET_w_MGc)
-    ET_l.append(ET)
-    
+    approx_ET_w_MGc_l.append(approx_ET_w_MGc)
+    # ET_l.append(ET)
     if sim_ET > 3*sim_ET0:
       break
+  blog(sim_ET=sim_ET_l, ET_w_MGc_l=ET_w_MGc_l, approx_ET_w_MGc_l=approx_ET_w_MGc_l)
   plot.plot(d_l, sim_ET_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
   plot.plot(d_l, ET_w_MGc_l, label='M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
-  plot.plot(d_l, ET_l, label='Heavy-tail model', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
+  plot.plot(d_l, approx_ET_w_MGc_l, label='Approx M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
+  # plot.plot(d_l, ET_l, label='Heavy-tail model', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
   prettify(plot.gca() )
-  plot.legend()
+  plot.legend(loc='best', framealpha=0.5)
   plot.xscale('log')
   fontsize = 14
   plot.xlabel('d', fontsize=fontsize)

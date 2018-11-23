@@ -429,7 +429,7 @@ def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
     if eq_u > max_eq:
       max_eq = eq_u
       u_w_max_eq = u
-    u -= 0.05
+    u -= 0.005
   if u < l:
     print("u < l; u_w_max_eq= {}, max_eq= {}".format(u_w_max_eq, max_eq) )
     found_it = False
@@ -501,10 +501,10 @@ def ET_EW_pareto_w_MGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   def EW_MGc(ar, c, EX, EX2):
     def EW_MMc(ar, EX, c):
       ro = ar*EX/c
-      log(INFO, "ro= {}".format(ro) )
-      C = 1/(1 + (1-ro)*G(c+1)/(c*ro)**c * sum([(c*ro)**k/G(k+1) for k in range(c) ] ) )
-      # EN = ro/(1-ro)*C + c*ro
-      return C/(c/EX - ar)
+      pqueueing = 1/(1 + (1-ro)*G(c+1)/(c*ro)**c * sum([(c*ro)**k/G(k+1) for k in range(c) ] ) )
+      # EN = ro/(1-ro)*pqueueing + c*ro
+      log(INFO, "ro= {}, pqueueing= {}".format(ro, pqueueing) )
+      return pqueueing/(c/EX - ar)
     # CoeffVar = math.sqrt(EX2 - EX**2)/EX
     # return (1 + CoeffVar**2)/2 * EW_MMc(ar, EX, c)
     return (1 + (EX2 - EX**2)/EX**2)/2 * EW_MMc(ar, EX, c)
@@ -513,8 +513,23 @@ def ET_EW_pareto_w_MGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   ES2 = L.moment(2)*Esl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   EC = EC_exact_pareto(k, r, b, beta, a, alpha, d, red)
   
-  print("ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
+  log(INFO, "ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
   EW = EW_MGc(ar, int(N*Cap*ES/EC), ES, ES2)
+  ET = ES + EW
+  log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
+  return ET, EW
+
+def approx_ET_EW_pareto_w_MGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
+  ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
+  ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  if ro is None:
+    return None, None
+  alpha = alpha_gen(ro)
+  
+  L = Pareto(b, beta)
+  ES = L.mean()*Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  EW = 1/ar * ro**2/(1 - ro)
+  
   ET = ES + EW
   log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
   return ET, EW
@@ -698,6 +713,7 @@ def sim(sinfo_m, mapping_m, sching_m, plotname_suffix=''):
   
   njobs_wfate, ndropped = 0, 0
   njobs_waited_inq = 0
+  servtime_l = []
   waittime_l, waittime_givenqed_l = [], []
   responsetime_l = []
   sl_l, serv_sl_l = [], []
@@ -708,6 +724,7 @@ def sim(sinfo_m, mapping_m, sching_m, plotname_suffix=''):
       if fate == 'dropped':
         ndropped += 1
       elif fate == 'finished':
+        servtime_l.append(info['run_time'] )
         serv_sl_l.append(info['run_time']/info['expected_run_time'] )
         sl_l.append(
           (info['wait_time'] + info['run_time'] )/info['expected_run_time'] )
@@ -721,6 +738,7 @@ def sim(sinfo_m, mapping_m, sching_m, plotname_suffix=''):
   
   return {
     'drop_rate': ndropped/len(cl.jid_info_m),
+    'servtime_mean': np.mean(servtime_l),
     'waittime_mean': np.mean(waittime_l),
     'sl_mean': np.mean(sl_l),
     'sl_std': np.std(sl_l),

@@ -1,0 +1,141 @@
+WARNING: Error in initializing MVAPICH2 ptmalloc library.Continuing without InfiniBand registration cache support.
+ro= 0.6
+INFO] <module>:: rank= 1, num_mpiprocs= 10
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 100000,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7fc565bb5d08>},
+ 'wcap': 10}
+  mapping_m: {'type': 'spreading'}
+INFO] plot_ET_wrt_d:: rank= 1, starting;
+ro= 0.6
+INFO] <module>:: rank= 3, num_mpiprocs= 10
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 100000,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f3b41182f28>},
+ 'wcap': 10}
+  mapping_m: {'type': 'spreading'}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+INFO] plot_ET_wrt_d:: rank= 3, starting;
+ro= 0.6
+INFO] <module>:: rank= 9, num_mpiprocs= 10
+  mapping_m: {'type': 'spreading'}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 100000,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f5905026f28>},
+ 'wcap': 10}
+INFO] plot_ET_wrt_d:: rank= 9, starting;
+ro= 0.6
+INFO] <module>:: rank= 5, num_mpiprocs= 10
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 100000,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7fe751d3fea0>},
+ 'wcap': 10}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  mapping_m: {'type': 'spreading'}
+INFO] plot_ET_wrt_d:: rank= 5, starting;
+ro= 0.6
+INFO] <module>:: rank= 7, num_mpiprocs= 10
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 100000,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f418f723e18>},
+ 'wcap': 10}
+  mapping_m: {'type': 'spreading'}
+INFO] plot_ET_wrt_d:: rank= 7, starting;
+ro= 0.6
+INFO] <module>:: rank= 8, num_mpiprocs= 10
+  mapping_m: {'type': 'spreading'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 100000,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f9e85897e18>},
+ 'wcap': 10}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+INFO] plot_ET_wrt_d:: rank= 8, starting;
+ro= 0.6
+INFO] <module>:: rank= 2, num_mpiprocs= 10
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  mapping_m: {'type': 'spreading'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 100000,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f54b6bdec80>},
+ 'wcap': 10}
+INFO] plot_ET_wrt_d:: rank= 2, starting;
+ro= 0.6
+INFO] <module>:: rank= 0, num_mpiprocs= 10
+  mapping_m: {'type': 'spreading'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 100000,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f832e699bf8>},
+ 'wcap': 10}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+INFO] plot_ET_wrt_d:: rank= 0, starting;
+>> d= 0
+rank= 1, will sim for d= 0
+rank= 2, will sim for d= 0
+rank= 3, will sim for d= 0
+rank= 5, will sim for d= 0
+rank= 7, will sim for d= 0
+rank= 8, will sim for d= 0
+rank= 9, will sim for d= 0
+ro= 0.6
+INFO] <module>:: rank= 4, num_mpiprocs= 10
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 100000,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f749c667d08>},
+ 'wcap': 10}
+  mapping_m: {'type': 'spreading'}
+INFO] plot_ET_wrt_d:: rank= 4, starting;
+rank= 4, will sim for d= 0
+ro= 0.6
+INFO] <module>:: rank= 6, num_mpiprocs= 10
+  mapping_m: {'type': 'spreading'}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 100000,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7feef19bfe18>},
+ 'wcap': 10}
+INFO] plot_ET_wrt_d:: rank= 6, starting;
+rank= 6, will sim for d= 0
