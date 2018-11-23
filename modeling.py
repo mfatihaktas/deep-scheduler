@@ -114,74 +114,6 @@ def Pr_kD_leq_d_pareto(k, b, beta, d):
   #     return 0
   # return sum([Pr_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
 
-def test():
-  N, Cap = 4, 2
-  b, beta = 10, 1.1
-  a, alpha = 1, 2
-  k = BZipf(1, 2)
-  r = 2
-  log(INFO, "", k=k, r=r, b=b, beta=beta, a=a, alpha=alpha)
-  
-  D = Exp(beta, b) # Pareto(b, beta)
-  S = Exp(alpha, a) # Pareto(a, alpha)
-  Ek = k.mean()
-  ES = S.mean()
-  ED = D.mean()
-  
-  def gen_sim_E_kD_given_kD_leq_d(d, nsamples=100*1000):
-    sum_sample = 0
-    for _ in range(nsamples):
-      k_sample = k.sample()
-      D_sample = D.sample()
-      kD_sample = k_sample*D_sample
-      if kD_sample <= d:
-        sum_sample += kD_sample
-    return sum_sample/nsamples
-  
-  def Pr_kD(x):
-    return sum([D.pdf(x/i)*k.pdf(i) for i in k.v_l] )
-  def Pr_kD_leq_x(x):
-    return sum([D.cdf(x/i)*k.pdf(i) for i in k.v_l] )
-  
-  E_kD = Ek*ED
-  # E_kD_ = mpmath.quad(lambda x: x*Pr_kD(x), [0, mpmath.inf] )
-  # E_kD__ = mpmath.quad(lambda x: 1 - Pr_kD_leq_x(x), [0, mpmath.inf] )
-  E_kD_ = scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, np.inf)[0]
-  E_kD__ = scipy.integrate.quad(lambda x: 1 - Pr_kD_leq_x(x), 0, np.inf)[0]
-  print("E_kD= {}, E_kD_= {}, E_kD__= {}".format(E_kD, E_kD_, E_kD__) )
-  # 
-  def compute(d):
-    Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
-    
-    # mpmath.quad(lambda x: x*Pr_kD(x), [0, d] ) \
-    E_kD_given_kD_leq_d = scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, d)[0] \
-                        / Pr_kD_leq_d if Pr_kD_leq_d != 0 else 0
-    
-    # ED_given_D_g_doverk = lambda k: mean(D, given_X_leq_x=False, x=d/k)
-    # EkD_given_kD_g_d = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
-    EkD_given_kD_g_d = (Ek*ED - scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, d)[0] ) \
-                      / (1 - Pr_kD_leq_d) if Pr_kD_leq_d != 0 else Ek*ED
-    
-    log(INFO, "", diff=(Ek*ED - (E_kD_given_kD_leq_d*Pr_kD_leq_d + EkD_given_kD_g_d*(1 - Pr_kD_leq_d) ) ) )
-    blog(E_kD_given_kD_leq_d=E_kD_given_kD_leq_d, EkD_given_kD_g_d=EkD_given_kD_g_d, Pr_kD_leq_d=Pr_kD_leq_d)
-    
-    # Using law of total expectation
-    ED_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
-    EkD_given_kD_leq_d_ = sum([i*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
-    ED_given_D_g_doverk = lambda k: mean(D, given_X_leq_x=False, x=d/k)
-    EkD_given_kD_g_d_ = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
-    blog(EkD_given_kD_leq_d_=EkD_given_kD_leq_d_, EkD_given_kD_g_d_=EkD_given_kD_g_d_)
-  
-    sim_E_kD_given_kD_leq_d = gen_sim_E_kD_given_kD_leq_d(d)
-    blog(sim_E_kD_given_kD_leq_d=sim_E_kD_given_kD_leq_d)
-  
-  l, u = a*b, 1000
-  for d in np.logspace(math.log10(l), math.log10(u), 10):
-    print("\n>> d= {}".format(d) )
-    compute(d)
-  
-  log(INFO, "done.")
-
 def sim_red(k, r, L, Sl, d, red, nrun=10000):
   if d is None:
     d = 0
@@ -491,35 +423,36 @@ def Esl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   return ES2_given_kD_leq_d*Pr_kD_leq_d + \
          ES2_given_kD_g_d*(1 - Pr_kD_leq_d)
 
-def ET_EW_pareto_w_MGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
+def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
   ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   if ro is None:
     return None, None
   alpha = alpha_gen(ro)
   
-  def EW_MGc(ar, c, EX, EX2):
-    def EW_MMc(ar, EX, c):
+  def MGc_EW_Prqing(ar, c, EX, EX2):
+    def MMc_EW_Prqing(ar, EX, c):
       ro = ar*EX/c
-      pqueueing = 1/(1 + (1-ro)*G(c+1)/(c*ro)**c * sum([(c*ro)**k/G(k+1) for k in range(c) ] ) )
-      # EN = ro/(1-ro)*pqueueing + c*ro
-      log(INFO, "ro= {}, pqueueing= {}".format(ro, pqueueing) )
-      return pqueueing/(c/EX - ar)
+      Prqing = 1/(1 + (1-ro)*G(c+1)/(c*ro)**c * sum([(c*ro)**k/G(k+1) for k in range(c) ] ) )
+      # EN = ro/(1-ro)*Prqing + c*ro
+      log(INFO, "ro= {}, Prqing= {}".format(ro, Prqing) )
+      return Prqing/(c/EX - ar), Prqing
     # CoeffVar = math.sqrt(EX2 - EX**2)/EX
-    # return (1 + CoeffVar**2)/2 * EW_MMc(ar, EX, c)
-    return (1 + (EX2 - EX**2)/EX**2)/2 * EW_MMc(ar, EX, c)
+    # return (1 + CoeffVar**2)/2 * MMc_EW_Prqing(ar, EX, c)
+    MMc_EW, MMc_Prqing = MMc_EW_Prqing(ar, EX, c)
+    return (1 + (EX2 - EX**2)/EX**2)/2 * MMc_EW, MMc_Prqing
   L = Pareto(b, beta)
   ES = L.mean()*Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   ES2 = L.moment(2)*Esl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   EC = EC_exact_pareto(k, r, b, beta, a, alpha, d, red)
   
   log(INFO, "ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
-  EW = EW_MGc(ar, int(N*Cap*ES/EC), ES, ES2)
+  EW, Prqing = MGc_EW_Prqing(ar, int(N*Cap*ES/EC), ES, ES2)
   ET = ES + EW
   log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
-  return ET, EW
+  return ET, EW, Prqing
 
-def approx_ET_EW_pareto_w_MGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
+def approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
   ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   if ro is None:
@@ -532,7 +465,7 @@ def approx_ET_EW_pareto_w_MGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   
   ET = ES + EW
   log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
-  return ET, EW
+  return ET, EW, ro
 
 def ET_EW_pareto(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None):
   if K is None:
@@ -684,178 +617,7 @@ def plot_ro_Esl():
   plot.gcf().clear()
   log(INFO, "done.")
 
-# ###########################################  Sim  ############################################## #
-def sim(sinfo_m, mapping_m, sching_m, plotname_suffix=''):
-  env = simpy.Environment()
-  cl = Cluster_LessReal(env, scher=Scher_wMultiplicativeExpansion(mapping_m, sching_m), **sinfo_m)
-  jg = JobGen_LessReal(env, out=cl, **sinfo_m)
-  env.run(until=cl.wait_for_alljobs)
-  
-  fig, axs = plot.subplots(len(cl.w_l), 1, sharex='col')
-  if len(cl.w_l) == 1:
-    axs = [axs]
-  avg_schedload_l = []
-  for i, w in enumerate(cl.w_l):
-    print("w._id= {}, w.avg_load= {}".format(w._id, w.avg_load() ) )
-    avg_schedload_l.append(w.avg_load() )
-    
-    plot.sca(axs[i] )
-    t_l, t_load_l = map_to_key__val_l(w.t_load_m)
-    plot.plot(t_l, t_load_l, label='w.id= {}'.format(w._id), color=next(darkcolor_c), marker=next(marker_c), linestyle='None')
-    plot.ylabel('Load')
-    plot.legend()
-    plot.xticks(rotation=70)
-    plot.xlabel('Time (sec)')
-  fig.set_size_inches(2*8, len(cl.w_l)*4)
-  plot.subplots_adjust(hspace=0.25, wspace=0.25)
-  plot.savefig('plot_wloadovertime_{}_{}.png'.format(sching_m['type'], plotname_suffix), bbox_inches='tight')
-  plot.gcf().clear()
-  
-  njobs_wfate, ndropped = 0, 0
-  njobs_waited_inq = 0
-  servtime_l = []
-  waittime_l, waittime_givenqed_l = [], []
-  responsetime_l = []
-  sl_l, serv_sl_l = [], []
-  for jid, info in cl.jid_info_m.items():
-    if 'fate' in info:
-      njobs_wfate += 1
-      fate = info['fate']
-      if fate == 'dropped':
-        ndropped += 1
-      elif fate == 'finished':
-        servtime_l.append(info['run_time'] )
-        serv_sl_l.append(info['run_time']/info['expected_run_time'] )
-        sl_l.append(
-          (info['wait_time'] + info['run_time'] )/info['expected_run_time'] )
-        waittime_l.append(info['wait_time'] )
-        responsetime_l.append(info['wait_time'] + info['run_time'] )
-        if info['wait_time'] > 0: # 0.01:
-          njobs_waited_inq += 1
-          waittime_givenqed_l.append(info['wait_time'] )
-  frac_jobs_waited_inq = njobs_waited_inq/len(cl.jid_info_m)
-  blog(ndropped=ndropped, njobs_wfate=njobs_wfate, frac_jobs_waited_inq=frac_jobs_waited_inq)
-  
-  return {
-    'drop_rate': ndropped/len(cl.jid_info_m),
-    'servtime_mean': np.mean(servtime_l),
-    'waittime_mean': np.mean(waittime_l),
-    'sl_mean': np.mean(sl_l),
-    'sl_std': np.std(sl_l),
-    'serv_sl_mean': np.mean(serv_sl_l),
-    'load_mean': np.mean(avg_schedload_l),
-    'frac_jobs_waited_inq': frac_jobs_waited_inq,
-    'waittime_givenqed_mean': np.mean(waittime_givenqed_l),
-    'responsetime_mean': np.mean(responsetime_l) }
-
-def plot_sim():
-  blog(sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
-  
-  def plot_wrt_d():
-    d_l = []
-    # ro_wrep_l, Esl_wrep_l = [], []
-    ro_wcoding_l, Esl_wcoding_l = [], []
-    sim_ro_wcoding_l, sim_Esl_wcoding_l = [], []
-    l, u = a*b, 1000
-    for d in np.logspace(math.log10(l), math.log10(u), 5):
-      d = round(d, 2)
-      print("\n>> d= {}".format(d) )
-      d_l.append(d)
-      
-      # red = 'Rep'
-      # ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-      # Esl = Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red) if ro is not None else None
-      # blog(ro=ro, Esl=Esl)
-      # ro_wrep_l.append(ro)
-      # Esl_wrep_l.append(Esl)
-      
-      red = 'Coding'
-      ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-      Esl = Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red) if ro is not None else None
-      blog(ro=ro, Esl=Esl)
-      ro_wcoding_l.append(ro)
-      Esl_wcoding_l.append(Esl)
-      
-      sching_m['threshold'] = d
-      sim_m = sim(sinfo_m, mapping_m, sching_m, 'd{}'.format(sching_m['threshold'] ) )
-      blog(sim_m=sim_m)
-      sim_ro = sim_m['load_mean']
-      sim_Esl = sim_m['serv_sl_mean']
-      # blog(sim_ro=sim_ro, sim_Esl=sim_Esl)
-      sim_ro_wcoding_l.append(sim_ro)
-      sim_Esl_wcoding_l.append(sim_Esl)
-    # 
-    fig, axs = plot.subplots(1, 2)
-    fontsize = 14
-    ax = axs[0]
-    plot.sca(ax)
-    # plot.plot(d_l, ro_wrep_l, label='w/ Rep', c='blue', marker=next(marker_c), ls=':', mew=1)
-    plot.plot(d_l, ro_wcoding_l, label='w/ Coding', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
-    plot.plot(d_l, sim_ro_wcoding_l, label='Sim, w/ Coding', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
-    prettify(ax)
-    plot.legend()
-    plot.xscale('log')
-    plot.xlabel('d', fontsize=fontsize)
-    plot.ylabel('Average load', fontsize=fontsize)
-    ax = axs[1]
-    plot.sca(ax)
-    # plot.plot(d_l, Esl_wrep_l, label='w/ Rep', c='blue', marker=next(marker_c), ls=':', mew=1)
-    plot.plot(d_l, Esl_wcoding_l, label='w/ Coding', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
-    plot.plot(d_l, sim_Esl_wcoding_l, label='Sim, w/ Coding', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
-    prettify(ax)
-    plot.xscale('log')
-    plot.legend()
-    plot.xlabel('d', fontsize=fontsize)
-    plot.ylabel('Average slowdown', fontsize=fontsize)
-  
-  def plot_wrt_ar():
-    sching_m['threshold'] = float('Inf')
-    ar_ub = ar_for_ro_pareto(0.9, N, Cap, k, b, beta, a, alpha_gen)
-    sim_ro_wcoding_l, sim_Esl_wcoding_l = [], []
-    for ar in np.linspace(ar_ub/10, ar_ub, 5):
-      sinfo_m['ar'] = ar
-      sim_m = sim(sinfo_m, mapping_m, sching_m)
-      blog(sim_m=sim_m)
-      sim_ro = sim_m['load_mean']
-      sim_Esl = sim_m['serv_sl_mean']
-      # blog(sim_ro=sim_ro, sim_Esl=sim_Esl)
-      sim_ro_wcoding_l.append(sim_ro)
-      sim_Esl_wcoding_l.append(sim_Esl)
-  
-  plot.subplots_adjust(hspace=2)
-  st = plot.suptitle(r'$N= {}$, $C= {}$, $k \sim$ {}, r= {}'.format(N, Cap, k, r) + '\n' + r'$b= {}$, $\beta= {}$, $a= {}$, $\alpha= {}$'.format(b, beta, a, alpha) )
-  plot.gcf().set_size_inches(2*5, 5)
-  plot.savefig('plot_ro_Esl.png', bbox_extra_artists=(st,), bbox_inches='tight')
-  plot.gcf().clear()
-  log(INFO, "done.")
-
 if __name__ == "__main__":
-  N, Cap = 10, 1
-  b, beta = 10, 5
-  a, alpha = 1, 1000 # 2
-  k = BZipf(1, 1)
-  r = 1
-  log(INFO, "", k=k, r=r, b=b, beta=beta, a=a, alpha=alpha)
-  def alpha_gen(ro):
-    return alpha
-  S = Pareto(a, alpha)
-  ar = round(ar_for_ro_pareto(1/2, N, Cap, k, b, beta, a, alpha_gen), 2)
-  
-  sinfo_m = {
-    'ar': ar, 'njob': 2000*5, 'nworker': N, 'wcap': Cap,
-    'totaldemand_rv': Pareto(b, beta),
-    'demandperslot_mean_rv': DUniform(1, 1),
-    'k_rv': k,
-    'straggle_m': {'slowdown': lambda load: S.sample() } }
-  mapping_m = {'type': 'spreading'}
-  sching_m = {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold': None}
-  blog(sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
-  
   # plot_slowdown()
-  
-  # test()
   compare_EC_exact_approx()
   # plot_ro_Esl()
-  
-  # plot_sim()
-  # plot_ET()

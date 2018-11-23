@@ -250,3 +250,304 @@ def test():
   
   for d in np.linspace(10, 1000, 10):
     do_for(d)
+
+def check_MGc_assumption():
+  # N, Cap = 10, 1
+  N_times_Cap = 100
+  r = 1
+  L = Exp(1, 1)
+  S = DUniform(1, 1)
+  sinfo_m['njob'] = 2000*10
+  sching_m = {'type': 'plain', 'r': r}
+  blog(N_times_Cap=N_times_Cap, sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
+  
+  def run(ro, N, k, R, L, S, r=1):
+    Cap = int(N_times_Cap/N)
+    print("\n")
+    log(INFO, "ro= {}, N= {}, Cap= {}, k= {}, R= {}, L= {}, S= {}, r= {}".format(ro, N, Cap, k, R, L, S, r) )
+    
+    ar = round(ar_for_ro(ro, N, Cap, k, R, L, S), 2)
+    sinfo_m.update({
+      'nworker': N, 'wcap': Cap, 'ar': ar,
+      'k_rv': k,
+      'reqed_rv': R,
+      'lifetime_rv': L,
+      'straggle_m': {'slowdown': lambda load: S.sample() } } )
+    sching_m['r'] = r
+    sim_m = sim(sinfo_m, mapping_m, sching_m, "N{}_C{}".format(N, Cap) )
+    blog(sim_m=sim_m)
+    
+    # c = int(N*Cap/R.mean() ) # N*Cap
+    # print("c= {}".format(c) )
+    # EW = EW_MGc(ar, L, c)
+    # print("M/G/c_EW= {}".format(EW) )
+    return {
+      'ar': ar,
+      'EW': sim_m['waittime_mean'],
+      'pblocking': sim_m['frac_jobs_waited_inq'],
+      'EW_givenqed': sim_m['waittime_givenqed_mean'] }
+  
+  def test(ro, R=DUniform(1, 1) ):
+    print("---------------")
+    run(ro, 1, k, R, L, S)
+    # run(ro, 2, k, R, L, S)
+    # run(ro, 5, k, R, L, S)
+    # run(ro, 10, k, R, L, S)
+  
+  def check_EW_scaling_wrt_ro(N, R):
+    log(INFO, "", N=N, R=R)
+    
+    # '''
+    ro_l, EW_l = [], []
+    for ro in np.linspace(0.1, 0.9, 9):
+      ro = round(ro, 2)
+      ar, EW, pblocking = run(ro, N, k, R, L, S)
+      print("ro= {}, EW= {}".format(ro, EW) )
+      
+      ro_l.append(ro)
+      EW_l.append(EW)
+    blog(ro_l=ro_l, EW_l=EW_l)
+    # '''
+    
+    # ro_l= [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    # EW_l= [0.00025548087470978202, 0.00056689800613990546, 0.00089200542402208672, 0.0012637166320921696, 0.0017178514022176334, 0.0021802843452227629, 0.002912705863562876, 0.0061096923858674568, 0.043253547318583753]
+    print("ratio = EW/(ro/(1-ro))")
+    for i, EW in enumerate(EW_l):
+      ro = ro_l[i]
+      ratio = EW/(ro/(1-ro) )
+      print("ro= {}, ratio= {}".format(ro, ratio) )
+    log(INFO, "done.")
+  
+  def check_EW_scaling_wrt_EL2_over_EL(N, R, ro):
+    log(INFO, "", N=N, R=R, ro=ro)
+    
+    EL2_over_EL_l, EW_l = [], []
+    for mu in np.linspace(0.1, 1, 10):
+      L = Exp(mu, 1)
+      EL2_over_EL = round(L.moment(2)/L.moment(1), 2)
+      ar, EW, pblocking = run(ro, N, k, R, L, S)
+      print("EL2_over_EL= {}, EW= {}".format(EL2_over_EL, EW) )
+      
+      EL2_over_EL_l.append(EL2_over_EL)
+      EW_l.append(EW)
+    blog(EL2_over_EL_l=EL2_over_EL_l, EW_l=EW_l)
+    # '''
+    
+    print("ratio = EW/(EL2/EL)")
+    for i, EW in enumerate(EW_l):
+      EL2_over_EL = EL2_over_EL_l[i]
+      ratio = EW/EL2_over_EL
+      print("EL2_over_EL= {}, ratio= {}".format(EL2_over_EL, ratio) )
+    log(INFO, "done.")
+  
+  def check_EW_scaling_wrt_ER2_over_ER(N, L, ro):
+    log(INFO, "", N=N, L=L, ro=ro)
+    
+    ER2_over_ER_l, EW_l = [], []
+    for u in np.linspace(0.1, 1, 10):
+      R = Uniform(0.1, u)
+      ER2_over_ER = round(R.moment(2)/R.moment(1), 2)
+      ar, EW, pblocking = run(ro, N, k, R, L, S)
+      print("ER2_over_ER= {}, EW= {}".format(ER2_over_ER, EW) )
+      
+      ER2_over_ER_l.append(ER2_over_ER)
+      EW_l.append(EW)
+    blog(ER2_over_ER_l=ER2_over_ER_l, EW_l=EW_l)
+    
+    print("ratio = EW/(ER2/ER)")
+    for i, EW in enumerate(EW_l):
+      ER2_over_ER = ER2_over_ER_l[i]
+      ratio = EW/ER2_over_ER
+      print("ER2_over_ER= {}, ratio= {}".format(ER2_over_ER, ratio) )
+    log(INFO, "done.")
+  
+  def check_EW_scaling_wrt_Ek2_over_Ek(N, R, L, ro):
+    log(INFO, "", N=N, R=R, L=L, ro=ro)
+    
+    Ek2_over_Ek_l, EW_l = [], []
+    for u in range(1, 10):
+      k = DUniform(1, u)
+      Ek2_over_Ek = round(k.moment(2)/k.moment(1), 2)
+      ar, EW, pblocking = run(ro, N, k, R, L, S)
+      print("Ek2_over_Ek= {}, EW= {}".format(Ek2_over_Ek, EW) )
+      
+      Ek2_over_Ek_l.append(Ek2_over_Ek)
+      EW_l.append(EW)
+    blog(Ek2_over_Ek_l=Ek2_over_Ek_l, EW_l=EW_l)
+    
+    print("ratio = EW/(ER2/ER)")
+    for i, EW in enumerate(EW_l):
+      Ek2_over_Ek = Ek2_over_Ek_l[i]
+      ratio = EW/Ek2_over_Ek
+      print("Ek2_over_Ek= {}, ratio= {}".format(Ek2_over_Ek, ratio) )
+    log(INFO, "done.")
+  
+  def check_EW_scaling_wrt_model(N, k, R, L, S):
+    log(INFO, "", N=N, k=k, R=R, L=L, S=S)
+    sinfo_m['njob'] = 2000*10
+    
+    ET = L.mean()*sum([X_n_k(S, i, i).mean()*k.pdf(i) for i in k.v_l] )
+    ET2 = L.moment(2)*sum([X_n_k(S, i, i).moment(2)*k.pdf(i) for i in k.v_l] )
+    EL, EL2 = L.mean(), L.moment(2)
+    blog(ET=ET, ET2=ET2, EL=EL, EL2=EL2)
+    
+    C_moment = lambda i: k.moment(i)*R.moment(i)*L.moment(i)*S.moment(i)
+    print(">> C_moment(1)= {}, C_moment(2)= {}".format(C_moment(1), C_moment(2) ) )
+    
+    def Pr_blocking(ar, ro):
+      # narr_atleast_forblocking = (1-ro)*N_times_Cap/(k.moment(1)*R.moment(1) ) - 1
+      # blog(narr_atleast_forblocking=narr_atleast_forblocking)
+      # ar_ = ar*L.tail(ET)*ET # *L.u_l/10
+      # return max(0, \
+      #   1 - math.exp(-ar_)*sum([ar_**i/math.factorial(i) for i in range(int(narr_atleast_forblocking) ) ] ) )
+      
+      alpha = 0.9 # 1/2 # L.cdf(L.u_l/10) # L.cdf(10*EL) # 1/2 # L.cdf(EL)
+      # print("alpha= {}".format(alpha) )
+      long_jlifetime = EL + math.sqrt((EL2 - EL**2)*alpha/(1-alpha) ) # ET + math.sqrt((ET2 - ET**2)*alpha/(1-alpha) )
+      ro_short = ar*L.cdf(long_jlifetime)*C_moment(1)/N_times_Cap
+      narr_atleast_forblocking = (1-ro_short)*N_times_Cap / (k.moment(1)*R.moment(1) ) - 1
+      blog(narr_atleast_forblocking=narr_atleast_forblocking)
+      ar_long = ar*L.tail(long_jlifetime)*long_jlifetime
+      return max(0, \
+        1 - math.exp(-ar_long)*sum([ar_long**i/math.factorial(i) for i in range(int(narr_atleast_forblocking) ) ] ) )
+    
+    def EW_givenqed_model(ro):
+      return ro/(1-ro) * C_moment(2)/C_moment(1)
+    
+    def EW_model(ar, ro, pblocking=None):
+      if pblocking is None:
+        pblocking = Pr_blocking(ar, ro)
+      print("pblocking= {}".format(pblocking) )
+      return ro/(1-ro) * C_moment(2)/C_moment(1) / 2 * pblocking
+    
+    EW_l, sim_EW_l = [], []
+    # for ro in np.linspace(0.1, 0.9, 9):
+    for ro in np.linspace(0.7, 0.9, 3):
+      ro = round(ro, 2)
+      m = run(ro, N, k, R, L, S)
+      ar, sim_EW, sim_pblocking = m['ar'], m['EW'], m['pblocking']
+      print("ar= {}, ro= {}".format(ar, ro) )
+      
+      pblocking = Pr_blocking(ar, ro)
+      print("sim_pblocking= {}, pblocking= {}".format(sim_pblocking, pblocking) )
+      EW = EW_model(ar, ro, pblocking)
+      print("sim_EW= {}, EW= {}".format(sim_EW, EW) )
+      sim_EW_l.append(sim_EW)
+      EW_l.append(EW)
+      
+      sim_EW_givenqed = m['EW_givenqed']
+      EW_givenqed = EW_givenqed_model(ro)
+      print("sim_EW_givenqed= {}, EW_givenqed= {}".format(sim_EW_givenqed, EW_givenqed) )
+    blog(EW_l=EW_l, sim_EW_l=sim_EW_l)
+    
+    # print("ratio = sim_EW/model")
+    # for i, sim_EW in enumerate(sim_EW_l):
+    #   EW = EW_l[i]
+    #   ratio = sim_EW/EW
+    #   print("EW= {}, ratio= {}".format(EW, ratio) )
+    log(INFO, "done.")
+  
+  def check_EW_scaling_w_increasing_r(N, k, R, L, S, ro):
+    log(INFO, "", N=N, k=k, R=R, L=L, S=S, ro=ro)
+    
+    # for r in np.linspace(1, 2, 3):
+    for r in range(1, 4):
+      m = run(ro, N, k, R, L, S, r)
+      ar, sim_EW, sim_pblocking = m['ar'], m['EW'], m['pblocking']
+      print("ar= {}, ro= {}".format(ar, ro) )
+  
+  # test(ro=0.4)
+  # test(ro=0.65)
+  # test(ro=0.9)
+  
+  # R = Uniform(0.25, 0.75) # Uniform(0.5, 1.5)
+  # test(0.9, R)
+  
+  # R = Uniform(0.25, 0.75) # Uniform(1, 1) # Uniform(0.05, 0.15) # Uniform(0.5, 1.5)
+  # check_EW_scaling_wrt_ro(5, R)
+  
+  # R = Uniform(1.5, 2.5) # Uniform(2, 2)
+  # check_EW_scaling_wrt_EL2_over_EL(N, R, ro=0.85)
+  
+  # L = Exp(0.1, 1)
+  # check_EW_scaling_wrt_ER2_over_ER(N, L, ro=0.85)
+  
+  # R = Uniform(1, 1) # Uniform(1, 1)
+  # L = Exp(0.1, 1) # Uniform(1, 1)
+  # check_EW_scaling_wrt_Ek2_over_Ek(N, R, L, ro=0.85)
+  
+  k = BZipf(1, 10) # DUniform(1, 1) # DUniform(1, 4)
+  R = Uniform(1, 1)
+  L = TPareto(10, 10**6, 4) # Exp(0.1, 1) # Uniform(1, 1)
+  S = TPareto(1, 10, 2) # Uniform(1, 1)
+  check_EW_scaling_wrt_model(N, k, R, L, S)
+  
+  log(INFO, "done.")
+
+def test():
+  N, Cap = 4, 2
+  b, beta = 10, 1.1
+  a, alpha = 1, 2
+  k = BZipf(1, 2)
+  r = 2
+  log(INFO, "", k=k, r=r, b=b, beta=beta, a=a, alpha=alpha)
+  
+  D = Exp(beta, b) # Pareto(b, beta)
+  S = Exp(alpha, a) # Pareto(a, alpha)
+  Ek = k.mean()
+  ES = S.mean()
+  ED = D.mean()
+  
+  def gen_sim_E_kD_given_kD_leq_d(d, nsamples=100*1000):
+    sum_sample = 0
+    for _ in range(nsamples):
+      k_sample = k.sample()
+      D_sample = D.sample()
+      kD_sample = k_sample*D_sample
+      if kD_sample <= d:
+        sum_sample += kD_sample
+    return sum_sample/nsamples
+  
+  def Pr_kD(x):
+    return sum([D.pdf(x/i)*k.pdf(i) for i in k.v_l] )
+  def Pr_kD_leq_x(x):
+    return sum([D.cdf(x/i)*k.pdf(i) for i in k.v_l] )
+  
+  E_kD = Ek*ED
+  # E_kD_ = mpmath.quad(lambda x: x*Pr_kD(x), [0, mpmath.inf] )
+  # E_kD__ = mpmath.quad(lambda x: 1 - Pr_kD_leq_x(x), [0, mpmath.inf] )
+  E_kD_ = scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, np.inf)[0]
+  E_kD__ = scipy.integrate.quad(lambda x: 1 - Pr_kD_leq_x(x), 0, np.inf)[0]
+  print("E_kD= {}, E_kD_= {}, E_kD__= {}".format(E_kD, E_kD_, E_kD__) )
+  # 
+  def compute(d):
+    Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
+    
+    # mpmath.quad(lambda x: x*Pr_kD(x), [0, d] ) \
+    E_kD_given_kD_leq_d = scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, d)[0] \
+                        / Pr_kD_leq_d if Pr_kD_leq_d != 0 else 0
+    
+    # ED_given_D_g_doverk = lambda k: mean(D, given_X_leq_x=False, x=d/k)
+    # EkD_given_kD_g_d = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
+    EkD_given_kD_g_d = (Ek*ED - scipy.integrate.quad(lambda x: x*Pr_kD(x), 0, d)[0] ) \
+                      / (1 - Pr_kD_leq_d) if Pr_kD_leq_d != 0 else Ek*ED
+    
+    log(INFO, "", diff=(Ek*ED - (E_kD_given_kD_leq_d*Pr_kD_leq_d + EkD_given_kD_g_d*(1 - Pr_kD_leq_d) ) ) )
+    blog(E_kD_given_kD_leq_d=E_kD_given_kD_leq_d, EkD_given_kD_g_d=EkD_given_kD_g_d, Pr_kD_leq_d=Pr_kD_leq_d)
+    
+    # Using law of total expectation
+    ED_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
+    EkD_given_kD_leq_d_ = sum([i*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
+    ED_given_D_g_doverk = lambda k: mean(D, given_X_leq_x=False, x=d/k)
+    EkD_given_kD_g_d_ = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
+    blog(EkD_given_kD_leq_d_=EkD_given_kD_leq_d_, EkD_given_kD_g_d_=EkD_given_kD_g_d_)
+  
+    sim_E_kD_given_kD_leq_d = gen_sim_E_kD_given_kD_leq_d(d)
+    blog(sim_E_kD_given_kD_leq_d=sim_E_kD_given_kD_leq_d)
+  
+  l, u = a*b, 1000
+  for d in np.logspace(math.log10(l), math.log10(u), 10):
+    print("\n>> d= {}".format(d) )
+    compute(d)
+  
+  log(INFO, "done.")

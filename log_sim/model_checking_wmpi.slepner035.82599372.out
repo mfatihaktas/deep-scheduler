@@ -1,0 +1,4422 @@
+WARNING: Error in initializing MVAPICH2 ptmalloc library.Continuing without InfiniBand registration cache support.
+ro= 0.6
+INFO] <module>:: rank= 0, num_mpiprocs= 10
+  mapping_m: {'type': 'spreading'}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 200,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7effce3a58c8>},
+ 'wcap': 10}
+INFO] plot_ET_wrt_d:: rank= 0, starting;
+>> d= 0
+ro= 0.6
+INFO] <module>:: rank= 4, num_mpiprocs= 10
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 200,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f5a00e3b9d8>},
+ 'wcap': 10}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  mapping_m: {'type': 'spreading'}
+INFO] plot_ET_wrt_d:: rank= 4, starting;
+rank= 4, will sim for d= 0
+ro= 0.6
+INFO] <module>:: rank= 3, num_mpiprocs= 10
+  mapping_m: {'type': 'spreading'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 200,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f4f93d3b8c8>},
+ 'wcap': 10}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+INFO] plot_ET_wrt_d:: rank= 3, starting;
+rank= 3, will sim for d= 0
+ro= 0.6
+INFO] <module>:: rank= 1, num_mpiprocs= 10
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 200,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f3b5857db70>},
+ 'wcap': 10}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  mapping_m: {'type': 'spreading'}
+INFO] plot_ET_wrt_d:: rank= 1, starting;
+rank= 1, will sim for d= 0
+ro= 0.6
+INFO] <module>:: rank= 8, num_mpiprocs= 10
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  mapping_m: {'type': 'spreading'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 200,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f3b27fd1d90>},
+ 'wcap': 10}
+INFO] plot_ET_wrt_d:: rank= 8, starting;
+rank= 8, will sim for d= 0
+ro= 0.6
+INFO] <module>:: rank= 2, num_mpiprocs= 10
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 200,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7fd0c94879d8>},
+ 'wcap': 10}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  mapping_m: {'type': 'spreading'}
+INFO] plot_ET_wrt_d:: rank= 2, starting;
+rank= 2, will sim for d= 0
+ro= 0.6
+INFO] <module>:: rank= 7, num_mpiprocs= 10
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 200,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7fb626623d90>},
+ 'wcap': 10}
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  mapping_m: {'type': 'spreading'}
+INFO] plot_ET_wrt_d:: rank= 7, starting;
+rank= 7, will sim for d= 0
+ro= 0.6
+INFO] <module>:: rank= 6, num_mpiprocs= 10
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  mapping_m: {'type': 'spreading'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 200,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7f37b0034b70>},
+ 'wcap': 10}
+INFO] plot_ET_wrt_d:: rank= 6, starting;
+rank= 6, will sim for d= 0
+ro= 0.6
+INFO] <module>:: rank= 5, num_mpiprocs= 10
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 200,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7fc4e76bb9d8>},
+ 'wcap': 10}
+  mapping_m: {'type': 'spreading'}
+INFO] plot_ET_wrt_d:: rank= 5, starting;
+rank= 5, will sim for d= 0
+ro= 0.6
+INFO] <module>:: rank= 9, num_mpiprocs= 10
+  sching_m: {'r': 2, 'threshold': None, 'type': 'expand_if_totaldemand_leq'}
+  mapping_m: {'type': 'spreading'}
+  sinfo_m: {'ar': 2.7400000000000002,
+ 'k_rv': BZipf([1, 5], tail index= 1),
+ 'lifetime_rv': Pareto(loc= 10, a= 4),
+ 'njob': 200,
+ 'nworker': 20,
+ 'reqed_rv': Uniform[1, 1],
+ 'straggle_m': {'slowdown': <function <lambda> at 0x7fd5a17279d8>},
+ 'wcap': 10}
+INFO] plot_ET_wrt_d:: rank= 9, starting;
+rank= 9, will sim for d= 0
+w._id= 0, w.avg_load= 0.5288362876950101
+w._id= 1, w.avg_load= 0.5283859846255723
+w._id= 2, w.avg_load= 0.538643475232679
+w._id= 3, w.avg_load= 0.5211150191027811
+w._id= 4, w.avg_load= 0.512080183294179
+w._id= 5, w.avg_load= 0.5025583342643922
+w._id= 6, w.avg_load= 0.5073048478926959
+w._id= 7, w.avg_load= 0.5028283391547465
+w._id= 8, w.avg_load= 0.48591579247595734
+w._id= 9, w.avg_load= 0.48586238975161106
+w._id= 10, w.avg_load= 0.48822825557716476
+w._id= 11, w.avg_load= 0.4782903379752005
+w._id= 12, w.avg_load= 0.4719065085887488
+w._id= 13, w.avg_load= 0.4724776648841437
+w._id= 14, w.avg_load= 0.47967786996865763
+w._id= 15, w.avg_load= 0.4613883683177758
+w._id= 16, w.avg_load= 0.4710574051997129
+w._id= 17, w.avg_load= 0.45345988746827826
+w._id= 18, w.avg_load= 0.44347869748404084
+w._id= 19, w.avg_load= 0.44790040260126446
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 21.048212632304907, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5542480612237842
+w._id= 1, w.avg_load= 0.5541225878386626
+w._id= 2, w.avg_load= 0.5407057598085352
+w._id= 3, w.avg_load= 0.551979792901315
+w._id= 4, w.avg_load= 0.54617007829439
+w._id= 5, w.avg_load= 0.5443611398870256
+w._id= 6, w.avg_load= 0.5271332678929571
+w._id= 7, w.avg_load= 0.5227934466292542
+w._id= 8, w.avg_load= 0.5304433490028748
+w._id= 9, w.avg_load= 0.5309826293822917
+w._id= 10, w.avg_load= 0.5209005115195344
+w._id= 11, w.avg_load= 0.5074185105010446
+w._id= 12, w.avg_load= 0.49707764130359944
+w._id= 13, w.avg_load= 0.4892344260562534
+w._id= 14, w.avg_load= 0.4936611647047903
+w._id= 15, w.avg_load= 0.4873744235687139
+w._id= 16, w.avg_load= 0.48086138416936414
+w._id= 17, w.avg_load= 0.476005098089295
+w._id= 18, w.avg_load= 0.47246180062824317
+w._id= 19, w.avg_load= 0.4589172396506249
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 20.811634009401047, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.53569135875542
+w._id= 1, w.avg_load= 0.5240404435686907
+w._id= 2, w.avg_load= 0.5181315128895979
+w._id= 3, w.avg_load= 0.5125953154208994
+w._id= 4, w.avg_load= 0.5118029272832985
+w._id= 5, w.avg_load= 0.511793931829496
+w._id= 6, w.avg_load= 0.5143551167494711
+w._id= 7, w.avg_load= 0.48878107017843997
+w._id= 8, w.avg_load= 0.5047293408203967
+w._id= 9, w.avg_load= 0.4953397874411468
+w._id= 10, w.avg_load= 0.4928821567899591
+w._id= 11, w.avg_load= 0.47781204456496257
+w._id= 12, w.avg_load= 0.47301016069199087
+w._id= 13, w.avg_load= 0.46982531148152246
+w._id= 14, w.avg_load= 0.46861157722895275
+w._id= 15, w.avg_load= 0.4676457328160546
+w._id= 16, w.avg_load= 0.44752925069246147
+w._id= 17, w.avg_load= 0.4720320048219559
+w._id= 18, w.avg_load= 0.44323795552701056
+w._id= 19, w.avg_load= 0.4463497277773858
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+rank= 4, sET= 20.294061056035957, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5340299989861985
+w._id= 1, w.avg_load= 0.5257167027932697
+w._id= 2, w.avg_load= 0.528471660955124
+w._id= 3, w.avg_load= 0.5128944693929555
+w._id= 4, w.avg_load= 0.521560901669406
+w._id= 5, w.avg_load= 0.5149363348130606
+w._id= 6, w.avg_load= 0.501804050908326
+w._id= 7, w.avg_load= 0.49942016584211346
+w._id= 8, w.avg_load= 0.4936050154229397
+w._id= 9, w.avg_load= 0.48831938449394796
+w._id= 10, w.avg_load= 0.49346898817630563
+w._id= 11, w.avg_load= 0.49019222677216345
+w._id= 12, w.avg_load= 0.47013851560866676
+w._id= 13, w.avg_load= 0.4727392813470328
+w._id= 14, w.avg_load= 0.45900535047385255
+w._id= 15, w.avg_load= 0.4640390487422017
+w._id= 16, w.avg_load= 0.4646573994978349
+w._id= 17, w.avg_load= 0.4477225120007259
+w._id= 18, w.avg_load= 0.4492457077750314
+w._id= 19, w.avg_load= 0.43835906017526405
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 1, sET= 20.293468733961408, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.47945424237263157
+w._id= 1, w.avg_load= 0.48367292830945147
+w._id= 2, w.avg_load= 0.4813478728960778
+w._id= 3, w.avg_load= 0.47063305799259725
+w._id= 4, w.avg_load= 0.46868517282127165
+w._id= 5, w.avg_load= 0.4612669010637788
+w._id= 6, w.avg_load= 0.45734104680222176
+w._id= 7, w.avg_load= 0.4570817152694047
+w._id= 8, w.avg_load= 0.44937766468466855
+w._id= 9, w.avg_load= 0.4482175389085016
+w._id= 10, w.avg_load= 0.4412518769392687
+w._id= 11, w.avg_load= 0.4386390045057682
+w._id= 12, w.avg_load= 0.4461424362165392
+w._id= 13, w.avg_load= 0.41919011497181907
+w._id= 14, w.avg_load= 0.41665440332724435
+w._id= 15, w.avg_load= 0.4098297274781222
+w._id= 16, w.avg_load= 0.4109913473039873
+w._id= 17, w.avg_load= 0.4108015824906282
+w._id= 18, w.avg_load= 0.40370421409548934
+w._id= 19, w.avg_load= 0.40615719371650466
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 2, sET= 20.850465732052825, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5134207031937088
+w._id= 1, w.avg_load= 0.5053609502056705
+w._id= 2, w.avg_load= 0.504139969539033
+w._id= 3, w.avg_load= 0.4911266079280205
+w._id= 4, w.avg_load= 0.4951047095959108
+w._id= 5, w.avg_load= 0.4909438455722737
+w._id= 6, w.avg_load= 0.4784085235225391
+w._id= 7, w.avg_load= 0.48495397496388937
+w._id= 8, w.avg_load= 0.472317364207725
+w._id= 9, w.avg_load= 0.47068074921214714
+w._id= 10, w.avg_load= 0.4618694071901256
+w._id= 11, w.avg_load= 0.4602015159373887
+w._id= 12, w.avg_load= 0.4545885637365376
+w._id= 13, w.avg_load= 0.4564910409428142
+w._id= 14, w.avg_load= 0.4587090318092203
+w._id= 15, w.avg_load= 0.435357379903752
+w._id= 16, w.avg_load= 0.4477981694467428
+w._id= 17, w.avg_load= 0.4383474494977023
+w._id= 18, w.avg_load= 0.4282624696854355
+w._id= 19, w.avg_load= 0.43610014373619443
+  frac_jobs_waited_inq: 0.0037593984962406013
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 20.87424321113198, sEW= 3.7325799855381093e-07, sPrqing= 0.0037593984962406013
+w._id= 0, w.avg_load= 0.5438183580559499
+w._id= 1, w.avg_load= 0.5480278757213761
+w._id= 2, w.avg_load= 0.5311223506476364
+w._id= 3, w.avg_load= 0.5353530105774804
+w._id= 4, w.avg_load= 0.5293894512661996
+w._id= 5, w.avg_load= 0.5179324771422331
+w._id= 6, w.avg_load= 0.5100805098817041
+w._id= 7, w.avg_load= 0.5076604635327298
+w._id= 8, w.avg_load= 0.502714059175435
+w._id= 9, w.avg_load= 0.5054601638794195
+w._id= 10, w.avg_load= 0.4970204385674667
+w._id= 11, w.avg_load= 0.488396746609943
+w._id= 12, w.avg_load= 0.5042221435409274
+w._id= 13, w.avg_load= 0.48634034743895194
+w._id= 14, w.avg_load= 0.4937598509192141
+w._id= 15, w.avg_load= 0.4858048570114221
+w._id= 16, w.avg_load= 0.46498195195902875
+w._id= 17, w.avg_load= 0.4625323400068526
+w._id= 18, w.avg_load= 0.4504775592710141
+w._id= 19, w.avg_load= 0.4537072785218129
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 7, sET= 20.97577192601674, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.559033815890805
+w._id= 1, w.avg_load= 0.5534017908895389
+w._id= 2, w.avg_load= 0.5443471221597094
+w._id= 3, w.avg_load= 0.5499343333505609
+w._id= 4, w.avg_load= 0.5297724699889409
+w._id= 5, w.avg_load= 0.5460894722884022
+w._id= 6, w.avg_load= 0.5294910159529169
+w._id= 7, w.avg_load= 0.5141695655114826
+w._id= 8, w.avg_load= 0.5169605057809952
+w._id= 9, w.avg_load= 0.519938117619759
+w._id= 10, w.avg_load= 0.5198794999920608
+w._id= 11, w.avg_load= 0.5015791638729692
+w._id= 12, w.avg_load= 0.5083330568940853
+w._id= 13, w.avg_load= 0.49653004444630705
+w._id= 14, w.avg_load= 0.5002284340691442
+w._id= 15, w.avg_load= 0.5071676973530179
+w._id= 16, w.avg_load= 0.4921051334296969
+w._id= 17, w.avg_load= 0.48046251042110155
+w._id= 18, w.avg_load= 0.48301668555488264
+w._id= 19, w.avg_load= 0.4647058571839623
+  frac_jobs_waited_inq: 0.007692307692307693
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 19.472566322683402, sEW= 1.9319090382552418e-07, sPrqing= 0.007692307692307693
+w._id= 0, w.avg_load= 0.5518233217576672
+w._id= 1, w.avg_load= 0.5480067494063057
+w._id= 2, w.avg_load= 0.5326513505266037
+w._id= 3, w.avg_load= 0.5583745908159518
+w._id= 4, w.avg_load= 0.5252806012029241
+w._id= 5, w.avg_load= 0.5267638791628161
+w._id= 6, w.avg_load= 0.5199044803876295
+w._id= 7, w.avg_load= 0.5273263605022076
+w._id= 8, w.avg_load= 0.5202286980557701
+w._id= 9, w.avg_load= 0.5137647405899451
+w._id= 10, w.avg_load= 0.5049425742990552
+w._id= 11, w.avg_load= 0.5022212412600123
+w._id= 12, w.avg_load= 0.49630216173533476
+w._id= 13, w.avg_load= 0.49658722691921175
+w._id= 14, w.avg_load= 0.48393883990210484
+w._id= 15, w.avg_load= 0.4810423452859653
+w._id= 16, w.avg_load= 0.47528018716904785
+w._id= 17, w.avg_load= 0.46553470966297766
+w._id= 18, w.avg_load= 0.4755622989560448
+w._id= 19, w.avg_load= 0.45674292113582987
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 9, sET= 21.879003373611837, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5111360147072581
+w._id= 1, w.avg_load= 0.5053161934783047
+w._id= 2, w.avg_load= 0.5010462739493027
+w._id= 3, w.avg_load= 0.49689205183009844
+w._id= 4, w.avg_load= 0.5136761167444103
+w._id= 5, w.avg_load= 0.48891291685345256
+w._id= 6, w.avg_load= 0.4767721125877649
+w._id= 7, w.avg_load= 0.46999523638295465
+w._id= 8, w.avg_load= 0.457785362623889
+w._id= 9, w.avg_load= 0.46127649473191884
+w._id= 10, w.avg_load= 0.4635894848110184
+w._id= 11, w.avg_load= 0.4644243838615653
+w._id= 12, w.avg_load= 0.45556239964087625
+w._id= 13, w.avg_load= 0.4548883695567642
+w._id= 14, w.avg_load= 0.44670002263267367
+w._id= 15, w.avg_load= 0.4260330772271654
+w._id= 16, w.avg_load= 0.4225801351998322
+w._id= 17, w.avg_load= 0.42218238802245994
+w._id= 18, w.avg_load= 0.41352413237518076
+w._id= 19, w.avg_load= 0.4354956128832163
+  ndropped: 0
+  frac_jobs_waited_inq: 0.00392156862745098
+  njobs_wfate: 200
+rank= 0, sET= 20.08541820032503, sEW= 5.951558971872828e-07, sPrqing= 0.00392156862745098
+*** sim_ET= 20.658484519752516, sim_EW= 1.161604799566618e-07, sim_Prqing= 0.0015373274815999275
+  sET_l: [20.08541820032503,
+ 20.293468733961408,
+ 20.850465732052825,
+ 20.811634009401047,
+ 20.294061056035957,
+ 19.472566322683402,
+ 20.874243211131979,
+ 20.975771926016741,
+ 21.048212632304907,
+ 21.879003373611837]
+  sPrqing_l: [0.00392156862745098,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0076923076923076927,
+ 0.0037593984962406013,
+ 0.0,
+ 0.0,
+ 0.0]
+  sEW_l: [5.9515589718728283e-07,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 1.9319090382552418e-07,
+ 3.7325799855381093e-07,
+ 0.0,
+ 0.0,
+ 0.0]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.6
+INFO] MMc_EW_Prqing:: ro= 0.6019301799118312, Prqing= 6.256059023442736e-07
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 0, ro= 0.5999999999999999, ES= 23.945397668025404, EW= 2.773283461830876e-07, ET= 23.94539794535375
+*** ET_wMGc= 23.94539794535375, EW_wMGc= 2.773283461830876e-07, Prqing_wMGc= 6.256059023442736e-07
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 0, ro= 0.5999999999999999, ES= 23.945397668025404, EW= 0.3284671532846713, ET= 24.273864821310074
+*** approx_ET_wMGc= 24.273864821310074, approx_EW_wMGc= 0.3284671532846713, approx_Prqing_wMGc= 0.5999999999999999
+>> d= 10.0
+rank= 1, will sim for d= 10
+rank= 4, will sim for d= 10
+rank= 6, will sim for d= 10
+rank= 3, will sim for d= 10
+rank= 8, will sim for d= 10
+rank= 2, will sim for d= 10
+rank= 7, will sim for d= 10
+rank= 5, will sim for d= 10
+rank= 9, will sim for d= 10
+w._id= 0, w.avg_load= 0.508070097102552
+w._id= 1, w.avg_load= 0.4986690397438812
+w._id= 2, w.avg_load= 0.5003546856354446
+w._id= 3, w.avg_load= 0.49252562432816116
+w._id= 4, w.avg_load= 0.4888686294847622
+w._id= 5, w.avg_load= 0.4870283598160781
+w._id= 6, w.avg_load= 0.4788109909481315
+w._id= 7, w.avg_load= 0.4931631276545252
+w._id= 8, w.avg_load= 0.466837232189907
+w._id= 9, w.avg_load= 0.47601162108655243
+w._id= 10, w.avg_load= 0.4724320608700074
+w._id= 11, w.avg_load= 0.4681883580932571
+w._id= 12, w.avg_load= 0.4473594324842305
+w._id= 13, w.avg_load= 0.4490501418179428
+w._id= 14, w.avg_load= 0.4402409200975756
+w._id= 15, w.avg_load= 0.4465632762482989
+w._id= 16, w.avg_load= 0.43397220719130813
+w._id= 17, w.avg_load= 0.4252093973084116
+w._id= 18, w.avg_load= 0.42906848757222255
+w._id= 19, w.avg_load= 0.41627518728833685
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+rank= 4, sET= 20.81549584785567, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5959620932738618
+w._id= 1, w.avg_load= 0.5783949273401815
+w._id= 2, w.avg_load= 0.5803334116144759
+w._id= 3, w.avg_load= 0.562050315313317
+w._id= 4, w.avg_load= 0.5675965388820772
+w._id= 5, w.avg_load= 0.5611100470170346
+w._id= 6, w.avg_load= 0.5586516016903071
+w._id= 7, w.avg_load= 0.5574809318404446
+w._id= 8, w.avg_load= 0.5258315925108815
+w._id= 9, w.avg_load= 0.534629561217861
+w._id= 10, w.avg_load= 0.5358391982505146
+w._id= 11, w.avg_load= 0.5393504050086382
+w._id= 12, w.avg_load= 0.5224039909123102
+w._id= 13, w.avg_load= 0.5224150903278151
+w._id= 14, w.avg_load= 0.5179793910238294
+w._id= 15, w.avg_load= 0.5130249384712451
+w._id= 16, w.avg_load= 0.49972884274565016
+w._id= 17, w.avg_load= 0.49739999902294624
+w._id= 18, w.avg_load= 0.5024206989659376
+w._id= 19, w.avg_load= 0.5041784535368162
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 20.240019579551227, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5889145428690732
+w._id= 1, w.avg_load= 0.5901078834863692
+w._id= 2, w.avg_load= 0.5835527888783325
+w._id= 3, w.avg_load= 0.5831043716821898
+w._id= 4, w.avg_load= 0.5575429653248504
+w._id= 5, w.avg_load= 0.5611869643978536
+w._id= 6, w.avg_load= 0.5694843451474532
+w._id= 7, w.avg_load= 0.5631399941547179
+w._id= 8, w.avg_load= 0.5370452241607687
+w._id= 9, w.avg_load= 0.5320220257642961
+w._id= 10, w.avg_load= 0.5453902911601758
+w._id= 11, w.avg_load= 0.5134570698012424
+w._id= 12, w.avg_load= 0.5382514325914564
+w._id= 13, w.avg_load= 0.5236991572986621
+w._id= 14, w.avg_load= 0.5294886073686419
+w._id= 15, w.avg_load= 0.5209769612953986
+w._id= 16, w.avg_load= 0.5087157858931232
+w._id= 17, w.avg_load= 0.5002740922173491
+w._id= 18, w.avg_load= 0.513875579923033
+w._id= 19, w.avg_load= 0.49093354389646465
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 21.206399849979192, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5731895284491401
+w._id= 1, w.avg_load= 0.5672429977133244
+w._id= 2, w.avg_load= 0.5445521629187566
+w._id= 3, w.avg_load= 0.5551482744653158
+w._id= 4, w.avg_load= 0.5437559993824351
+w._id= 5, w.avg_load= 0.5486764720703708
+w._id= 6, w.avg_load= 0.5386656489379279
+w._id= 7, w.avg_load= 0.5300575569384541
+w._id= 8, w.avg_load= 0.521680393366938
+w._id= 9, w.avg_load= 0.5068352818991033
+w._id= 10, w.avg_load= 0.5112967810572259
+w._id= 11, w.avg_load= 0.502047112425668
+w._id= 12, w.avg_load= 0.5020271151225011
+w._id= 13, w.avg_load= 0.49914765119074395
+w._id= 14, w.avg_load= 0.5078191285376089
+w._id= 15, w.avg_load= 0.47693133298403834
+w._id= 16, w.avg_load= 0.4939283584119409
+w._id= 17, w.avg_load= 0.48727089559304926
+w._id= 18, w.avg_load= 0.46564505730139016
+w._id= 19, w.avg_load= 0.4787666415558625
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 1, sET= 20.97135738413306, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.632199633436607
+w._id= 1, w.avg_load= 0.6331171796920999
+w._id= 2, w.avg_load= 0.6229134746113084
+w._id= 3, w.avg_load= 0.5959912509781782
+w._id= 4, w.avg_load= 0.6234399111682553
+w._id= 5, w.avg_load= 0.5860065117667337
+w._id= 6, w.avg_load= 0.6036035674206164
+w._id= 7, w.avg_load= 0.5921700371476589
+w._id= 8, w.avg_load= 0.5927791213080824
+w._id= 9, w.avg_load= 0.5838348693271356
+w._id= 10, w.avg_load= 0.580301149656376
+w._id= 11, w.avg_load= 0.5845278400618755
+w._id= 12, w.avg_load= 0.5750712305726217
+w._id= 13, w.avg_load= 0.5691794503840157
+w._id= 14, w.avg_load= 0.5522410284633001
+w._id= 15, w.avg_load= 0.5651567683793194
+w._id= 16, w.avg_load= 0.5460380692625402
+w._id= 17, w.avg_load= 0.5420536712316744
+w._id= 18, w.avg_load= 0.552673164770165
+w._id= 19, w.avg_load= 0.5334972865603771
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 22.582239663878372, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6109039614591206
+w._id= 1, w.avg_load= 0.5915127458321707
+w._id= 2, w.avg_load= 0.5989889620016096
+w._id= 3, w.avg_load= 0.5964550700282507
+w._id= 4, w.avg_load= 0.5733302414431728
+w._id= 5, w.avg_load= 0.5985328731369297
+w._id= 6, w.avg_load= 0.5859978002940744
+w._id= 7, w.avg_load= 0.5820342114870073
+w._id= 8, w.avg_load= 0.5656489422220926
+w._id= 9, w.avg_load= 0.5711391057078516
+w._id= 10, w.avg_load= 0.5594935727022159
+w._id= 11, w.avg_load= 0.5560217702120508
+w._id= 12, w.avg_load= 0.5636537001693751
+w._id= 13, w.avg_load= 0.5439944570468247
+w._id= 14, w.avg_load= 0.5339975632234064
+w._id= 15, w.avg_load= 0.5408393826176905
+w._id= 16, w.avg_load= 0.5169429800532179
+w._id= 17, w.avg_load= 0.5255283939370836
+w._id= 18, w.avg_load= 0.5081765748910867
+w._id= 19, w.avg_load= 0.5083994814991425
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 2, sET= 21.07379749880127, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5409894126422756
+w._id= 1, w.avg_load= 0.5316467721501451
+w._id= 2, w.avg_load= 0.5285047461582989
+w._id= 3, w.avg_load= 0.5293778184789003
+w._id= 4, w.avg_load= 0.5119270537503723
+w._id= 5, w.avg_load= 0.5204501623563288
+w._id= 6, w.avg_load= 0.5094880553675539
+w._id= 7, w.avg_load= 0.506262095419524
+w._id= 8, w.avg_load= 0.4869648049078635
+w._id= 9, w.avg_load= 0.4916552737484263
+w._id= 10, w.avg_load= 0.49221758378133185
+w._id= 11, w.avg_load= 0.4716757715588092
+w._id= 12, w.avg_load= 0.4698809071994014
+w._id= 13, w.avg_load= 0.4562884518041323
+w._id= 14, w.avg_load= 0.4662151418287009
+w._id= 15, w.avg_load= 0.45090513153131856
+w._id= 16, w.avg_load= 0.45921156569384003
+w._id= 17, w.avg_load= 0.44978933623045836
+w._id= 18, w.avg_load= 0.4451361079053774
+w._id= 19, w.avg_load= 0.4390329093338289
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 7, sET= 20.20964299217827, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5714695666013658
+w._id= 1, w.avg_load= 0.5559709802009671
+w._id= 2, w.avg_load= 0.5484317457310588
+w._id= 3, w.avg_load= 0.553021684237128
+w._id= 4, w.avg_load= 0.5516162155815533
+w._id= 5, w.avg_load= 0.5485200062020421
+w._id= 6, w.avg_load= 0.5382574670816764
+w._id= 7, w.avg_load= 0.5344367245533235
+w._id= 8, w.avg_load= 0.5207489495069021
+w._id= 9, w.avg_load= 0.5221950175152351
+w._id= 10, w.avg_load= 0.5024065038909745
+w._id= 11, w.avg_load= 0.5106232188707464
+w._id= 12, w.avg_load= 0.495194267098062
+w._id= 13, w.avg_load= 0.5001026572074894
+w._id= 14, w.avg_load= 0.49511090259876317
+w._id= 15, w.avg_load= 0.4886649965169994
+w._id= 16, w.avg_load= 0.48257469203787284
+w._id= 17, w.avg_load= 0.4829549797999012
+w._id= 18, w.avg_load= 0.47986012051866167
+w._id= 19, w.avg_load= 0.46033169041391275
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 20.654325599642412, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5817051853557457
+w._id= 1, w.avg_load= 0.5813093134316221
+w._id= 2, w.avg_load= 0.5590969159834849
+w._id= 3, w.avg_load= 0.5617225330549264
+w._id= 4, w.avg_load= 0.5497925384153546
+w._id= 5, w.avg_load= 0.5487240214173416
+w._id= 6, w.avg_load= 0.5534297634292431
+w._id= 7, w.avg_load= 0.5542589467864286
+w._id= 8, w.avg_load= 0.537960736469695
+w._id= 9, w.avg_load= 0.5400984471750339
+w._id= 10, w.avg_load= 0.5425420064152456
+w._id= 11, w.avg_load= 0.5242192178129718
+w._id= 12, w.avg_load= 0.5291848551618364
+w._id= 13, w.avg_load= 0.5213292539832869
+w._id= 14, w.avg_load= 0.5297404617640741
+w._id= 15, w.avg_load= 0.5156978492858395
+w._id= 16, w.avg_load= 0.5007368659482686
+w._id= 17, w.avg_load= 0.4850836164907916
+w._id= 18, w.avg_load= 0.48395277897748556
+w._id= 19, w.avg_load= 0.49636089704148634
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 9, sET= 21.423504941091714, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5665142837580042
+w._id= 1, w.avg_load= 0.55258277751276
+w._id= 2, w.avg_load= 0.546455770211035
+w._id= 3, w.avg_load= 0.5336106167674433
+w._id= 4, w.avg_load= 0.5460142086548248
+w._id= 5, w.avg_load= 0.5428051726784567
+w._id= 6, w.avg_load= 0.5500825781544445
+w._id= 7, w.avg_load= 0.5320194233718887
+w._id= 8, w.avg_load= 0.5147986536224957
+w._id= 9, w.avg_load= 0.5193335458802965
+w._id= 10, w.avg_load= 0.5215001832473781
+w._id= 11, w.avg_load= 0.5221281362592021
+w._id= 12, w.avg_load= 0.50702465427867
+w._id= 13, w.avg_load= 0.49987647835148435
+w._id= 14, w.avg_load= 0.4973646854542448
+w._id= 15, w.avg_load= 0.49773111069868714
+w._id= 16, w.avg_load= 0.4834945415130492
+w._id= 17, w.avg_load= 0.4929076444274222
+w._id= 18, w.avg_load= 0.4849062289310073
+w._id= 19, w.avg_load= 0.46572877415820846
+  ndropped: 0
+  frac_jobs_waited_inq: 0.007751937984496124
+  njobs_wfate: 200
+rank= 0, sET= 20.30611548623033, sEW= 6.061483543717827e-07, sPrqing= 0.007751937984496124
+*** sim_ET= 20.94828988433415, sim_EW= 6.061483543717827e-08, sim_Prqing= 0.0007751937984496124
+  sET_l: [20.306115486230329,
+ 20.971357384133061,
+ 21.07379749880127,
+ 21.206399849979192,
+ 20.815495847855669,
+ 20.654325599642412,
+ 22.582239663878372,
+ 20.209642992178271,
+ 20.240019579551227,
+ 21.423504941091714]
+  sPrqing_l: [0.007751937984496124, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  sEW_l: [6.0614835437178274e-07, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.6
+INFO] MMc_EW_Prqing:: ro= 0.6019301799118312, Prqing= 6.256059023442736e-07
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 10.0, ro= 0.5999999999999999, ES= 23.945397668025404, EW= 2.773283461830876e-07, ET= 23.94539794535375
+*** ET_wMGc= 23.94539794535375, EW_wMGc= 2.773283461830876e-07, Prqing_wMGc= 6.256059023442736e-07
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 10.0, ro= 0.5999999999999999, ES= 23.945397668025404, EW= 0.3284671532846713, ET= 24.273864821310074
+*** approx_ET_wMGc= 24.273864821310074, approx_EW_wMGc= 0.3284671532846713, approx_Prqing_wMGc= 0.5999999999999999
+>> d= 12.593969317272713
+rank= 1, will sim for d= 12
+rank= 4, will sim for d= 12
+rank= 3, will sim for d= 12
+rank= 8, will sim for d= 12
+rank= 7, will sim for d= 12
+rank= 2, will sim for d= 12
+rank= 5, will sim for d= 12
+rank= 9, will sim for d= 12
+rank= 6, will sim for d= 12
+w._id= 0, w.avg_load= 0.5723930427299057
+w._id= 1, w.avg_load= 0.5698354284202328
+w._id= 2, w.avg_load= 0.5614298390135832
+w._id= 3, w.avg_load= 0.5530030237247495
+w._id= 4, w.avg_load= 0.5559246681417791
+w._id= 5, w.avg_load= 0.53488285775581
+w._id= 6, w.avg_load= 0.5449487152389408
+w._id= 7, w.avg_load= 0.5381245122287306
+w._id= 8, w.avg_load= 0.5286010437821268
+w._id= 9, w.avg_load= 0.5349419651930872
+w._id= 10, w.avg_load= 0.512618267458131
+w._id= 11, w.avg_load= 0.5155595284914037
+w._id= 12, w.avg_load= 0.4973283410051083
+w._id= 13, w.avg_load= 0.4991259363648539
+w._id= 14, w.avg_load= 0.4938253255921439
+w._id= 15, w.avg_load= 0.49642888072679464
+w._id= 16, w.avg_load= 0.48544890003628577
+w._id= 17, w.avg_load= 0.4864155694724443
+w._id= 18, w.avg_load= 0.4778273276936549
+w._id= 19, w.avg_load= 0.4801758960227201
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 19.430063233717267, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5842604633476403
+w._id= 1, w.avg_load= 0.5875715859894981
+w._id= 2, w.avg_load= 0.593174265305097
+w._id= 3, w.avg_load= 0.5801791825264854
+w._id= 4, w.avg_load= 0.5668075511054499
+w._id= 5, w.avg_load= 0.5734890102506566
+w._id= 6, w.avg_load= 0.5656751645781961
+w._id= 7, w.avg_load= 0.5679401372576288
+w._id= 8, w.avg_load= 0.5595798428876372
+w._id= 9, w.avg_load= 0.5620615066436632
+w._id= 10, w.avg_load= 0.5607081171226043
+w._id= 11, w.avg_load= 0.5554326624328312
+w._id= 12, w.avg_load= 0.5506084603934716
+w._id= 13, w.avg_load= 0.5403042981512457
+w._id= 14, w.avg_load= 0.5246217131559141
+w._id= 15, w.avg_load= 0.5275185684912994
+w._id= 16, w.avg_load= 0.5080781594925012
+w._id= 17, w.avg_load= 0.5152836863230462
+w._id= 18, w.avg_load= 0.50821268225706
+w._id= 19, w.avg_load= 0.49934022870572264
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+rank= 4, sET= 19.617795734477227, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5767199307612169
+w._id= 1, w.avg_load= 0.5728798267214354
+w._id= 2, w.avg_load= 0.5717996080429602
+w._id= 3, w.avg_load= 0.5653538384423101
+w._id= 4, w.avg_load= 0.5632874780181952
+w._id= 5, w.avg_load= 0.56440180863151
+w._id= 6, w.avg_load= 0.5621461295445679
+w._id= 7, w.avg_load= 0.5345246311572303
+w._id= 8, w.avg_load= 0.540820094010475
+w._id= 9, w.avg_load= 0.5301242796692669
+w._id= 10, w.avg_load= 0.5329212998440741
+w._id= 11, w.avg_load= 0.5215480644092074
+w._id= 12, w.avg_load= 0.5142441588819526
+w._id= 13, w.avg_load= 0.5164475079175224
+w._id= 14, w.avg_load= 0.5084636068423941
+w._id= 15, w.avg_load= 0.5037064879222632
+w._id= 16, w.avg_load= 0.4944654220917989
+w._id= 17, w.avg_load= 0.4907618130813113
+w._id= 18, w.avg_load= 0.48928758879619627
+w._id= 19, w.avg_load= 0.5073431429992978
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 20.37252238801892, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5801019654482348
+w._id= 1, w.avg_load= 0.5786984523784466
+w._id= 2, w.avg_load= 0.5615571887974733
+w._id= 3, w.avg_load= 0.5664563950921313
+w._id= 4, w.avg_load= 0.5710706283988756
+w._id= 5, w.avg_load= 0.5586583487428536
+w._id= 6, w.avg_load= 0.5493189532683429
+w._id= 7, w.avg_load= 0.5391151416977747
+w._id= 8, w.avg_load= 0.5372474580034517
+w._id= 9, w.avg_load= 0.5350676760909159
+w._id= 10, w.avg_load= 0.5248948025681162
+w._id= 11, w.avg_load= 0.507714521267486
+w._id= 12, w.avg_load= 0.49776870357883185
+w._id= 13, w.avg_load= 0.5138962563851353
+w._id= 14, w.avg_load= 0.514146155081504
+w._id= 15, w.avg_load= 0.5013318368618119
+w._id= 16, w.avg_load= 0.4878233193110751
+w._id= 17, w.avg_load= 0.49303900193501343
+w._id= 18, w.avg_load= 0.4936712593653892
+w._id= 19, w.avg_load= 0.48268722248062196
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0035971223021582736
+  njobs_wfate: 200
+rank= 1, sET= 20.56848896632077, sEW= 2.0414920559375105e-07, sPrqing= 0.0035971223021582736
+w._id= 0, w.avg_load= 0.5230002744914783
+w._id= 1, w.avg_load= 0.5148328984483519
+w._id= 2, w.avg_load= 0.5176605830430706
+w._id= 3, w.avg_load= 0.5069547032052735
+w._id= 4, w.avg_load= 0.5070476560314551
+w._id= 5, w.avg_load= 0.5091741713477744
+w._id= 6, w.avg_load= 0.5034882999054474
+w._id= 7, w.avg_load= 0.49803266842961824
+w._id= 8, w.avg_load= 0.48611053255770725
+w._id= 9, w.avg_load= 0.4791628144974711
+w._id= 10, w.avg_load= 0.4911049966321083
+w._id= 11, w.avg_load= 0.4731290135816939
+w._id= 12, w.avg_load= 0.470189578692026
+w._id= 13, w.avg_load= 0.44527539156170814
+w._id= 14, w.avg_load= 0.4433857064317678
+w._id= 15, w.avg_load= 0.44426975310245237
+w._id= 16, w.avg_load= 0.4401254998655853
+w._id= 17, w.avg_load= 0.43494449316300365
+w._id= 18, w.avg_load= 0.4210558508333341
+w._id= 19, w.avg_load= 0.42302330758278633
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 2, sET= 20.115638080541956, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5684595832887609
+w._id= 1, w.avg_load= 0.5774958909928718
+w._id= 2, w.avg_load= 0.5732711305336958
+w._id= 3, w.avg_load= 0.5667449784106187
+w._id= 4, w.avg_load= 0.5545689474807555
+w._id= 5, w.avg_load= 0.5484694943352082
+w._id= 6, w.avg_load= 0.5534530327683229
+w._id= 7, w.avg_load= 0.5479658834371192
+w._id= 8, w.avg_load= 0.5562201172506488
+w._id= 9, w.avg_load= 0.5329211036421202
+w._id= 10, w.avg_load= 0.522699922705118
+w._id= 11, w.avg_load= 0.5232858936546564
+w._id= 12, w.avg_load= 0.5126873916510947
+w._id= 13, w.avg_load= 0.5200493149664893
+w._id= 14, w.avg_load= 0.5126915019801803
+w._id= 15, w.avg_load= 0.5104772365728754
+w._id= 16, w.avg_load= 0.49875625446052435
+w._id= 17, w.avg_load= 0.4992158906263297
+w._id= 18, w.avg_load= 0.4969787152859897
+w._id= 19, w.avg_load= 0.4877401095437239
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 19.002071695165228, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5702069160137079
+w._id= 1, w.avg_load= 0.5593367593700685
+w._id= 2, w.avg_load= 0.5534103622372222
+w._id= 3, w.avg_load= 0.5441040914837861
+w._id= 4, w.avg_load= 0.5409657195468773
+w._id= 5, w.avg_load= 0.552892003583066
+w._id= 6, w.avg_load= 0.5429287604567882
+w._id= 7, w.avg_load= 0.5322187711473398
+w._id= 8, w.avg_load= 0.5195492561895563
+w._id= 9, w.avg_load= 0.5105869532196228
+w._id= 10, w.avg_load= 0.5130828916382587
+w._id= 11, w.avg_load= 0.5111256885546598
+w._id= 12, w.avg_load= 0.5077875570152236
+w._id= 13, w.avg_load= 0.5011064028043187
+w._id= 14, w.avg_load= 0.4771787012287559
+w._id= 15, w.avg_load= 0.4925933041820015
+w._id= 16, w.avg_load= 0.48791302525433994
+w._id= 17, w.avg_load= 0.4904905570086411
+w._id= 18, w.avg_load= 0.47611602806109254
+w._id= 19, w.avg_load= 0.4736632971179919
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 7, sET= 20.10536054584052, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5626872866505989
+w._id= 1, w.avg_load= 0.560489144557061
+w._id= 2, w.avg_load= 0.5434934719318658
+w._id= 3, w.avg_load= 0.5442873430276095
+w._id= 4, w.avg_load= 0.5436210645574687
+w._id= 5, w.avg_load= 0.534239606937586
+w._id= 6, w.avg_load= 0.5513793559396368
+w._id= 7, w.avg_load= 0.5319768892361083
+w._id= 8, w.avg_load= 0.5341665160219407
+w._id= 9, w.avg_load= 0.5418012000086687
+w._id= 10, w.avg_load= 0.5132206411160728
+w._id= 11, w.avg_load= 0.4998712404256696
+w._id= 12, w.avg_load= 0.49596458294782014
+w._id= 13, w.avg_load= 0.49247358287316045
+w._id= 14, w.avg_load= 0.4965222343944199
+w._id= 15, w.avg_load= 0.4844183340141116
+w._id= 16, w.avg_load= 0.48111362342341035
+w._id= 17, w.avg_load= 0.4780392517186453
+w._id= 18, w.avg_load= 0.4692462324272262
+w._id= 19, w.avg_load= 0.47114776741746395
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 19.623015104352874, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5099179115288135
+w._id= 1, w.avg_load= 0.5000426361089443
+w._id= 2, w.avg_load= 0.4973976121858912
+w._id= 3, w.avg_load= 0.49510684815268374
+w._id= 4, w.avg_load= 0.4974065440013914
+w._id= 5, w.avg_load= 0.48266764184560434
+w._id= 6, w.avg_load= 0.4787860651198848
+w._id= 7, w.avg_load= 0.4672443680607475
+w._id= 8, w.avg_load= 0.46694932828435215
+w._id= 9, w.avg_load= 0.4513028007261405
+w._id= 10, w.avg_load= 0.4648408339748133
+w._id= 11, w.avg_load= 0.45035715035605167
+w._id= 12, w.avg_load= 0.43284101154317917
+w._id= 13, w.avg_load= 0.44872903449692975
+w._id= 14, w.avg_load= 0.4446313125473796
+w._id= 15, w.avg_load= 0.44159833978049756
+w._id= 16, w.avg_load= 0.4198088973892901
+w._id= 17, w.avg_load= 0.42072894268715616
+w._id= 18, w.avg_load= 0.4143052045149512
+w._id= 19, w.avg_load= 0.41441220020298686
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 9, sET= 18.335275817924455, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6426237840698437
+w._id= 1, w.avg_load= 0.6451949048379004
+w._id= 2, w.avg_load= 0.6355710175071966
+w._id= 3, w.avg_load= 0.6407246722300884
+w._id= 4, w.avg_load= 0.6249852626891205
+w._id= 5, w.avg_load= 0.6281665805227417
+w._id= 6, w.avg_load= 0.6271108108468902
+w._id= 7, w.avg_load= 0.6099703328997045
+w._id= 8, w.avg_load= 0.6216113947056694
+w._id= 9, w.avg_load= 0.6062558400588454
+w._id= 10, w.avg_load= 0.5918964236842503
+w._id= 11, w.avg_load= 0.5956409065495385
+w._id= 12, w.avg_load= 0.5924255361517536
+w._id= 13, w.avg_load= 0.5894104726493564
+w._id= 14, w.avg_load= 0.5829866439718208
+w._id= 15, w.avg_load= 0.5760023272346932
+w._id= 16, w.avg_load= 0.5722772075028427
+w._id= 17, w.avg_load= 0.5633097171199002
+w._id= 18, w.avg_load= 0.5601719202173516
+w._id= 19, w.avg_load= 0.5618328465385086
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 0, sET= 20.28778011931855, sEW= 0.0, sPrqing= 0.0
+*** sim_ET= 19.745801168567777, sim_EW= 2.0414920559375104e-08, sim_Prqing= 0.00035971223021582735
+  sET_l: [20.287780119318551,
+ 20.568488966320771,
+ 20.115638080541956,
+ 20.372522388018918,
+ 19.617795734477227,
+ 19.623015104352874,
+ 19.002071695165228,
+ 20.105360545840519,
+ 19.430063233717267,
+ 18.335275817924455]
+  sPrqing_l: [0.0, 0.0035971223021582736, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  sEW_l: [0.0, 2.0414920559375105e-07, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.6157467308267767
+INFO] MMc_EW_Prqing:: ro= 0.6191840374849563, Prqing= 7.50619850014171e-06
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 12.593969317272713, ro= 0.6157467308171394, ES= 21.920018845270356, EW= 3.517558214977428e-06, ET= 21.920022362828572
+*** ET_wMGc= 21.920022362828572, EW_wMGc= 3.517558214977428e-06, Prqing_wMGc= 7.50619850014171e-06
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 12.593969317272713, ro= 0.6157467308171394, ES= 21.920018845270356, EW= 0.36011075780186186, ET= 22.28012960307222
+*** approx_ET_wMGc= 22.28012960307222, approx_EW_wMGc= 0.36011075780186186, approx_Prqing_wMGc= 0.6157467308171394
+>> d= 15.860806316440653
+rank= 4, will sim for d= 15
+rank= 3, will sim for d= 15
+rank= 1, will sim for d= 15
+rank= 8, will sim for d= 15
+rank= 2, will sim for d= 15
+rank= 7, will sim for d= 15
+rank= 5, will sim for d= 15
+rank= 6, will sim for d= 15
+rank= 9, will sim for d= 15
+w._id= 0, w.avg_load= 0.5577138443551733
+w._id= 1, w.avg_load= 0.5563003275677467
+w._id= 2, w.avg_load= 0.5499117641646337
+w._id= 3, w.avg_load= 0.5385737409830081
+w._id= 4, w.avg_load= 0.5310206185748746
+w._id= 5, w.avg_load= 0.5327703539349825
+w._id= 6, w.avg_load= 0.5320386362331814
+w._id= 7, w.avg_load= 0.5383433164503483
+w._id= 8, w.avg_load= 0.5193044959732083
+w._id= 9, w.avg_load= 0.5163131939063517
+w._id= 10, w.avg_load= 0.5135652466684374
+w._id= 11, w.avg_load= 0.5156255226651689
+w._id= 12, w.avg_load= 0.5090490794039854
+w._id= 13, w.avg_load= 0.5032873183892332
+w._id= 14, w.avg_load= 0.4856930745292819
+w._id= 15, w.avg_load= 0.4826885044900813
+w._id= 16, w.avg_load= 0.4849342341759745
+w._id= 17, w.avg_load= 0.4790444394180805
+w._id= 18, w.avg_load= 0.47850041476330546
+w._id= 19, w.avg_load= 0.4621065679268229
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 1, sET= 20.372214014840313, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5280935763652275
+w._id= 1, w.avg_load= 0.5156202971951909
+w._id= 2, w.avg_load= 0.5275306003135002
+w._id= 3, w.avg_load= 0.5053509013521811
+w._id= 4, w.avg_load= 0.5021885688428404
+w._id= 5, w.avg_load= 0.49107962221023177
+w._id= 6, w.avg_load= 0.5057413759422955
+w._id= 7, w.avg_load= 0.4823584073851047
+w._id= 8, w.avg_load= 0.48273230856251453
+w._id= 9, w.avg_load= 0.48249529083082093
+w._id= 10, w.avg_load= 0.47173235033327643
+w._id= 11, w.avg_load= 0.47741176399411267
+w._id= 12, w.avg_load= 0.4685426558651052
+w._id= 13, w.avg_load= 0.468344510667869
+w._id= 14, w.avg_load= 0.4510709090626007
+w._id= 15, w.avg_load= 0.45119929147847143
+w._id= 16, w.avg_load= 0.45496958014161903
+w._id= 17, w.avg_load= 0.44845750698563686
+w._id= 18, w.avg_load= 0.4436468908707445
+w._id= 19, w.avg_load= 0.4454083189012624
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 19.563415584435116, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6153030178552388
+w._id= 1, w.avg_load= 0.6070325609543233
+w._id= 2, w.avg_load= 0.5929231666871915
+w._id= 3, w.avg_load= 0.6097710941419006
+w._id= 4, w.avg_load= 0.6039451751152166
+w._id= 5, w.avg_load= 0.5783804332135626
+w._id= 6, w.avg_load= 0.5850325736241032
+w._id= 7, w.avg_load= 0.5769593380943021
+w._id= 8, w.avg_load= 0.5646036772878148
+w._id= 9, w.avg_load= 0.5658876178594121
+w._id= 10, w.avg_load= 0.5630332272507886
+w._id= 11, w.avg_load= 0.5594590436523121
+w._id= 12, w.avg_load= 0.550358961286332
+w._id= 13, w.avg_load= 0.5384490417734417
+w._id= 14, w.avg_load= 0.5369127939741316
+w._id= 15, w.avg_load= 0.5377561384412802
+w._id= 16, w.avg_load= 0.5353865771150662
+w._id= 17, w.avg_load= 0.5277620664708947
+w._id= 18, w.avg_load= 0.5313205778524319
+w._id= 19, w.avg_load= 0.5241522377814726
+  frac_jobs_waited_inq: 0.003676470588235294
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 19.22730491663712, sEW= 7.318923671562061e-09, sPrqing= 0.003676470588235294
+w._id= 0, w.avg_load= 0.638424691996673
+w._id= 1, w.avg_load= 0.6357780987819613
+w._id= 2, w.avg_load= 0.6359250237909664
+w._id= 3, w.avg_load= 0.6164854943842873
+w._id= 4, w.avg_load= 0.6200315107135448
+w._id= 5, w.avg_load= 0.6154822199169104
+w._id= 6, w.avg_load= 0.6065857801721606
+w._id= 7, w.avg_load= 0.5958450521341146
+w._id= 8, w.avg_load= 0.603375191158128
+w._id= 9, w.avg_load= 0.5937088766385754
+w._id= 10, w.avg_load= 0.5861630779182153
+w._id= 11, w.avg_load= 0.5881089990412345
+w._id= 12, w.avg_load= 0.5749985277741073
+w._id= 13, w.avg_load= 0.5784933676162505
+w._id= 14, w.avg_load= 0.5811935713501285
+w._id= 15, w.avg_load= 0.568089885753075
+w._id= 16, w.avg_load= 0.562999946044929
+w._id= 17, w.avg_load= 0.5566827929622524
+w._id= 18, w.avg_load= 0.5600655200153035
+w._id= 19, w.avg_load= 0.5542417139409845
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+rank= 4, sET= 19.861610701413223, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5482354507861015
+w._id= 1, w.avg_load= 0.5581527975986771
+w._id= 2, w.avg_load= 0.5429563538441228
+w._id= 3, w.avg_load= 0.5374240420799737
+w._id= 4, w.avg_load= 0.5201062938090566
+w._id= 5, w.avg_load= 0.5139626546664062
+w._id= 6, w.avg_load= 0.5186842287718167
+w._id= 7, w.avg_load= 0.5211040282638718
+w._id= 8, w.avg_load= 0.5316393196256811
+w._id= 9, w.avg_load= 0.5160362440180358
+w._id= 10, w.avg_load= 0.5023969336440398
+w._id= 11, w.avg_load= 0.5001547165612349
+w._id= 12, w.avg_load= 0.49634329224322055
+w._id= 13, w.avg_load= 0.5003160611237734
+w._id= 14, w.avg_load= 0.4932760477813883
+w._id= 15, w.avg_load= 0.48298647762781566
+w._id= 16, w.avg_load= 0.4824831952035247
+w._id= 17, w.avg_load= 0.4819258629802922
+w._id= 18, w.avg_load= 0.4715992941008726
+w._id= 19, w.avg_load= 0.4541007412965816
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 2, sET= 19.900911995930883, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6717453402612396
+w._id= 1, w.avg_load= 0.6674235612158238
+w._id= 2, w.avg_load= 0.6631152893066257
+w._id= 3, w.avg_load= 0.6480807273324672
+w._id= 4, w.avg_load= 0.6499910115478243
+w._id= 5, w.avg_load= 0.6470541527538706
+w._id= 6, w.avg_load= 0.645238585730829
+w._id= 7, w.avg_load= 0.6538284687381833
+w._id= 8, w.avg_load= 0.6300315233752896
+w._id= 9, w.avg_load= 0.6374469597278574
+w._id= 10, w.avg_load= 0.6344423976176874
+w._id= 11, w.avg_load= 0.6236968695694385
+w._id= 12, w.avg_load= 0.6140902743867395
+w._id= 13, w.avg_load= 0.5999739646314264
+w._id= 14, w.avg_load= 0.5903435640564281
+w._id= 15, w.avg_load= 0.5925387166253997
+w._id= 16, w.avg_load= 0.5940347360463238
+w._id= 17, w.avg_load= 0.5722817180941085
+w._id= 18, w.avg_load= 0.573424258445351
+w._id= 19, w.avg_load= 0.5767978816784077
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 19.675234645168082, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6322133249314138
+w._id= 1, w.avg_load= 0.6312071978852526
+w._id= 2, w.avg_load= 0.6227816684302103
+w._id= 3, w.avg_load= 0.6189579641148625
+w._id= 4, w.avg_load= 0.6249773021802196
+w._id= 5, w.avg_load= 0.6141617031651324
+w._id= 6, w.avg_load= 0.606767661924346
+w._id= 7, w.avg_load= 0.5976823546124216
+w._id= 8, w.avg_load= 0.5944920646217345
+w._id= 9, w.avg_load= 0.5869585271646426
+w._id= 10, w.avg_load= 0.5879169142004932
+w._id= 11, w.avg_load= 0.59153543315311
+w._id= 12, w.avg_load= 0.5778152419127698
+w._id= 13, w.avg_load= 0.5747602332090822
+w._id= 14, w.avg_load= 0.571689000418233
+w._id= 15, w.avg_load= 0.5568852762276912
+w._id= 16, w.avg_load= 0.5553043091130846
+w._id= 17, w.avg_load= 0.5571150961399151
+w._id= 18, w.avg_load= 0.544560078045665
+w._id= 19, w.avg_load= 0.5372639702171016
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 7, sET= 20.061693877559733, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5958665229888181
+w._id= 1, w.avg_load= 0.5862230645554425
+w._id= 2, w.avg_load= 0.5951945743403558
+w._id= 3, w.avg_load= 0.5816443919482669
+w._id= 4, w.avg_load= 0.592345575933351
+w._id= 5, w.avg_load= 0.5791191257117051
+w._id= 6, w.avg_load= 0.5712091464631627
+w._id= 7, w.avg_load= 0.5558019132530482
+w._id= 8, w.avg_load= 0.5588578770379934
+w._id= 9, w.avg_load= 0.5603713421842741
+w._id= 10, w.avg_load= 0.5483383432140433
+w._id= 11, w.avg_load= 0.5472195612114815
+w._id= 12, w.avg_load= 0.5430367478486013
+w._id= 13, w.avg_load= 0.5392355277064755
+w._id= 14, w.avg_load= 0.5322764139617295
+w._id= 15, w.avg_load= 0.5353386741858687
+w._id= 16, w.avg_load= 0.5296084312144302
+w._id= 17, w.avg_load= 0.5103043488579369
+w._id= 18, w.avg_load= 0.5023679361911447
+w._id= 19, w.avg_load= 0.49933428551588
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 19.14104937814377, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5691295121394245
+w._id= 1, w.avg_load= 0.5668340770385009
+w._id= 2, w.avg_load= 0.5670130481167185
+w._id= 3, w.avg_load= 0.5422480593104693
+w._id= 4, w.avg_load= 0.5425380022022553
+w._id= 5, w.avg_load= 0.5338771892625351
+w._id= 6, w.avg_load= 0.5287016121975752
+w._id= 7, w.avg_load= 0.5271922701505874
+w._id= 8, w.avg_load= 0.5248386287655312
+w._id= 9, w.avg_load= 0.5211403113040382
+w._id= 10, w.avg_load= 0.5201893229547693
+w._id= 11, w.avg_load= 0.5069718861968777
+w._id= 12, w.avg_load= 0.5138421849784758
+w._id= 13, w.avg_load= 0.510222224074988
+w._id= 14, w.avg_load= 0.5008287098313485
+w._id= 15, w.avg_load= 0.5008582595805164
+w._id= 16, w.avg_load= 0.4960104691238837
+w._id= 17, w.avg_load= 0.4771474823667639
+w._id= 18, w.avg_load= 0.48028309143032105
+w._id= 19, w.avg_load= 0.4747142572344244
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 9, sET= 20.033126549810316, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5480332718224494
+w._id= 1, w.avg_load= 0.5524044324048961
+w._id= 2, w.avg_load= 0.5676430538117926
+w._id= 3, w.avg_load= 0.5478618811861795
+w._id= 4, w.avg_load= 0.5390031759350061
+w._id= 5, w.avg_load= 0.5368428619876491
+w._id= 6, w.avg_load= 0.5391467349575778
+w._id= 7, w.avg_load= 0.5268736579749557
+w._id= 8, w.avg_load= 0.5240227264755641
+w._id= 9, w.avg_load= 0.5120512636504219
+w._id= 10, w.avg_load= 0.5152773814503806
+w._id= 11, w.avg_load= 0.5045379995113695
+w._id= 12, w.avg_load= 0.48593287119311684
+w._id= 13, w.avg_load= 0.49033388303699926
+w._id= 14, w.avg_load= 0.4912277717458055
+w._id= 15, w.avg_load= 0.4870198502886296
+w._id= 16, w.avg_load= 0.47228438427915936
+w._id= 17, w.avg_load= 0.4692836434407789
+w._id= 18, w.avg_load= 0.4674302165889993
+w._id= 19, w.avg_load= 0.4575452636601599
+  ndropped: 0
+  frac_jobs_waited_inq: 0.003787878787878788
+  njobs_wfate: 200
+rank= 0, sET= 19.073053771543396, sEW= 4.20386175647991e-08, sPrqing= 0.003787878787878788
+*** sim_ET= 19.690961543548195, sim_EW= 4.935754123636116e-09, sim_Prqing= 0.0007464349376114082
+  sET_l: [19.073053771543396,
+ 20.372214014840313,
+ 19.900911995930883,
+ 19.563415584435116,
+ 19.861610701413223,
+ 19.141049378143769,
+ 19.675234645168082,
+ 20.061693877559733,
+ 19.22730491663712,
+ 20.033126549810316]
+  sPrqing_l: [0.003787878787878788,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0036764705882352941,
+ 0.0]
+  sEW_l: [4.2038617564799098e-08,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 0.0,
+ 7.3189236715620613e-09,
+ 0.0]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.6236299301850511
+INFO] MMc_EW_Prqing:: ro= 0.6288570390600616, Prqing= 2.212634330960148e-05
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 15.860806316440653, ro= 0.6236299301978064, ES= 21.114907880848786, EW= 1.0655273940881701e-05, ET= 21.114918536122726
+*** ET_wMGc= 21.114918536122726, EW_wMGc= 1.0655273940881701e-05, Prqing_wMGc= 2.212634330960148e-05
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 15.860806316440653, ro= 0.6236299301978064, ES= 21.114907880848786, EW= 0.37712754872743876, ET= 21.492035429576227
+*** approx_ET_wMGc= 21.492035429576227, approx_EW_wMGc= 0.37712754872743876, approx_Prqing_wMGc= 0.6236299301978064
+>> d= 19.975050809645882
+rank= 1, will sim for d= 19
+rank= 4, will sim for d= 19
+rank= 3, will sim for d= 19
+rank= 8, will sim for d= 19
+rank= 2, will sim for d= 19
+rank= 7, will sim for d= 19
+rank= 6, will sim for d= 19
+rank= 5, will sim for d= 19
+rank= 9, will sim for d= 19
+w._id= 0, w.avg_load= 0.6039981410608047
+w._id= 1, w.avg_load= 0.6051031078900191
+w._id= 2, w.avg_load= 0.608701061566595
+w._id= 3, w.avg_load= 0.5940288055695775
+w._id= 4, w.avg_load= 0.5816341204018423
+w._id= 5, w.avg_load= 0.5853709580610913
+w._id= 6, w.avg_load= 0.5806430249760116
+w._id= 7, w.avg_load= 0.5824740718261905
+w._id= 8, w.avg_load= 0.5711057918318763
+w._id= 9, w.avg_load= 0.565441082621057
+w._id= 10, w.avg_load= 0.5615944363136878
+w._id= 11, w.avg_load= 0.5634047653459401
+w._id= 12, w.avg_load= 0.5599809174639618
+w._id= 13, w.avg_load= 0.5384494710990346
+w._id= 14, w.avg_load= 0.5315012909537491
+w._id= 15, w.avg_load= 0.5380880930962276
+w._id= 16, w.avg_load= 0.5315504310406476
+w._id= 17, w.avg_load= 0.5277292366739482
+w._id= 18, w.avg_load= 0.5319538572702454
+w._id= 19, w.avg_load= 0.5189811450617997
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+rank= 4, sET= 18.54920814102798, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6339949333032523
+w._id= 1, w.avg_load= 0.6287339364537541
+w._id= 2, w.avg_load= 0.6330626026191413
+w._id= 3, w.avg_load= 0.626029907270144
+w._id= 4, w.avg_load= 0.6199850217903541
+w._id= 5, w.avg_load= 0.6190132462197706
+w._id= 6, w.avg_load= 0.6053915608369207
+w._id= 7, w.avg_load= 0.6060633015364124
+w._id= 8, w.avg_load= 0.5984374111754355
+w._id= 9, w.avg_load= 0.5965395688945467
+w._id= 10, w.avg_load= 0.5916805638758192
+w._id= 11, w.avg_load= 0.5806363535926974
+w._id= 12, w.avg_load= 0.5833162222639316
+w._id= 13, w.avg_load= 0.5818607149258337
+w._id= 14, w.avg_load= 0.5779662467581939
+w._id= 15, w.avg_load= 0.5713850925707483
+w._id= 16, w.avg_load= 0.5566876485333772
+w._id= 17, w.avg_load= 0.5641362960698019
+w._id= 18, w.avg_load= 0.5490296508017606
+w._id= 19, w.avg_load= 0.5557414668764166
+  frac_jobs_waited_inq: 0.0038461538461538464
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 20.30804133444874, sEW= 1.489728026555781e-06, sPrqing= 0.0038461538461538464
+w._id= 0, w.avg_load= 0.555412515162575
+w._id= 1, w.avg_load= 0.5405572623638234
+w._id= 2, w.avg_load= 0.5494175622981319
+w._id= 3, w.avg_load= 0.526118437494293
+w._id= 4, w.avg_load= 0.5176677901090674
+w._id= 5, w.avg_load= 0.5275878819828466
+w._id= 6, w.avg_load= 0.5243251700743939
+w._id= 7, w.avg_load= 0.5180778758264292
+w._id= 8, w.avg_load= 0.5087761377810225
+w._id= 9, w.avg_load= 0.49795618414475573
+w._id= 10, w.avg_load= 0.48796711371925466
+w._id= 11, w.avg_load= 0.4951761070204241
+w._id= 12, w.avg_load= 0.48737922447996523
+w._id= 13, w.avg_load= 0.49453054069240326
+w._id= 14, w.avg_load= 0.47393810442537293
+w._id= 15, w.avg_load= 0.47641099185428276
+w._id= 16, w.avg_load= 0.4850700670443643
+w._id= 17, w.avg_load= 0.47045059000704453
+w._id= 18, w.avg_load= 0.4723897138320738
+w._id= 19, w.avg_load= 0.4634045756223011
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 1, sET= 18.70528645074809, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6386815843155254
+w._id= 1, w.avg_load= 0.6387724821791466
+w._id= 2, w.avg_load= 0.6258579380184649
+w._id= 3, w.avg_load= 0.6356824555327522
+w._id= 4, w.avg_load= 0.635222808676202
+w._id= 5, w.avg_load= 0.6218467163383996
+w._id= 6, w.avg_load= 0.6171547269012129
+w._id= 7, w.avg_load= 0.6121071477940997
+w._id= 8, w.avg_load= 0.6116385948646421
+w._id= 9, w.avg_load= 0.6124529626702658
+w._id= 10, w.avg_load= 0.5898912278467495
+w._id= 11, w.avg_load= 0.5821481683230754
+w._id= 12, w.avg_load= 0.5892414419848768
+w._id= 13, w.avg_load= 0.593790962829253
+w._id= 14, w.avg_load= 0.591997034474039
+w._id= 15, w.avg_load= 0.5783293971369234
+w._id= 16, w.avg_load= 0.5801082090870605
+w._id= 17, w.avg_load= 0.5611994621124836
+w._id= 18, w.avg_load= 0.5539516126908842
+w._id= 19, w.avg_load= 0.5537512259152376
+  frac_jobs_waited_inq: 0.003816793893129771
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 19.11327964043254, sEW= 3.837215158242202e-07, sPrqing= 0.003816793893129771
+w._id= 0, w.avg_load= 0.608517313034932
+w._id= 1, w.avg_load= 0.5949888502278445
+w._id= 2, w.avg_load= 0.5935175628192499
+w._id= 3, w.avg_load= 0.5879196929552732
+w._id= 4, w.avg_load= 0.583847761193808
+w._id= 5, w.avg_load= 0.587944941053899
+w._id= 6, w.avg_load= 0.5701867006551337
+w._id= 7, w.avg_load= 0.5686840841125949
+w._id= 8, w.avg_load= 0.5696005509109133
+w._id= 9, w.avg_load= 0.569823345487808
+w._id= 10, w.avg_load= 0.556349867370665
+w._id= 11, w.avg_load= 0.552101537893723
+w._id= 12, w.avg_load= 0.5491607075522024
+w._id= 13, w.avg_load= 0.5396751833757703
+w._id= 14, w.avg_load= 0.550522554735808
+w._id= 15, w.avg_load= 0.5318502208177069
+w._id= 16, w.avg_load= 0.528114450774264
+w._id= 17, w.avg_load= 0.5310530110419543
+w._id= 18, w.avg_load= 0.519798938624611
+w._id= 19, w.avg_load= 0.5316337088839278
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 2, sET= 19.620685130935254, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6647877125422634
+w._id= 1, w.avg_load= 0.6630943198327738
+w._id= 2, w.avg_load= 0.661475110134977
+w._id= 3, w.avg_load= 0.6566982539042413
+w._id= 4, w.avg_load= 0.6412659247765902
+w._id= 5, w.avg_load= 0.6354906854810956
+w._id= 6, w.avg_load= 0.6331939549946692
+w._id= 7, w.avg_load= 0.6313648482237924
+w._id= 8, w.avg_load= 0.6399844374044146
+w._id= 9, w.avg_load= 0.6200499044868347
+w._id= 10, w.avg_load= 0.628707174397982
+w._id= 11, w.avg_load= 0.6200508224317084
+w._id= 12, w.avg_load= 0.6218266093362574
+w._id= 13, w.avg_load= 0.60547466922409
+w._id= 14, w.avg_load= 0.6063222067316423
+w._id= 15, w.avg_load= 0.6082739545102487
+w._id= 16, w.avg_load= 0.5964868210201616
+w._id= 17, w.avg_load= 0.5924035466819282
+w._id= 18, w.avg_load= 0.5920318722493072
+w._id= 19, w.avg_load= 0.5821785604682655
+  frac_jobs_waited_inq: 0.0038022813688212928
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 20.30188242136628, sEW= 4.5867023792389714e-07, sPrqing= 0.0038022813688212928
+w._id= 0, w.avg_load= 0.592155797704162
+w._id= 1, w.avg_load= 0.5853133345641276
+w._id= 2, w.avg_load= 0.5855833071396502
+w._id= 3, w.avg_load= 0.5605726730683092
+w._id= 4, w.avg_load= 0.5605300794146791
+w._id= 5, w.avg_load= 0.568010116558839
+w._id= 6, w.avg_load= 0.5686898403931607
+w._id= 7, w.avg_load= 0.5496655213002839
+w._id= 8, w.avg_load= 0.5407663430885544
+w._id= 9, w.avg_load= 0.5431940303990488
+w._id= 10, w.avg_load= 0.5335895531765853
+w._id= 11, w.avg_load= 0.5379462446780388
+w._id= 12, w.avg_load= 0.5221047094947467
+w._id= 13, w.avg_load= 0.5277145707290032
+w._id= 14, w.avg_load= 0.5202752034995305
+w._id= 15, w.avg_load= 0.50627541064295
+w._id= 16, w.avg_load= 0.5172646442303948
+w._id= 17, w.avg_load= 0.5135925431100239
+w._id= 18, w.avg_load= 0.5092580275890295
+w._id= 19, w.avg_load= 0.4964041768392585
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 7, sET= 20.078692491168084, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6410374776614642
+w._id= 1, w.avg_load= 0.6358503325993141
+w._id= 2, w.avg_load= 0.6342988692647034
+w._id= 3, w.avg_load= 0.638735522613438
+w._id= 4, w.avg_load= 0.6313901303506075
+w._id= 5, w.avg_load= 0.6163200099344577
+w._id= 6, w.avg_load= 0.608005056542155
+w._id= 7, w.avg_load= 0.6044686498469222
+w._id= 8, w.avg_load= 0.6165862439842871
+w._id= 9, w.avg_load= 0.5906497463113382
+w._id= 10, w.avg_load= 0.5902863483540733
+w._id= 11, w.avg_load= 0.5864831764906845
+w._id= 12, w.avg_load= 0.5850629042885556
+w._id= 13, w.avg_load= 0.5694153423391715
+w._id= 14, w.avg_load= 0.5775764556282599
+w._id= 15, w.avg_load= 0.5637639192426913
+w._id= 16, w.avg_load= 0.5566288108652726
+w._id= 17, w.avg_load= 0.5580643935378263
+w._id= 18, w.avg_load= 0.5629237206119079
+w._id= 19, w.avg_load= 0.550369920059856
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 19.280699984461876, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.4825910652299379
+w._id= 1, w.avg_load= 0.49077753013296743
+w._id= 2, w.avg_load= 0.4865519456096616
+w._id= 3, w.avg_load= 0.47572427341751494
+w._id= 4, w.avg_load= 0.4686602564463152
+w._id= 5, w.avg_load= 0.46521732799961385
+w._id= 6, w.avg_load= 0.4678443952316724
+w._id= 7, w.avg_load= 0.467741371247403
+w._id= 8, w.avg_load= 0.47343261060928776
+w._id= 9, w.avg_load= 0.46451259364051095
+w._id= 10, w.avg_load= 0.4512135530188132
+w._id= 11, w.avg_load= 0.44339228328589275
+w._id= 12, w.avg_load= 0.4401403339232697
+w._id= 13, w.avg_load= 0.4318123187715728
+w._id= 14, w.avg_load= 0.420341876663131
+w._id= 15, w.avg_load= 0.4269594127359526
+w._id= 16, w.avg_load= 0.41124385909723965
+w._id= 17, w.avg_load= 0.39863249123460565
+w._id= 18, w.avg_load= 0.4083147693905521
+w._id= 19, w.avg_load= 0.4078954903042396
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 9, sET= 19.613756440632688, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6349751575514979
+w._id= 1, w.avg_load= 0.6247490950151082
+w._id= 2, w.avg_load= 0.6264694343218713
+w._id= 3, w.avg_load= 0.618427642911459
+w._id= 4, w.avg_load= 0.6060501877197894
+w._id= 5, w.avg_load= 0.6103766077913418
+w._id= 6, w.avg_load= 0.5956072106814451
+w._id= 7, w.avg_load= 0.5953338762094534
+w._id= 8, w.avg_load= 0.5922878049818823
+w._id= 9, w.avg_load= 0.5995153867601312
+w._id= 10, w.avg_load= 0.5870304274720156
+w._id= 11, w.avg_load= 0.5990285531568895
+w._id= 12, w.avg_load= 0.5718635128026546
+w._id= 13, w.avg_load= 0.5660989197248761
+w._id= 14, w.avg_load= 0.5816125449945494
+w._id= 15, w.avg_load= 0.5769482250595434
+w._id= 16, w.avg_load= 0.5649787956645467
+w._id= 17, w.avg_load= 0.5711600701247371
+w._id= 18, w.avg_load= 0.5575527449048222
+w._id= 19, w.avg_load= 0.5406631072875397
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 0, sET= 18.903382090298575, sEW= 0.0, sPrqing= 0.0
+*** sim_ET= 19.447491412552015, sim_EW= 2.3321197803038983e-07, sim_Prqing= 0.0011465229108104911
+  sET_l: [18.903382090298575,
+ 18.70528645074809,
+ 19.620685130935254,
+ 19.113279640432541,
+ 18.549208141027979,
+ 19.280699984461876,
+ 20.30188242136628,
+ 20.078692491168084,
+ 20.308041334448738,
+ 19.613756440632688]
+  sPrqing_l: [0.0,
+ 0.0,
+ 0.0,
+ 0.0038167938931297708,
+ 0.0,
+ 0.0,
+ 0.0038022813688212928,
+ 0.0,
+ 0.0038461538461538464,
+ 0.0]
+  sEW_l: [0.0,
+ 0.0,
+ 0.0,
+ 3.8372151582422022e-07,
+ 0.0,
+ 0.0,
+ 4.5867023792389714e-07,
+ 0.0,
+ 1.489728026555781e-06,
+ 0.0]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.6276947558981624
+INFO] MMc_EW_Prqing:: ro= 0.6330881784841923, Prqing= 3.403320445481483e-05
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 19.975050809645882, ro= 0.627576453015591, ES= 20.79486717648807, EW= 1.6572047393597703e-05, ET= 20.79488374853546
+*** ET_wMGc= 20.79488374853546, EW_wMGc= 1.6572047393597703e-05, Prqing_wMGc= 3.403320445481483e-05
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 19.975050809645882, ro= 0.627576453015591, ES= 20.79486717648807, EW= 0.38596292203978055, ET= 21.18083009852785
+*** approx_ET_wMGc= 21.18083009852785, approx_EW_wMGc= 0.38596292203978055, approx_Prqing_wMGc= 0.627576453015591
+>> d= 25.156517700764358
+rank= 1, will sim for d= 25
+rank= 3, will sim for d= 25
+rank= 4, will sim for d= 25
+rank= 2, will sim for d= 25
+rank= 8, will sim for d= 25
+rank= 6, will sim for d= 25
+rank= 7, will sim for d= 25
+rank= 5, will sim for d= 25
+rank= 9, will sim for d= 25
+w._id= 0, w.avg_load= 0.7017813927756048
+w._id= 1, w.avg_load= 0.6921813607692076
+w._id= 2, w.avg_load= 0.6774414036665796
+w._id= 3, w.avg_load= 0.6619551343953167
+w._id= 4, w.avg_load= 0.6651011465678024
+w._id= 5, w.avg_load= 0.6568090363163956
+w._id= 6, w.avg_load= 0.6611147815172255
+w._id= 7, w.avg_load= 0.6475763028651271
+w._id= 8, w.avg_load= 0.6379790308702848
+w._id= 9, w.avg_load= 0.6418456979627977
+w._id= 10, w.avg_load= 0.6309174075248473
+w._id= 11, w.avg_load= 0.6346088761217542
+w._id= 12, w.avg_load= 0.6198234159363124
+w._id= 13, w.avg_load= 0.6213733360162597
+w._id= 14, w.avg_load= 0.6145285468481675
+w._id= 15, w.avg_load= 0.61830518043223
+w._id= 16, w.avg_load= 0.6082644855434699
+w._id= 17, w.avg_load= 0.614536315013688
+w._id= 18, w.avg_load= 0.5990504418169545
+w._id= 19, w.avg_load= 0.5992673696403403
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 18.66959520002049, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6815900269132038
+w._id= 1, w.avg_load= 0.6904472643974121
+w._id= 2, w.avg_load= 0.6738336294101531
+w._id= 3, w.avg_load= 0.6772477341824843
+w._id= 4, w.avg_load= 0.6601358502657485
+w._id= 5, w.avg_load= 0.6544033874873648
+w._id= 6, w.avg_load= 0.6440002380595672
+w._id= 7, w.avg_load= 0.6390625644290228
+w._id= 8, w.avg_load= 0.6322634074971804
+w._id= 9, w.avg_load= 0.6310661546571649
+w._id= 10, w.avg_load= 0.6328821408001668
+w._id= 11, w.avg_load= 0.6219979038334816
+w._id= 12, w.avg_load= 0.6137772969100886
+w._id= 13, w.avg_load= 0.6256720831384837
+w._id= 14, w.avg_load= 0.6181831647560263
+w._id= 15, w.avg_load= 0.61996917362396
+w._id= 16, w.avg_load= 0.6147544878141304
+w._id= 17, w.avg_load= 0.5864567444146772
+w._id= 18, w.avg_load= 0.6079423975747942
+w._id= 19, w.avg_load= 0.5899352053777609
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+rank= 4, sET= 18.038259261751573, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5795032455090144
+w._id= 1, w.avg_load= 0.5824105589076324
+w._id= 2, w.avg_load= 0.5661770934328422
+w._id= 3, w.avg_load= 0.5542652152787205
+w._id= 4, w.avg_load= 0.5591604644130793
+w._id= 5, w.avg_load= 0.5397892021591685
+w._id= 6, w.avg_load= 0.5514760853522477
+w._id= 7, w.avg_load= 0.5423540346623646
+w._id= 8, w.avg_load= 0.5340430269623143
+w._id= 9, w.avg_load= 0.5178392932004683
+w._id= 10, w.avg_load= 0.5247306170140305
+w._id= 11, w.avg_load= 0.5321190070957283
+w._id= 12, w.avg_load= 0.5247271602483858
+w._id= 13, w.avg_load= 0.5142188898165216
+w._id= 14, w.avg_load= 0.4987243567485428
+w._id= 15, w.avg_load= 0.5076011672468896
+w._id= 16, w.avg_load= 0.49562781835631997
+w._id= 17, w.avg_load= 0.49825734697558605
+w._id= 18, w.avg_load= 0.48200926394745125
+w._id= 19, w.avg_load= 0.4886824539109756
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 1, sET= 18.44870287750993, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6464158366231494
+w._id= 1, w.avg_load= 0.6473786454315149
+w._id= 2, w.avg_load= 0.6497504475145317
+w._id= 3, w.avg_load= 0.6301344743166025
+w._id= 4, w.avg_load= 0.6417241157809366
+w._id= 5, w.avg_load= 0.6223061453439164
+w._id= 6, w.avg_load= 0.6317334582295345
+w._id= 7, w.avg_load= 0.6106579759114348
+w._id= 8, w.avg_load= 0.6225457447763125
+w._id= 9, w.avg_load= 0.6105873858116401
+w._id= 10, w.avg_load= 0.6165168329835994
+w._id= 11, w.avg_load= 0.6071291528668585
+w._id= 12, w.avg_load= 0.6019185385263525
+w._id= 13, w.avg_load= 0.5892756046478739
+w._id= 14, w.avg_load= 0.6011661353110046
+w._id= 15, w.avg_load= 0.591097661872458
+w._id= 16, w.avg_load= 0.59531914116027
+w._id= 17, w.avg_load= 0.5900594151554409
+w._id= 18, w.avg_load= 0.5756453661869098
+w._id= 19, w.avg_load= 0.5631892839266035
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 18.3107498249626, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.664375718713492
+w._id= 1, w.avg_load= 0.6702722476529533
+w._id= 2, w.avg_load= 0.6577308608235215
+w._id= 3, w.avg_load= 0.6578995024389882
+w._id= 4, w.avg_load= 0.654826920872437
+w._id= 5, w.avg_load= 0.6480393061908174
+w._id= 6, w.avg_load= 0.6391441506728057
+w._id= 7, w.avg_load= 0.6370927026515589
+w._id= 8, w.avg_load= 0.6297364980803585
+w._id= 9, w.avg_load= 0.6370476560004446
+w._id= 10, w.avg_load= 0.6258924075426634
+w._id= 11, w.avg_load= 0.623523974181494
+w._id= 12, w.avg_load= 0.6141991767857979
+w._id= 13, w.avg_load= 0.6118325547459407
+w._id= 14, w.avg_load= 0.6056979953921644
+w._id= 15, w.avg_load= 0.5981114018107413
+w._id= 16, w.avg_load= 0.5961840456518047
+w._id= 17, w.avg_load= 0.5838887618909363
+w._id= 18, w.avg_load= 0.5875847775365536
+w._id= 19, w.avg_load= 0.5608463810652753
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 2, sET= 18.3798329930778, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6798620672147443
+w._id= 1, w.avg_load= 0.6639908265801452
+w._id= 2, w.avg_load= 0.6539479067801695
+w._id= 3, w.avg_load= 0.6678946047558347
+w._id= 4, w.avg_load= 0.6565420806026927
+w._id= 5, w.avg_load= 0.6385707840930654
+w._id= 6, w.avg_load= 0.646127753274801
+w._id= 7, w.avg_load= 0.6371222862018472
+w._id= 8, w.avg_load= 0.6305129826802317
+w._id= 9, w.avg_load= 0.6292131419711615
+w._id= 10, w.avg_load= 0.6109707042302703
+w._id= 11, w.avg_load= 0.6100377481859819
+w._id= 12, w.avg_load= 0.6008408959199144
+w._id= 13, w.avg_load= 0.6087765777552789
+w._id= 14, w.avg_load= 0.6019058292137025
+w._id= 15, w.avg_load= 0.5902480189697675
+w._id= 16, w.avg_load= 0.5907293925181711
+w._id= 17, w.avg_load= 0.5871196183407404
+w._id= 18, w.avg_load= 0.5851578139036903
+w._id= 19, w.avg_load= 0.5831690281013945
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 18.287609981622083, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6482386516719705
+w._id= 1, w.avg_load= 0.6334517775133022
+w._id= 2, w.avg_load= 0.6291483728186806
+w._id= 3, w.avg_load= 0.6257918416896248
+w._id= 4, w.avg_load= 0.6087600135633418
+w._id= 5, w.avg_load= 0.6171439865567658
+w._id= 6, w.avg_load= 0.6048014820747429
+w._id= 7, w.avg_load= 0.5949076925343124
+w._id= 8, w.avg_load= 0.5910816600579654
+w._id= 9, w.avg_load= 0.6021063299650283
+w._id= 10, w.avg_load= 0.5831310854797395
+w._id= 11, w.avg_load= 0.5784368876403863
+w._id= 12, w.avg_load= 0.5704386864876038
+w._id= 13, w.avg_load= 0.5646726687114295
+w._id= 14, w.avg_load= 0.5649420074113196
+w._id= 15, w.avg_load= 0.5657985549265531
+w._id= 16, w.avg_load= 0.5576115041016415
+w._id= 17, w.avg_load= 0.5710525576410713
+w._id= 18, w.avg_load= 0.5613127445499028
+w._id= 19, w.avg_load= 0.5558300200128033
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 7, sET= 18.542799334028743, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6431055533516872
+w._id= 1, w.avg_load= 0.6467899667294731
+w._id= 2, w.avg_load= 0.6323616032606099
+w._id= 3, w.avg_load= 0.619956736037808
+w._id= 4, w.avg_load= 0.6156766235293301
+w._id= 5, w.avg_load= 0.5965054621823451
+w._id= 6, w.avg_load= 0.6081427747812372
+w._id= 7, w.avg_load= 0.6119046420582956
+w._id= 8, w.avg_load= 0.6061687685093838
+w._id= 9, w.avg_load= 0.6061778683226351
+w._id= 10, w.avg_load= 0.5947740277934508
+w._id= 11, w.avg_load= 0.5844646525999623
+w._id= 12, w.avg_load= 0.5696352178225362
+w._id= 13, w.avg_load= 0.5699548403540333
+w._id= 14, w.avg_load= 0.5794875933857382
+w._id= 15, w.avg_load= 0.5621457188612728
+w._id= 16, w.avg_load= 0.5710124018450308
+w._id= 17, w.avg_load= 0.560247997569791
+w._id= 18, w.avg_load= 0.5582426743024803
+w._id= 19, w.avg_load= 0.5448834244301493
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 19.120665400041684, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6392548020978548
+w._id= 1, w.avg_load= 0.6400595042966261
+w._id= 2, w.avg_load= 0.6239472196106451
+w._id= 3, w.avg_load= 0.625300319636312
+w._id= 4, w.avg_load= 0.6286961827442631
+w._id= 5, w.avg_load= 0.6258777949781025
+w._id= 6, w.avg_load= 0.6219230371026641
+w._id= 7, w.avg_load= 0.6211795230669709
+w._id= 8, w.avg_load= 0.6178970087505763
+w._id= 9, w.avg_load= 0.6051587407725765
+w._id= 10, w.avg_load= 0.5944586590913638
+w._id= 11, w.avg_load= 0.5890294471063044
+w._id= 12, w.avg_load= 0.5920955512262782
+w._id= 13, w.avg_load= 0.5748032676270426
+w._id= 14, w.avg_load= 0.5781850887135146
+w._id= 15, w.avg_load= 0.5716079655751697
+w._id= 16, w.avg_load= 0.5696418830381469
+w._id= 17, w.avg_load= 0.5594238136770228
+w._id= 18, w.avg_load= 0.5524854811358568
+w._id= 19, w.avg_load= 0.5455843356317349
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 9, sET= 19.43960691759034, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.5965530223023712
+w._id= 1, w.avg_load= 0.611582689817828
+w._id= 2, w.avg_load= 0.5979795121955399
+w._id= 3, w.avg_load= 0.5822774570733364
+w._id= 4, w.avg_load= 0.5835229114283259
+w._id= 5, w.avg_load= 0.5869224826251593
+w._id= 6, w.avg_load= 0.5776202369596831
+w._id= 7, w.avg_load= 0.5619685150740799
+w._id= 8, w.avg_load= 0.5692129444228542
+w._id= 9, w.avg_load= 0.5673536899793644
+w._id= 10, w.avg_load= 0.5604107583021432
+w._id= 11, w.avg_load= 0.552841067750043
+w._id= 12, w.avg_load= 0.5400450156884148
+w._id= 13, w.avg_load= 0.5442261508050258
+w._id= 14, w.avg_load= 0.5323664824159501
+w._id= 15, w.avg_load= 0.531186371281611
+w._id= 16, w.avg_load= 0.5226687001006847
+w._id= 17, w.avg_load= 0.5101269605553631
+w._id= 18, w.avg_load= 0.5209560222330044
+w._id= 19, w.avg_load= 0.5210201255344508
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 0, sET= 18.43451023327732, sEW= 0.0, sPrqing= 0.0
+*** sim_ET= 18.56723320238826, sim_EW= 0.0, sim_Prqing= 0.0
+  sET_l: [18.434510233277319,
+ 18.44870287750993,
+ 18.379832993077802,
+ 18.310749824962599,
+ 18.038259261751573,
+ 19.120665400041684,
+ 18.287609981622083,
+ 18.542799334028743,
+ 18.669595200020488,
+ 19.439606917590339]
+  sPrqing_l: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  sEW_l: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.67146322807708
+INFO] MMc_EW_Prqing:: ro= 0.6732968563500399, Prqing= 0.0005522057138513953
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 25.156517700764358, ro= 0.6714632278922441, ES= 19.65830237518365, EW= 0.0003104417650194303, ET= 19.65861281694867
+*** ET_wMGc= 19.65861281694867, EW_wMGc= 0.0003104417650194303, Prqing_wMGc= 0.0005522057138513953
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 25.156517700764358, ro= 0.6714632278922441, ES= 19.65830237518365, EW= 0.5008525844317917, ET= 20.15915495961544
+*** approx_ET_wMGc= 20.15915495961544, approx_EW_wMGc= 0.5008525844317917, approx_Prqing_wMGc= 0.6714632278922441
+>> d= 31.682041205285422
+rank= 1, will sim for d= 31
+rank= 4, will sim for d= 31
+rank= 3, will sim for d= 31
+rank= 2, will sim for d= 31
+rank= 6, will sim for d= 31
+rank= 5, will sim for d= 31
+rank= 8, will sim for d= 31
+rank= 7, will sim for d= 31
+rank= 9, will sim for d= 31
+w._id= 0, w.avg_load= 0.6677710635626559
+w._id= 1, w.avg_load= 0.6594201453207998
+w._id= 2, w.avg_load= 0.6805044273461625
+w._id= 3, w.avg_load= 0.6608052369614265
+w._id= 4, w.avg_load= 0.6609898662053348
+w._id= 5, w.avg_load= 0.6614888476889992
+w._id= 6, w.avg_load= 0.6283043115969996
+w._id= 7, w.avg_load= 0.6350731450656988
+w._id= 8, w.avg_load= 0.6308528678306208
+w._id= 9, w.avg_load= 0.6232016903057596
+w._id= 10, w.avg_load= 0.607112504658315
+w._id= 11, w.avg_load= 0.6194182248985385
+w._id= 12, w.avg_load= 0.6088013028971943
+w._id= 13, w.avg_load= 0.5878110172668861
+w._id= 14, w.avg_load= 0.6009015034310466
+w._id= 15, w.avg_load= 0.5907003350362268
+w._id= 16, w.avg_load= 0.572446665982855
+w._id= 17, w.avg_load= 0.5906363564973482
+w._id= 18, w.avg_load= 0.592209248968138
+w._id= 19, w.avg_load= 0.5736776321593128
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 17.704954269707855, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.7766460703800566
+w._id= 1, w.avg_load= 0.7745806130135495
+w._id= 2, w.avg_load= 0.751305653675857
+w._id= 3, w.avg_load= 0.7545675348225486
+w._id= 4, w.avg_load= 0.7581178586122702
+w._id= 5, w.avg_load= 0.7448107254679446
+w._id= 6, w.avg_load= 0.7481327501077848
+w._id= 7, w.avg_load= 0.7496590586746107
+w._id= 8, w.avg_load= 0.7438542935614226
+w._id= 9, w.avg_load= 0.737162845208657
+w._id= 10, w.avg_load= 0.7200560158449592
+w._id= 11, w.avg_load= 0.7239507252216221
+w._id= 12, w.avg_load= 0.7315519200693198
+w._id= 13, w.avg_load= 0.7293699237745603
+w._id= 14, w.avg_load= 0.7224296216332332
+w._id= 15, w.avg_load= 0.7160071405515758
+w._id= 16, w.avg_load= 0.7159761450692883
+w._id= 17, w.avg_load= 0.711300890291326
+w._id= 18, w.avg_load= 0.7001654657309418
+w._id= 19, w.avg_load= 0.690273316112754
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 1, sET= 18.386206312819667, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.7280802772762641
+w._id= 1, w.avg_load= 0.7262561749639888
+w._id= 2, w.avg_load= 0.7147079335500063
+w._id= 3, w.avg_load= 0.7171046281125214
+w._id= 4, w.avg_load= 0.7162211836418142
+w._id= 5, w.avg_load= 0.7180687280507569
+w._id= 6, w.avg_load= 0.7026699783318217
+w._id= 7, w.avg_load= 0.7028328051142377
+w._id= 8, w.avg_load= 0.6988787841885417
+w._id= 9, w.avg_load= 0.6924920305796883
+w._id= 10, w.avg_load= 0.6790893310210138
+w._id= 11, w.avg_load= 0.6876134600688074
+w._id= 12, w.avg_load= 0.675478279762119
+w._id= 13, w.avg_load= 0.6600632749248981
+w._id= 14, w.avg_load= 0.6610631742873512
+w._id= 15, w.avg_load= 0.6542239637394576
+w._id= 16, w.avg_load= 0.6483397514642473
+w._id= 17, w.avg_load= 0.6415395694270073
+w._id= 18, w.avg_load= 0.6397098310448724
+w._id= 19, w.avg_load= 0.6382778904389689
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+rank= 4, sET= 17.86034877213449, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6900167448839211
+w._id= 1, w.avg_load= 0.6864863031589175
+w._id= 2, w.avg_load= 0.6991211888229795
+w._id= 3, w.avg_load= 0.6729005439032318
+w._id= 4, w.avg_load= 0.6726461554518268
+w._id= 5, w.avg_load= 0.6730579276156591
+w._id= 6, w.avg_load= 0.6621630339254599
+w._id= 7, w.avg_load= 0.6563401766003083
+w._id= 8, w.avg_load= 0.6497454112323974
+w._id= 9, w.avg_load= 0.645971873093409
+w._id= 10, w.avg_load= 0.6519711215092009
+w._id= 11, w.avg_load= 0.6453204321379052
+w._id= 12, w.avg_load= 0.6469229914760866
+w._id= 13, w.avg_load= 0.631839334029975
+w._id= 14, w.avg_load= 0.6434294944528073
+w._id= 15, w.avg_load= 0.6347577016804012
+w._id= 16, w.avg_load= 0.6212943827653215
+w._id= 17, w.avg_load= 0.6172017985160805
+w._id= 18, w.avg_load= 0.6164499255012342
+w._id= 19, w.avg_load= 0.6085133439383403
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 18.25123212273569, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6888323222040404
+w._id= 1, w.avg_load= 0.6747522428377437
+w._id= 2, w.avg_load= 0.6728566379913127
+w._id= 3, w.avg_load= 0.6741180516365292
+w._id= 4, w.avg_load= 0.6633410700874502
+w._id= 5, w.avg_load= 0.6713038945742755
+w._id= 6, w.avg_load= 0.6638929492542014
+w._id= 7, w.avg_load= 0.6595243434549127
+w._id= 8, w.avg_load= 0.6650437167640278
+w._id= 9, w.avg_load= 0.6487113251260272
+w._id= 10, w.avg_load= 0.6449543483782643
+w._id= 11, w.avg_load= 0.6317900167533526
+w._id= 12, w.avg_load= 0.6329881917797671
+w._id= 13, w.avg_load= 0.6223989494046528
+w._id= 14, w.avg_load= 0.6174718247409025
+w._id= 15, w.avg_load= 0.6138470580866769
+w._id= 16, w.avg_load= 0.6061985912242626
+w._id= 17, w.avg_load= 0.5982774007949762
+w._id= 18, w.avg_load= 0.602713886278149
+w._id= 19, w.avg_load= 0.596820658884547
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.00398406374501992
+rank= 2, sET= 18.26645102371939, sEW= 2.61568837798265e-07, sPrqing= 0.00398406374501992
+w._id= 0, w.avg_load= 0.6492505404920221
+w._id= 1, w.avg_load= 0.6450257078152529
+w._id= 2, w.avg_load= 0.6407385856005761
+w._id= 3, w.avg_load= 0.631704355286083
+w._id= 4, w.avg_load= 0.6292438755168572
+w._id= 5, w.avg_load= 0.6172503304559941
+w._id= 6, w.avg_load= 0.6167901039311742
+w._id= 7, w.avg_load= 0.6147567476006099
+w._id= 8, w.avg_load= 0.6086044044835427
+w._id= 9, w.avg_load= 0.6162566115048927
+w._id= 10, w.avg_load= 0.601464573138666
+w._id= 11, w.avg_load= 0.6063404157112915
+w._id= 12, w.avg_load= 0.5989569607879334
+w._id= 13, w.avg_load= 0.5917108130614258
+w._id= 14, w.avg_load= 0.5868823834623104
+w._id= 15, w.avg_load= 0.5897000508303644
+w._id= 16, w.avg_load= 0.5758953433157225
+w._id= 17, w.avg_load= 0.5674678390908519
+w._id= 18, w.avg_load= 0.5622166981053455
+w._id= 19, w.avg_load= 0.5734984396800459
+  frac_jobs_waited_inq: 0.00392156862745098
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 17.66312227185096, sEW= 1.68387540817605e-06, sPrqing= 0.00392156862745098
+w._id= 0, w.avg_load= 0.7108577866963743
+w._id= 1, w.avg_load= 0.7118184820710516
+w._id= 2, w.avg_load= 0.7109362429154256
+w._id= 3, w.avg_load= 0.7034546964427423
+w._id= 4, w.avg_load= 0.6978774110861536
+w._id= 5, w.avg_load= 0.6951231805671216
+w._id= 6, w.avg_load= 0.6930984528814034
+w._id= 7, w.avg_load= 0.6840664622061535
+w._id= 8, w.avg_load= 0.6824700362598966
+w._id= 9, w.avg_load= 0.6813415626870151
+w._id= 10, w.avg_load= 0.6619100555075405
+w._id= 11, w.avg_load= 0.6667513301343118
+w._id= 12, w.avg_load= 0.6459415106097162
+w._id= 13, w.avg_load= 0.6449530120549747
+w._id= 14, w.avg_load= 0.6442374396095419
+w._id= 15, w.avg_load= 0.6360837617115443
+w._id= 16, w.avg_load= 0.6430668162995747
+w._id= 17, w.avg_load= 0.6352708032137011
+w._id= 18, w.avg_load= 0.6196000500455219
+w._id= 19, w.avg_load= 0.6180295934402863
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 7, sET= 17.50428358721283, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6647452305840013
+w._id= 1, w.avg_load= 0.6661936143792289
+w._id= 2, w.avg_load= 0.6526402284740469
+w._id= 3, w.avg_load= 0.6565511844884522
+w._id= 4, w.avg_load= 0.6489234079221273
+w._id= 5, w.avg_load= 0.6407278177696463
+w._id= 6, w.avg_load= 0.6353485728539043
+w._id= 7, w.avg_load= 0.6474630422997641
+w._id= 8, w.avg_load= 0.6354904690256822
+w._id= 9, w.avg_load= 0.6282866168359212
+w._id= 10, w.avg_load= 0.6160301249593344
+w._id= 11, w.avg_load= 0.6166624410279041
+w._id= 12, w.avg_load= 0.6099497904075437
+w._id= 13, w.avg_load= 0.6126011035304996
+w._id= 14, w.avg_load= 0.6104733605071002
+w._id= 15, w.avg_load= 0.598184197782208
+w._id= 16, w.avg_load= 0.5911495235933505
+w._id= 17, w.avg_load= 0.5821808533797852
+w._id= 18, w.avg_load= 0.5733788534085981
+w._id= 19, w.avg_load= 0.5938037849456727
+  frac_jobs_waited_inq: 0.004032258064516129
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 17.495332959142978, sEW= 2.5647719166244086e-07, sPrqing= 0.004032258064516129
+w._id= 0, w.avg_load= 0.8126036306523442
+w._id= 1, w.avg_load= 0.800340381199564
+w._id= 2, w.avg_load= 0.7977679924064617
+w._id= 3, w.avg_load= 0.7953895371279543
+w._id= 4, w.avg_load= 0.7837795569038304
+w._id= 5, w.avg_load= 0.782516303492678
+w._id= 6, w.avg_load= 0.7836559470871598
+w._id= 7, w.avg_load= 0.773834291613169
+w._id= 8, w.avg_load= 0.7731610815464655
+w._id= 9, w.avg_load= 0.7666629946125926
+w._id= 10, w.avg_load= 0.7687195895657822
+w._id= 11, w.avg_load= 0.7606632546111403
+w._id= 12, w.avg_load= 0.7531761756489187
+w._id= 13, w.avg_load= 0.7537800928375064
+w._id= 14, w.avg_load= 0.7493552757813767
+w._id= 15, w.avg_load= 0.7407595139785266
+w._id= 16, w.avg_load= 0.7341963767949513
+w._id= 17, w.avg_load= 0.7446819841739774
+w._id= 18, w.avg_load= 0.718514546878552
+w._id= 19, w.avg_load= 0.7174082439139684
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0038022813688212928
+rank= 9, sET= 18.122567314914036, sEW= 0.0009000000000004604, sPrqing= 0.0038022813688212928
+w._id= 0, w.avg_load= 0.6850014099320809
+w._id= 1, w.avg_load= 0.6805588134751894
+w._id= 2, w.avg_load= 0.6814193621525527
+w._id= 3, w.avg_load= 0.6721783163820115
+w._id= 4, w.avg_load= 0.6735314640936125
+w._id= 5, w.avg_load= 0.6659556840904934
+w._id= 6, w.avg_load= 0.65386924199951
+w._id= 7, w.avg_load= 0.6571200534112634
+w._id= 8, w.avg_load= 0.667289755964753
+w._id= 9, w.avg_load= 0.6578273977079058
+w._id= 10, w.avg_load= 0.6503821011949938
+w._id= 11, w.avg_load= 0.6216780748417479
+w._id= 12, w.avg_load= 0.6346202925119203
+w._id= 13, w.avg_load= 0.6193923251619746
+w._id= 14, w.avg_load= 0.6246673279899514
+w._id= 15, w.avg_load= 0.6231806560799701
+w._id= 16, w.avg_load= 0.605822614219643
+w._id= 17, w.avg_load= 0.6141210591155406
+w._id= 18, w.avg_load= 0.6094642876132841
+w._id= 19, w.avg_load= 0.6190748305746541
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 0, sET= 18.262872719552178, sEW= 0.0, sPrqing= 0.0
+*** sim_ET= 17.951737135379005, sim_EW= 9.022019214380972e-05, sim_Prqing= 0.0015740171805808324
+  sET_l: [18.262872719552178,
+ 18.386206312819667,
+ 18.266451023719391,
+ 18.25123212273569,
+ 17.86034877213449,
+ 17.495332959142978,
+ 17.663122271850959,
+ 17.504283587212829,
+ 17.704954269707855,
+ 18.122567314914036]
+  sPrqing_l: [0.0,
+ 0.0,
+ 0.0039840637450199202,
+ 0.0,
+ 0.0,
+ 0.0040322580645161289,
+ 0.0039215686274509803,
+ 0.0,
+ 0.0,
+ 0.0038022813688212928]
+  sEW_l: [0.0,
+ 0.0,
+ 2.6156883779826502e-07,
+ 0.0,
+ 0.0,
+ 2.5647719166244086e-07,
+ 1.6838754081760499e-06,
+ 0.0,
+ 0.0,
+ 0.00090000000000046044]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.7214078112027764
+INFO] MMc_EW_Prqing:: ro= 0.7224269274687706, Prqing= 0.005505388628177839
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 31.682041205285422, ro= 0.7214078114002883, ES= 18.983481305748718, EW= 0.003799256922070657, ET= 18.98728056267079
+*** ET_wMGc= 18.98728056267079, EW_wMGc= 0.003799256922070657, Prqing_wMGc= 0.005505388628177839
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 31.682041205285422, ro= 0.7214078114002883, ES= 18.983481305748718, EW= 0.6817767442248371, ET= 19.665258049973556
+*** approx_ET_wMGc= 19.665258049973556, approx_EW_wMGc= 0.6817767442248371, approx_Prqing_wMGc= 0.7214078114002883
+>> d= 39.900265484793444
+rank= 1, will sim for d= 39
+rank= 4, will sim for d= 39
+rank= 3, will sim for d= 39
+rank= 8, will sim for d= 39
+rank= 6, will sim for d= 39
+rank= 7, will sim for d= 39
+rank= 2, will sim for d= 39
+rank= 5, will sim for d= 39
+rank= 9, will sim for d= 39
+w._id= 0, w.avg_load= 0.7290036086714954
+w._id= 1, w.avg_load= 0.7311213591602582
+w._id= 2, w.avg_load= 0.7224783053068146
+w._id= 3, w.avg_load= 0.7224733461739695
+w._id= 4, w.avg_load= 0.7125123147681691
+w._id= 5, w.avg_load= 0.704290630062745
+w._id= 6, w.avg_load= 0.692986407010955
+w._id= 7, w.avg_load= 0.7050303756076154
+w._id= 8, w.avg_load= 0.7010668406024357
+w._id= 9, w.avg_load= 0.6751586150254413
+w._id= 10, w.avg_load= 0.6657960875113516
+w._id= 11, w.avg_load= 0.6707674857823255
+w._id= 12, w.avg_load= 0.6667458889247472
+w._id= 13, w.avg_load= 0.6549732646612146
+w._id= 14, w.avg_load= 0.6772391195911368
+w._id= 15, w.avg_load= 0.659886998522881
+w._id= 16, w.avg_load= 0.6549988267114116
+w._id= 17, w.avg_load= 0.6503292240617324
+w._id= 18, w.avg_load= 0.6452567292813545
+w._id= 19, w.avg_load= 0.6409913664914548
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 17.682428838055746, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.7308821877540977
+w._id= 1, w.avg_load= 0.7323349147630224
+w._id= 2, w.avg_load= 0.7288856384333376
+w._id= 3, w.avg_load= 0.7257439155749236
+w._id= 4, w.avg_load= 0.7191813446530311
+w._id= 5, w.avg_load= 0.7224597880318396
+w._id= 6, w.avg_load= 0.7037322973141688
+w._id= 7, w.avg_load= 0.6999196842901154
+w._id= 8, w.avg_load= 0.7053955990619457
+w._id= 9, w.avg_load= 0.7108760231480394
+w._id= 10, w.avg_load= 0.6991533369751902
+w._id= 11, w.avg_load= 0.6872955708470913
+w._id= 12, w.avg_load= 0.6953586937443166
+w._id= 13, w.avg_load= 0.6890796370482658
+w._id= 14, w.avg_load= 0.6820361579587522
+w._id= 15, w.avg_load= 0.6740366509809644
+w._id= 16, w.avg_load= 0.6734243327541214
+w._id= 17, w.avg_load= 0.6681507747666993
+w._id= 18, w.avg_load= 0.6575775835017236
+w._id= 19, w.avg_load= 0.6506255334283676
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.15853658536585366
+rank= 4, sET= 18.052392916144644, sEW= 0.16375193535914062, sPrqing= 0.15853658536585366
+w._id= 0, w.avg_load= 0.7275298568750587
+w._id= 1, w.avg_load= 0.7172184257009225
+w._id= 2, w.avg_load= 0.7172753409215991
+w._id= 3, w.avg_load= 0.7046303965703723
+w._id= 4, w.avg_load= 0.7020435147146445
+w._id= 5, w.avg_load= 0.7063970208124334
+w._id= 6, w.avg_load= 0.6930699071931589
+w._id= 7, w.avg_load= 0.6792199733490998
+w._id= 8, w.avg_load= 0.6771223230407061
+w._id= 9, w.avg_load= 0.6880935198446424
+w._id= 10, w.avg_load= 0.6724218959538494
+w._id= 11, w.avg_load= 0.6650616681166037
+w._id= 12, w.avg_load= 0.6665646768150152
+w._id= 13, w.avg_load= 0.6611149653889639
+w._id= 14, w.avg_load= 0.6565900562146862
+w._id= 15, w.avg_load= 0.6571460335877585
+w._id= 16, w.avg_load= 0.6367473536089916
+w._id= 17, w.avg_load= 0.6297109114246072
+w._id= 18, w.avg_load= 0.621565703803501
+w._id= 19, w.avg_load= 0.624937878275726
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 17.428518937452576, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.7556348652355376
+w._id= 1, w.avg_load= 0.754323984080548
+w._id= 2, w.avg_load= 0.7763708694655124
+w._id= 3, w.avg_load= 0.7588502864542436
+w._id= 4, w.avg_load= 0.7518409860652009
+w._id= 5, w.avg_load= 0.734076903813253
+w._id= 6, w.avg_load= 0.7175652163439411
+w._id= 7, w.avg_load= 0.7262258316616146
+w._id= 8, w.avg_load= 0.7152694384774471
+w._id= 9, w.avg_load= 0.7211493314114508
+w._id= 10, w.avg_load= 0.7194790355465246
+w._id= 11, w.avg_load= 0.7123569119552977
+w._id= 12, w.avg_load= 0.6949579892652974
+w._id= 13, w.avg_load= 0.7009963144504183
+w._id= 14, w.avg_load= 0.6943110985400673
+w._id= 15, w.avg_load= 0.6893186066936335
+w._id= 16, w.avg_load= 0.6799174740135704
+w._id= 17, w.avg_load= 0.6673729414680905
+w._id= 18, w.avg_load= 0.6891467435045604
+w._id= 19, w.avg_load= 0.6695346760365753
+  ndropped: 0
+  frac_jobs_waited_inq: 0.019762845849802372
+  njobs_wfate: 200
+rank= 1, sET= 18.20785430731161, sEW= 0.01606000164134681, sPrqing= 0.019762845849802372
+w._id= 0, w.avg_load= 0.6250935147710062
+w._id= 1, w.avg_load= 0.639795893887813
+w._id= 2, w.avg_load= 0.6160138234953387
+w._id= 3, w.avg_load= 0.6200547065446602
+w._id= 4, w.avg_load= 0.6250877892901723
+w._id= 5, w.avg_load= 0.6111126464595903
+w._id= 6, w.avg_load= 0.6041591437067284
+w._id= 7, w.avg_load= 0.5993110580724992
+w._id= 8, w.avg_load= 0.601699889680305
+w._id= 9, w.avg_load= 0.589298702025712
+w._id= 10, w.avg_load= 0.5943567662369157
+w._id= 11, w.avg_load= 0.5755733396213043
+w._id= 12, w.avg_load= 0.587583176591234
+w._id= 13, w.avg_load= 0.5773963587833115
+w._id= 14, w.avg_load= 0.5795401102101805
+w._id= 15, w.avg_load= 0.5677399955097738
+w._id= 16, w.avg_load= 0.5515374022633699
+w._id= 17, w.avg_load= 0.5509442911343256
+w._id= 18, w.avg_load= 0.5439099399364884
+w._id= 19, w.avg_load= 0.5352979065659353
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 17.96845546862648, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.7318132074291236
+w._id= 1, w.avg_load= 0.736213741691074
+w._id= 2, w.avg_load= 0.7192215997791658
+w._id= 3, w.avg_load= 0.722660007375493
+w._id= 4, w.avg_load= 0.7207754726998011
+w._id= 5, w.avg_load= 0.721216626068673
+w._id= 6, w.avg_load= 0.725860335286195
+w._id= 7, w.avg_load= 0.7160011469038108
+w._id= 8, w.avg_load= 0.7015015605094438
+w._id= 9, w.avg_load= 0.702391294453601
+w._id= 10, w.avg_load= 0.6942635755112434
+w._id= 11, w.avg_load= 0.6895470710551298
+w._id= 12, w.avg_load= 0.6716483655055608
+w._id= 13, w.avg_load= 0.6786812069444869
+w._id= 14, w.avg_load= 0.6809554039520632
+w._id= 15, w.avg_load= 0.6739351055563028
+w._id= 16, w.avg_load= 0.6517912414614648
+w._id= 17, w.avg_load= 0.6442676695977615
+w._id= 18, w.avg_load= 0.6533892639262012
+w._id= 19, w.avg_load= 0.6386555281110207
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 2, sET= 17.225338097886244, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.7200910124266356
+w._id= 1, w.avg_load= 0.7055529662775316
+w._id= 2, w.avg_load= 0.7168689946507217
+w._id= 3, w.avg_load= 0.6972011439391252
+w._id= 4, w.avg_load= 0.7003980010788711
+w._id= 5, w.avg_load= 0.7053561998651626
+w._id= 6, w.avg_load= 0.6841683746567747
+w._id= 7, w.avg_load= 0.6839619186686557
+w._id= 8, w.avg_load= 0.6792857141964206
+w._id= 9, w.avg_load= 0.680929000106642
+w._id= 10, w.avg_load= 0.6753613207647838
+w._id= 11, w.avg_load= 0.6586548671524174
+w._id= 12, w.avg_load= 0.6509538470629972
+w._id= 13, w.avg_load= 0.6563494028302057
+w._id= 14, w.avg_load= 0.642818985577567
+w._id= 15, w.avg_load= 0.6442903586756513
+w._id= 16, w.avg_load= 0.6341070961157801
+w._id= 17, w.avg_load= 0.6444152045387611
+w._id= 18, w.avg_load= 0.6332416532319081
+w._id= 19, w.avg_load= 0.6280159779505309
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.00819672131147541
+rank= 7, sET= 17.7102619068735, sEW= 2.117899578048532e-06, sPrqing= 0.00819672131147541
+w._id= 0, w.avg_load= 0.7732117364157534
+w._id= 1, w.avg_load= 0.7703540114189019
+w._id= 2, w.avg_load= 0.7648924350086781
+w._id= 3, w.avg_load= 0.7544732995425087
+w._id= 4, w.avg_load= 0.7638253858547782
+w._id= 5, w.avg_load= 0.7423177123410026
+w._id= 6, w.avg_load= 0.7536199774857041
+w._id= 7, w.avg_load= 0.7435762038125937
+w._id= 8, w.avg_load= 0.7342923453710044
+w._id= 9, w.avg_load= 0.7331704172697899
+w._id= 10, w.avg_load= 0.7286773996513597
+w._id= 11, w.avg_load= 0.727759359337692
+w._id= 12, w.avg_load= 0.7168626439894049
+w._id= 13, w.avg_load= 0.7145612654489703
+w._id= 14, w.avg_load= 0.7117356481422048
+w._id= 15, w.avg_load= 0.70392599168847
+w._id= 16, w.avg_load= 0.697260951542179
+w._id= 17, w.avg_load= 0.7029456557539342
+w._id= 18, w.avg_load= 0.6936825486155715
+w._id= 19, w.avg_load= 0.6912504388493781
+  frac_jobs_waited_inq: 0.04961832061068702
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 17.4065748530979, sEW= 0.03203874642953689, sPrqing= 0.04961832061068702
+w._id= 0, w.avg_load= 0.7140261513836629
+w._id= 1, w.avg_load= 0.7089199564769552
+w._id= 2, w.avg_load= 0.7036696997400131
+w._id= 3, w.avg_load= 0.7076440825047239
+w._id= 4, w.avg_load= 0.7050294512412457
+w._id= 5, w.avg_load= 0.6939995038825909
+w._id= 6, w.avg_load= 0.7023386434378057
+w._id= 7, w.avg_load= 0.6991943480908429
+w._id= 8, w.avg_load= 0.6828267101011515
+w._id= 9, w.avg_load= 0.6747406333634678
+w._id= 10, w.avg_load= 0.6842896695438856
+w._id= 11, w.avg_load= 0.6681172497217589
+w._id= 12, w.avg_load= 0.6706852625370665
+w._id= 13, w.avg_load= 0.6645849981155062
+w._id= 14, w.avg_load= 0.6533102793765886
+w._id= 15, w.avg_load= 0.6513220861799786
+w._id= 16, w.avg_load= 0.6488394741556553
+w._id= 17, w.avg_load= 0.6412595960684632
+w._id= 18, w.avg_load= 0.6478594633379329
+w._id= 19, w.avg_load= 0.6293606637734989
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 9, sET= 17.621624193984864, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.6861614401440803
+w._id= 1, w.avg_load= 0.6839488081518227
+w._id= 2, w.avg_load= 0.6766498290461576
+w._id= 3, w.avg_load= 0.6810750714962419
+w._id= 4, w.avg_load= 0.6675700764425194
+w._id= 5, w.avg_load= 0.6577327261449647
+w._id= 6, w.avg_load= 0.6576927737811835
+w._id= 7, w.avg_load= 0.6617761936945443
+w._id= 8, w.avg_load= 0.6490276208198967
+w._id= 9, w.avg_load= 0.648734561423289
+w._id= 10, w.avg_load= 0.6395249475439637
+w._id= 11, w.avg_load= 0.6335447354107598
+w._id= 12, w.avg_load= 0.6202022275745394
+w._id= 13, w.avg_load= 0.6269444860294159
+w._id= 14, w.avg_load= 0.628478329521952
+w._id= 15, w.avg_load= 0.6067681103585031
+w._id= 16, w.avg_load= 0.6179057428877646
+w._id= 17, w.avg_load= 0.6109156884988763
+w._id= 18, w.avg_load= 0.601766908588141
+w._id= 19, w.avg_load= 0.6031822181192609
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0078125
+  njobs_wfate: 200
+rank= 0, sET= 16.86557361665062, sEW= 0.0004500070142218249, sPrqing= 0.0078125
+*** sim_ET= 17.61690231360842, sim_EW= 0.02123028083438242, sim_Prqing= 0.024392697313781846
+  sET_l: [16.865573616650622,
+ 18.20785430731161,
+ 17.225338097886244,
+ 17.428518937452576,
+ 18.052392916144644,
+ 17.406574853097901,
+ 17.96845546862648,
+ 17.710261906873502,
+ 17.682428838055746,
+ 17.621624193984864]
+  sPrqing_l: [0.0078125,
+ 0.019762845849802372,
+ 0.0,
+ 0.0,
+ 0.15853658536585366,
+ 0.049618320610687022,
+ 0.0,
+ 0.0081967213114754103,
+ 0.0,
+ 0.0]
+  sEW_l: [0.00045000701422182488,
+ 0.01606000164134681,
+ 0.0,
+ 0.0,
+ 0.16375193535914062,
+ 0.032038746429536892,
+ 0.0,
+ 2.1178995780485321e-06,
+ 0.0,
+ 0.0]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.7458257460352492
+INFO] MMc_EW_Prqing:: ro= 0.746743460450044, Prqing= 0.01427958891003151
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 39.900265484793444, ro= 0.7458257460758722, ES= 18.25978534677115, EW= 0.01073044823204656, ET= 18.270515795003195
+*** ET_wMGc= 18.270515795003195, EW_wMGc= 0.01073044823204656, Prqing_wMGc= 0.01427958891003151
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 39.900265484793444, ro= 0.7458257460758722, ES= 18.25978534677115, EW= 0.7987164373704004, ET= 19.05850178414155
+*** approx_ET_wMGc= 19.05850178414155, approx_EW_wMGc= 0.7987164373704004, approx_Prqing_wMGc= 0.7458257460758722
+>> d= 50.25027192665238
+rank= 8, will sim for d= 50
+rank= 1, will sim for d= 50
+rank= 4, will sim for d= 50
+rank= 3, will sim for d= 50
+rank= 2, will sim for d= 50
+rank= 5, will sim for d= 50
+rank= 7, will sim for d= 50
+rank= 9, will sim for d= 50
+rank= 6, will sim for d= 50
+w._id= 0, w.avg_load= 0.7569202650571843
+w._id= 1, w.avg_load= 0.759989457712359
+w._id= 2, w.avg_load= 0.7611390950615604
+w._id= 3, w.avg_load= 0.7472541017877405
+w._id= 4, w.avg_load= 0.7412431789806824
+w._id= 5, w.avg_load= 0.7373646275053866
+w._id= 6, w.avg_load= 0.7403898840197354
+w._id= 7, w.avg_load= 0.7284809716010814
+w._id= 8, w.avg_load= 0.7329778184485148
+w._id= 9, w.avg_load= 0.72605120196909
+w._id= 10, w.avg_load= 0.7210969707380537
+w._id= 11, w.avg_load= 0.719144429156249
+w._id= 12, w.avg_load= 0.7112884895742968
+w._id= 13, w.avg_load= 0.6941711572259315
+w._id= 14, w.avg_load= 0.6993702310264419
+w._id= 15, w.avg_load= 0.6926332513375821
+w._id= 16, w.avg_load= 0.6896457921851965
+w._id= 17, w.avg_load= 0.690630809910625
+w._id= 18, w.avg_load= 0.6802729655510453
+w._id= 19, w.avg_load= 0.6762684052502698
+  frac_jobs_waited_inq: 0.04780876494023904
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 16.40944226152146, sEW= 0.0529633139417399, sPrqing= 0.04780876494023904
+w._id= 0, w.avg_load= 0.7687562834303402
+w._id= 1, w.avg_load= 0.760886785284305
+w._id= 2, w.avg_load= 0.7667738323194513
+w._id= 3, w.avg_load= 0.755356320519881
+w._id= 4, w.avg_load= 0.7459175201452848
+w._id= 5, w.avg_load= 0.7508426287505725
+w._id= 6, w.avg_load= 0.7402775739492438
+w._id= 7, w.avg_load= 0.7488671577570605
+w._id= 8, w.avg_load= 0.7378583413983668
+w._id= 9, w.avg_load= 0.7315790122661631
+w._id= 10, w.avg_load= 0.7199672233965718
+w._id= 11, w.avg_load= 0.7240866962994121
+w._id= 12, w.avg_load= 0.7014930993656682
+w._id= 13, w.avg_load= 0.6893554856969534
+w._id= 14, w.avg_load= 0.6957039969387652
+w._id= 15, w.avg_load= 0.6935569239701685
+w._id= 16, w.avg_load= 0.6922590695859355
+w._id= 17, w.avg_load= 0.6878937088996834
+w._id= 18, w.avg_load= 0.6869015642836258
+w._id= 19, w.avg_load= 0.6843719180476411
+  frac_jobs_waited_inq: 0.03543307086614173
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 16.30733530736555, sEW= 0.02014775820813287, sPrqing= 0.03543307086614173
+w._id= 0, w.avg_load= 0.6794240725138335
+w._id= 1, w.avg_load= 0.6694750578744251
+w._id= 2, w.avg_load= 0.6647200130942623
+w._id= 3, w.avg_load= 0.6598172355808544
+w._id= 4, w.avg_load= 0.6498546860434098
+w._id= 5, w.avg_load= 0.6552793726248354
+w._id= 6, w.avg_load= 0.6439984520140666
+w._id= 7, w.avg_load= 0.6431672537485587
+w._id= 8, w.avg_load= 0.6448599197111131
+w._id= 9, w.avg_load= 0.627770933716657
+w._id= 10, w.avg_load= 0.6301722670768044
+w._id= 11, w.avg_load= 0.622396682818536
+w._id= 12, w.avg_load= 0.6212684222305256
+w._id= 13, w.avg_load= 0.6023100999247146
+w._id= 14, w.avg_load= 0.6058181481932509
+w._id= 15, w.avg_load= 0.6073209619264996
+w._id= 16, w.avg_load= 0.5957601470993512
+w._id= 17, w.avg_load= 0.5869477919954487
+w._id= 18, w.avg_load= 0.592599853182158
+w._id= 19, w.avg_load= 0.5948050056561206
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 1, sET= 16.336207262621365, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.8495135500983287
+w._id= 1, w.avg_load= 0.8405646294155877
+w._id= 2, w.avg_load= 0.8394467793319689
+w._id= 3, w.avg_load= 0.8371357146889314
+w._id= 4, w.avg_load= 0.8284923796894903
+w._id= 5, w.avg_load= 0.8343785328948549
+w._id= 6, w.avg_load= 0.8259845573305185
+w._id= 7, w.avg_load= 0.8179100709597532
+w._id= 8, w.avg_load= 0.8169013469413025
+w._id= 9, w.avg_load= 0.8078392571029712
+w._id= 10, w.avg_load= 0.8126124934170083
+w._id= 11, w.avg_load= 0.807767810917508
+w._id= 12, w.avg_load= 0.7971332848553466
+w._id= 13, w.avg_load= 0.8027984675612383
+w._id= 14, w.avg_load= 0.7972275284267644
+w._id= 15, w.avg_load= 0.7909444511504595
+w._id= 16, w.avg_load= 0.7915123883516695
+w._id= 17, w.avg_load= 0.7770160055475984
+w._id= 18, w.avg_load= 0.7795615946297226
+w._id= 19, w.avg_load= 0.7696708801428122
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.1220472440944882
+rank= 4, sET= 17.644524401427347, sEW= 0.15103708939073318, sPrqing= 0.1220472440944882
+w._id= 0, w.avg_load= 0.8117413811119523
+w._id= 1, w.avg_load= 0.8093537901666377
+w._id= 2, w.avg_load= 0.8022139724081103
+w._id= 3, w.avg_load= 0.7968737985147623
+w._id= 4, w.avg_load= 0.7981707984344499
+w._id= 5, w.avg_load= 0.7979458782292402
+w._id= 6, w.avg_load= 0.800317707539008
+w._id= 7, w.avg_load= 0.7891890072695746
+w._id= 8, w.avg_load= 0.7873883601835702
+w._id= 9, w.avg_load= 0.7854130917313076
+w._id= 10, w.avg_load= 0.7734442409521131
+w._id= 11, w.avg_load= 0.7755664121413635
+w._id= 12, w.avg_load= 0.7744101296643999
+w._id= 13, w.avg_load= 0.7684733140314342
+w._id= 14, w.avg_load= 0.7603454973178753
+w._id= 15, w.avg_load= 0.7515954776181779
+w._id= 16, w.avg_load= 0.7474304309926388
+w._id= 17, w.avg_load= 0.73007054454372
+w._id= 18, w.avg_load= 0.7342797990890745
+w._id= 19, w.avg_load= 0.7272049469187779
+  frac_jobs_waited_inq: 0.03076923076923077
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 16.69250561519881, sEW= 0.022358157062141545, sPrqing= 0.03076923076923077
+w._id= 0, w.avg_load= 0.8348893018138103
+w._id= 1, w.avg_load= 0.8200061528869336
+w._id= 2, w.avg_load= 0.8260264476038696
+w._id= 3, w.avg_load= 0.8206729095183656
+w._id= 4, w.avg_load= 0.8215889427203552
+w._id= 5, w.avg_load= 0.8190533157794403
+w._id= 6, w.avg_load= 0.8132226438388614
+w._id= 7, w.avg_load= 0.8207381350400638
+w._id= 8, w.avg_load= 0.8041584880890033
+w._id= 9, w.avg_load= 0.7987501738222366
+w._id= 10, w.avg_load= 0.7989252541928564
+w._id= 11, w.avg_load= 0.7988936875025833
+w._id= 12, w.avg_load= 0.7900529436049741
+w._id= 13, w.avg_load= 0.7902724450757136
+w._id= 14, w.avg_load= 0.7928446599193073
+w._id= 15, w.avg_load= 0.7793066628091304
+w._id= 16, w.avg_load= 0.7785876475413666
+w._id= 17, w.avg_load= 0.7763653039876257
+w._id= 18, w.avg_load= 0.7750559040520633
+w._id= 19, w.avg_load= 0.7750529053902692
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.27165354330708663
+rank= 2, sET= 16.378936176200728, sEW= 0.3424259450913169, sPrqing= 0.27165354330708663
+w._id= 0, w.avg_load= 0.8134611739995854
+w._id= 1, w.avg_load= 0.800616492504268
+w._id= 2, w.avg_load= 0.798160409901244
+w._id= 3, w.avg_load= 0.7927642146265248
+w._id= 4, w.avg_load= 0.7767907136096034
+w._id= 5, w.avg_load= 0.784524089552665
+w._id= 6, w.avg_load= 0.7816827606863231
+w._id= 7, w.avg_load= 0.7703115210105059
+w._id= 8, w.avg_load= 0.7624744947243166
+w._id= 9, w.avg_load= 0.7651889056775915
+w._id= 10, w.avg_load= 0.7625737717242224
+w._id= 11, w.avg_load= 0.7559692932363508
+w._id= 12, w.avg_load= 0.7536250913560495
+w._id= 13, w.avg_load= 0.7405704596943428
+w._id= 14, w.avg_load= 0.7470904695395519
+w._id= 15, w.avg_load= 0.7340821849900246
+w._id= 16, w.avg_load= 0.7315003289649384
+w._id= 17, w.avg_load= 0.733765825201337
+w._id= 18, w.avg_load= 0.7228989665350566
+w._id= 19, w.avg_load= 0.7230018564335007
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.1214574898785425
+rank= 7, sET= 17.07546398718724, sEW= 0.22283145012861333, sPrqing= 0.1214574898785425
+w._id= 0, w.avg_load= 0.7711619306766604
+w._id= 1, w.avg_load= 0.7600131718477405
+w._id= 2, w.avg_load= 0.7554982725667441
+w._id= 3, w.avg_load= 0.7560338396163917
+w._id= 4, w.avg_load= 0.7432851974426155
+w._id= 5, w.avg_load= 0.743066296132561
+w._id= 6, w.avg_load= 0.7247595197088953
+w._id= 7, w.avg_load= 0.7209293457543324
+w._id= 8, w.avg_load= 0.7215702525540483
+w._id= 9, w.avg_load= 0.7230493122920941
+w._id= 10, w.avg_load= 0.7172443679464446
+w._id= 11, w.avg_load= 0.7106962071137486
+w._id= 12, w.avg_load= 0.7207010202417137
+w._id= 13, w.avg_load= 0.7140079654701443
+w._id= 14, w.avg_load= 0.6998202373591706
+w._id= 15, w.avg_load= 0.7061289060412761
+w._id= 16, w.avg_load= 0.6944319193314638
+w._id= 17, w.avg_load= 0.6881152376734505
+w._id= 18, w.avg_load= 0.6897886554074087
+w._id= 19, w.avg_load= 0.6971467366610664
+  frac_jobs_waited_inq: 0.0
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 18.245674760819828, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.7267018242448693
+w._id= 1, w.avg_load= 0.7209591190913189
+w._id= 2, w.avg_load= 0.7169244950975018
+w._id= 3, w.avg_load= 0.7093718965696055
+w._id= 4, w.avg_load= 0.7028879115987969
+w._id= 5, w.avg_load= 0.7058931074138505
+w._id= 6, w.avg_load= 0.6981784224337871
+w._id= 7, w.avg_load= 0.6904502229761775
+w._id= 8, w.avg_load= 0.6959427971353553
+w._id= 9, w.avg_load= 0.6874877376653002
+w._id= 10, w.avg_load= 0.6702968740154495
+w._id= 11, w.avg_load= 0.6675337574869808
+w._id= 12, w.avg_load= 0.6649917524174154
+w._id= 13, w.avg_load= 0.6616624586418117
+w._id= 14, w.avg_load= 0.6555987574585528
+w._id= 15, w.avg_load= 0.667464688754212
+w._id= 16, w.avg_load= 0.6435794392294714
+w._id= 17, w.avg_load= 0.6395672629075289
+w._id= 18, w.avg_load= 0.6397049299735986
+w._id= 19, w.avg_load= 0.6377846232851476
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.0
+rank= 9, sET= 16.676265426029058, sEW= 0.0, sPrqing= 0.0
+w._id= 0, w.avg_load= 0.775956040745695
+w._id= 1, w.avg_load= 0.7842445372688962
+w._id= 2, w.avg_load= 0.7832281419879138
+w._id= 3, w.avg_load= 0.7725588792832903
+w._id= 4, w.avg_load= 0.7723333377819906
+w._id= 5, w.avg_load= 0.763841629544562
+w._id= 6, w.avg_load= 0.7608049880400944
+w._id= 7, w.avg_load= 0.768999968054879
+w._id= 8, w.avg_load= 0.7577680797936338
+w._id= 9, w.avg_load= 0.7551935073907056
+w._id= 10, w.avg_load= 0.7431917489859503
+w._id= 11, w.avg_load= 0.7468272931601561
+w._id= 12, w.avg_load= 0.7408187386253136
+w._id= 13, w.avg_load= 0.7251897630651009
+w._id= 14, w.avg_load= 0.7247475648971569
+w._id= 15, w.avg_load= 0.7181243309888949
+w._id= 16, w.avg_load= 0.7026427656001001
+w._id= 17, w.avg_load= 0.7105260612245932
+w._id= 18, w.avg_load= 0.702672017847869
+w._id= 19, w.avg_load= 0.7028329026321993
+  ndropped: 0
+  frac_jobs_waited_inq: 0.0
+  njobs_wfate: 200
+rank= 0, sET= 16.364180153033473, sEW= 0.0, sPrqing= 0.0
+*** sim_ET= 16.813053535140487, sim_EW= 0.08117637138226777, sim_Prqing= 0.06291693438557289
+  sET_l: [16.364180153033473,
+ 16.336207262621365,
+ 16.378936176200728,
+ 16.307335307365548,
+ 17.644524401427347,
+ 18.245674760819828,
+ 16.692505615198812,
+ 17.075463987187241,
+ 16.409442261521459,
+ 16.676265426029058]
+  sPrqing_l: [0.0,
+ 0.0,
+ 0.27165354330708663,
+ 0.035433070866141732,
+ 0.12204724409448819,
+ 0.0,
+ 0.030769230769230771,
+ 0.1214574898785425,
+ 0.047808764940239043,
+ 0.0]
+  sEW_l: [0.0,
+ 0.0,
+ 0.34242594509131691,
+ 0.02014775820813287,
+ 0.15103708939073318,
+ 0.0,
+ 0.022358157062141545,
+ 0.22283145012861333,
+ 0.052963313941739899,
+ 0.0]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.8656474203721011
+INFO] MMc_EW_Prqing:: ro= 0.8696172892231716, Prqing= 0.2284720701256547
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 50.25027192665238, ro= 0.8656477793705992, ES= 17.45582149900527, EW= 0.36617598765285964, ET= 17.82199748665813
+rank= 1, will sim for d= 63
+rank= 4, will sim for d= 63
+*** ET_wMGc= 17.82199748665813, EW_wMGc= 0.36617598765285964, Prqing_wMGc= 0.2284720701256547
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 50.25027192665238, ro= 0.8656477793705992, ES= 17.45582149900527, EW= 2.0355746169730518, ET= 19.491396115978322
+*** approx_ET_wMGc= 19.491396115978322, approx_EW_wMGc= 2.0355746169730518, approx_Prqing_wMGc= 0.8656477793705992
+rank= 3, will sim for d= 63
+rank= 8, will sim for d= 63
+rank= 5, will sim for d= 63
+rank= 6, will sim for d= 63
+rank= 7, will sim for d= 63
+rank= 2, will sim for d= 63
+>> d= 63.28503828288705
+rank= 9, will sim for d= 63
+w._id= 0, w.avg_load= 0.8502802598618615
+w._id= 1, w.avg_load= 0.8334491606023913
+w._id= 2, w.avg_load= 0.8444595594287515
+w._id= 3, w.avg_load= 0.8409038480355727
+w._id= 4, w.avg_load= 0.8326888280413973
+w._id= 5, w.avg_load= 0.8215661766574046
+w._id= 6, w.avg_load= 0.8223630035226311
+w._id= 7, w.avg_load= 0.8167590698574434
+w._id= 8, w.avg_load= 0.8211708890504067
+w._id= 9, w.avg_load= 0.8135543747902054
+w._id= 10, w.avg_load= 0.8040280597741691
+w._id= 11, w.avg_load= 0.8083327165036531
+w._id= 12, w.avg_load= 0.7917705518709554
+w._id= 13, w.avg_load= 0.801213617345634
+w._id= 14, w.avg_load= 0.796187625288218
+w._id= 15, w.avg_load= 0.800249143953148
+w._id= 16, w.avg_load= 0.7828067575966292
+w._id= 17, w.avg_load= 0.7862352596596864
+w._id= 18, w.avg_load= 0.7814639904481167
+w._id= 19, w.avg_load= 0.7795898717697932
+  ndropped: 0
+  frac_jobs_waited_inq: 0.08906882591093117
+  njobs_wfate: 200
+rank= 1, sET= 16.095906272256126, sEW= 0.09708972743422434, sPrqing= 0.08906882591093117
+w._id= 0, w.avg_load= 0.8531428381734113
+w._id= 1, w.avg_load= 0.8608322040044442
+w._id= 2, w.avg_load= 0.8560188847033092
+w._id= 3, w.avg_load= 0.8541233857705253
+w._id= 4, w.avg_load= 0.8494247067657754
+w._id= 5, w.avg_load= 0.8446207615077039
+w._id= 6, w.avg_load= 0.8399455122874097
+w._id= 7, w.avg_load= 0.8353170081625331
+w._id= 8, w.avg_load= 0.8460224822158438
+w._id= 9, w.avg_load= 0.8410128653812631
+w._id= 10, w.avg_load= 0.8356206291360255
+w._id= 11, w.avg_load= 0.837374330954812
+w._id= 12, w.avg_load= 0.8374090453174093
+w._id= 13, w.avg_load= 0.8379908839607348
+w._id= 14, w.avg_load= 0.8354890517352985
+w._id= 15, w.avg_load= 0.8343798329543904
+w._id= 16, w.avg_load= 0.8242453736750317
+w._id= 17, w.avg_load= 0.8261926121439486
+w._id= 18, w.avg_load= 0.8179902038739264
+w._id= 19, w.avg_load= 0.8127214242627007
+  frac_jobs_waited_inq: 0.4541832669322709
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 18.506423734197153, sEW= 1.6086655371120366, sPrqing= 0.4541832669322709
+w._id= 0, w.avg_load= 0.8391875346529141
+w._id= 1, w.avg_load= 0.8401364844132237
+w._id= 2, w.avg_load= 0.8398842955724035
+w._id= 3, w.avg_load= 0.8317799019699189
+w._id= 4, w.avg_load= 0.8313213174634402
+w._id= 5, w.avg_load= 0.8235969635139456
+w._id= 6, w.avg_load= 0.81868456436518
+w._id= 7, w.avg_load= 0.8264862011305213
+w._id= 8, w.avg_load= 0.8194731617236684
+w._id= 9, w.avg_load= 0.8238518991738454
+w._id= 10, w.avg_load= 0.8081630180246161
+w._id= 11, w.avg_load= 0.8045428894312342
+w._id= 12, w.avg_load= 0.8055718966690256
+w._id= 13, w.avg_load= 0.7971212437881562
+w._id= 14, w.avg_load= 0.7893932723531566
+w._id= 15, w.avg_load= 0.795092296224986
+w._id= 16, w.avg_load= 0.7961580154533193
+w._id= 17, w.avg_load= 0.7882911735322254
+w._id= 18, w.avg_load= 0.7819830650423619
+w._id= 19, w.avg_load= 0.7757058037030039
+  frac_jobs_waited_inq: 0.46586345381526106
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 18.81372104205944, sEW= 2.5837831378591476, sPrqing= 0.46586345381526106
+w._id= 0, w.avg_load= 0.8592428427922285
+w._id= 1, w.avg_load= 0.8559084296339782
+w._id= 2, w.avg_load= 0.8524345428968044
+w._id= 3, w.avg_load= 0.8524634666770976
+w._id= 4, w.avg_load= 0.8474538180883304
+w._id= 5, w.avg_load= 0.8450356885230978
+w._id= 6, w.avg_load= 0.8475755865338159
+w._id= 7, w.avg_load= 0.8386857431021286
+w._id= 8, w.avg_load= 0.8435085923219273
+w._id= 9, w.avg_load= 0.8376772514355336
+w._id= 10, w.avg_load= 0.8411352555401908
+w._id= 11, w.avg_load= 0.8443695927959927
+w._id= 12, w.avg_load= 0.8375922863652284
+w._id= 13, w.avg_load= 0.8328115569133228
+w._id= 14, w.avg_load= 0.8221613182901159
+w._id= 15, w.avg_load= 0.8221299543898724
+w._id= 16, w.avg_load= 0.8261731537974997
+w._id= 17, w.avg_load= 0.8147162594842646
+w._id= 18, w.avg_load= 0.8075564930714361
+w._id= 19, w.avg_load= 0.7967647403249715
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.21825396825396826
+rank= 4, sET= 16.01208348690305, sEW= 0.527533681873001, sPrqing= 0.21825396825396826
+w._id= 0, w.avg_load= 0.8334341990909733
+w._id= 1, w.avg_load= 0.833909682517737
+w._id= 2, w.avg_load= 0.8189380554907886
+w._id= 3, w.avg_load= 0.814418702833498
+w._id= 4, w.avg_load= 0.8133232984116157
+w._id= 5, w.avg_load= 0.8116143665577042
+w._id= 6, w.avg_load= 0.8114378699764739
+w._id= 7, w.avg_load= 0.8067321782314938
+w._id= 8, w.avg_load= 0.8082755964632413
+w._id= 9, w.avg_load= 0.8161238589457017
+w._id= 10, w.avg_load= 0.7959982102579743
+w._id= 11, w.avg_load= 0.7953080814368962
+w._id= 12, w.avg_load= 0.8120426128224258
+w._id= 13, w.avg_load= 0.8028956343800229
+w._id= 14, w.avg_load= 0.7827301796142173
+w._id= 15, w.avg_load= 0.7802568455443207
+w._id= 16, w.avg_load= 0.7715369619216597
+w._id= 17, w.avg_load= 0.7627613499748903
+w._id= 18, w.avg_load= 0.7676462117106393
+w._id= 19, w.avg_load= 0.7565995167646155
+  frac_jobs_waited_inq: 0.14522821576763487
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 16.693846804803815, sEW= 0.14774746982312278, sPrqing= 0.14522821576763487
+w._id= 0, w.avg_load= 0.837589485375593
+w._id= 1, w.avg_load= 0.8333598371891795
+w._id= 2, w.avg_load= 0.8252082806496979
+w._id= 3, w.avg_load= 0.8299255515173756
+w._id= 4, w.avg_load= 0.8387969938698123
+w._id= 5, w.avg_load= 0.8197856266483103
+w._id= 6, w.avg_load= 0.8249824210007938
+w._id= 7, w.avg_load= 0.8214532359591306
+w._id= 8, w.avg_load= 0.8009078232450356
+w._id= 9, w.avg_load= 0.8020794365636135
+w._id= 10, w.avg_load= 0.8125984424030313
+w._id= 11, w.avg_load= 0.7924068847503801
+w._id= 12, w.avg_load= 0.8081192242583304
+w._id= 13, w.avg_load= 0.7959903157326391
+w._id= 14, w.avg_load= 0.7816553907141129
+w._id= 15, w.avg_load= 0.7766140512415223
+w._id= 16, w.avg_load= 0.770875848134558
+w._id= 17, w.avg_load= 0.7697211461072668
+w._id= 18, w.avg_load= 0.7671238133665396
+w._id= 19, w.avg_load= 0.7603572660048907
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.17786561264822134
+rank= 2, sET= 16.76388045441662, sEW= 0.29978713874516244, sPrqing= 0.17786561264822134
+w._id= 0, w.avg_load= 0.8033463973372592
+w._id= 1, w.avg_load= 0.8070778651835446
+w._id= 2, w.avg_load= 0.8082166812923797
+w._id= 3, w.avg_load= 0.7965645700232127
+w._id= 4, w.avg_load= 0.7851714635764586
+w._id= 5, w.avg_load= 0.7881645323310598
+w._id= 6, w.avg_load= 0.7889821985296507
+w._id= 7, w.avg_load= 0.7783952391747895
+w._id= 8, w.avg_load= 0.7731014507449636
+w._id= 9, w.avg_load= 0.7780754069776211
+w._id= 10, w.avg_load= 0.7615066561388703
+w._id= 11, w.avg_load= 0.7622368897856563
+w._id= 12, w.avg_load= 0.756186655678035
+w._id= 13, w.avg_load= 0.763503416694142
+w._id= 14, w.avg_load= 0.7558256468238796
+w._id= 15, w.avg_load= 0.7499150011325023
+w._id= 16, w.avg_load= 0.737860313708968
+w._id= 17, w.avg_load= 0.7403987854505166
+w._id= 18, w.avg_load= 0.7306154327558596
+w._id= 19, w.avg_load= 0.7164197441733662
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.072
+rank= 7, sET= 16.213506744369045, sEW= 0.05752616487057995, sPrqing= 0.072
+w._id= 0, w.avg_load= 0.8504914959338418
+w._id= 1, w.avg_load= 0.8494401911994122
+w._id= 2, w.avg_load= 0.8485846013653676
+w._id= 3, w.avg_load= 0.8527167175755994
+w._id= 4, w.avg_load= 0.8392218804991076
+w._id= 5, w.avg_load= 0.8378677924527856
+w._id= 6, w.avg_load= 0.8310471375956734
+w._id= 7, w.avg_load= 0.8220197574879834
+w._id= 8, w.avg_load= 0.829452655526881
+w._id= 9, w.avg_load= 0.8120093112346481
+w._id= 10, w.avg_load= 0.8129582682098137
+w._id= 11, w.avg_load= 0.8129318639687826
+w._id= 12, w.avg_load= 0.8078364230325623
+w._id= 13, w.avg_load= 0.8060930912590395
+w._id= 14, w.avg_load= 0.8007117644690019
+w._id= 15, w.avg_load= 0.7972006594073726
+w._id= 16, w.avg_load= 0.7923458193739206
+w._id= 17, w.avg_load= 0.7887462291525164
+w._id= 18, w.avg_load= 0.7960875026667875
+w._id= 19, w.avg_load= 0.7719775304725203
+  frac_jobs_waited_inq: 0.19262295081967212
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 17.21402936074064, sEW= 0.7595813440489764, sPrqing= 0.19262295081967212
+w._id= 0, w.avg_load= 0.7644143869101465
+w._id= 1, w.avg_load= 0.7629952501820549
+w._id= 2, w.avg_load= 0.7474537486780827
+w._id= 3, w.avg_load= 0.7427539743410918
+w._id= 4, w.avg_load= 0.7477271601264347
+w._id= 5, w.avg_load= 0.7328333833785746
+w._id= 6, w.avg_load= 0.735878120566197
+w._id= 7, w.avg_load= 0.7347136054452695
+w._id= 8, w.avg_load= 0.7318854630386343
+w._id= 9, w.avg_load= 0.7244150549213867
+w._id= 10, w.avg_load= 0.7152204892226991
+w._id= 11, w.avg_load= 0.709381680390387
+w._id= 12, w.avg_load= 0.7067312405298812
+w._id= 13, w.avg_load= 0.7028189908850915
+w._id= 14, w.avg_load= 0.7194324075131326
+w._id= 15, w.avg_load= 0.7119515557041124
+w._id= 16, w.avg_load= 0.7004180425165349
+w._id= 17, w.avg_load= 0.6979462627717665
+w._id= 18, w.avg_load= 0.6886948397520699
+w._id= 19, w.avg_load= 0.6785537983975298
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.102880658436214
+rank= 9, sET= 15.79849306316422, sEW= 0.11896827911687112, sPrqing= 0.102880658436214
+w._id= 0, w.avg_load= 0.7668803829822775
+w._id= 1, w.avg_load= 0.7577614824445621
+w._id= 2, w.avg_load= 0.7526607315435924
+w._id= 3, w.avg_load= 0.7535078425230483
+w._id= 4, w.avg_load= 0.7398188266891189
+w._id= 5, w.avg_load= 0.7490649495599704
+w._id= 6, w.avg_load= 0.7411439728792508
+w._id= 7, w.avg_load= 0.7364132997855385
+w._id= 8, w.avg_load= 0.727128666122516
+w._id= 9, w.avg_load= 0.7288915951563122
+w._id= 10, w.avg_load= 0.7243685319041522
+w._id= 11, w.avg_load= 0.7225554693862
+w._id= 12, w.avg_load= 0.7124659158727304
+w._id= 13, w.avg_load= 0.715857730632815
+w._id= 14, w.avg_load= 0.7131757178113927
+w._id= 15, w.avg_load= 0.7111817219821507
+w._id= 16, w.avg_load= 0.7070744208165856
+w._id= 17, w.avg_load= 0.6998166944070535
+w._id= 18, w.avg_load= 0.6920129482471716
+w._id= 19, w.avg_load= 0.6850229768064722
+  ndropped: 0
+  frac_jobs_waited_inq: 0.11715481171548117
+  njobs_wfate: 200
+rank= 0, sET= 16.306392047868993, sEW= 0.1731206877415645, sPrqing= 0.11715481171548117
+*** sim_ET= 16.841828301077907, sim_EW= 0.6373803168624687, sim_Prqing= 0.2035121764299655
+  sET_l: [16.306392047868993,
+ 16.095906272256126,
+ 16.763880454416618,
+ 18.813721042059441,
+ 16.012083486903052,
+ 17.214029360740639,
+ 16.693846804803815,
+ 16.213506744369045,
+ 18.506423734197153,
+ 15.798493063164219]
+  sPrqing_l: [0.11715481171548117,
+ 0.089068825910931168,
+ 0.17786561264822134,
+ 0.46586345381526106,
+ 0.21825396825396826,
+ 0.19262295081967212,
+ 0.14522821576763487,
+ 0.071999999999999995,
+ 0.4541832669322709,
+ 0.102880658436214]
+  sEW_l: [0.1731206877415645,
+ 0.097089727434224338,
+ 0.29978713874516244,
+ 2.5837831378591476,
+ 0.52753368187300098,
+ 0.75958134404897637,
+ 0.14774746982312278,
+ 0.057526164870579953,
+ 1.6086655371120366,
+ 0.11896827911687112]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.9080580925410259
+INFO] MMc_EW_Prqing:: ro= 0.9174124358576115, Prqing= 0.4450331868781874
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 63.28503828288705, ro= 0.9080580925756165, ES= 16.741102844117, EW= 1.1072214084103578, ET= 17.848324252527355
+*** ET_wMGc= 17.848324252527355, EW_wMGc= 1.1072214084103578, Prqing_wMGc= 0.4450331868781874
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 63.28503828288705, ro= 0.9080580925756165, ES= 16.741102844117, EW= 3.273129544160844, ET= 20.014232388277843
+*** approx_ET_wMGc= 20.014232388277843, approx_EW_wMGc= 3.273129544160844, approx_Prqing_wMGc= 0.9080580925756165
+>> d= 79.70098303771086
+rank= 1, will sim for d= 79
+rank= 4, will sim for d= 79
+rank= 3, will sim for d= 79
+rank= 8, will sim for d= 79
+rank= 2, will sim for d= 79
+rank= 7, will sim for d= 79
+rank= 6, will sim for d= 79
+rank= 5, will sim for d= 79
+rank= 9, will sim for d= 79
+w._id= 0, w.avg_load= 0.7563139743433377
+w._id= 1, w.avg_load= 0.756815979277043
+w._id= 2, w.avg_load= 0.7510220355013519
+w._id= 3, w.avg_load= 0.7405741305313195
+w._id= 4, w.avg_load= 0.7381197472640699
+w._id= 5, w.avg_load= 0.7317905501509824
+w._id= 6, w.avg_load= 0.7247499914410725
+w._id= 7, w.avg_load= 0.7218747203747081
+w._id= 8, w.avg_load= 0.7197173969098093
+w._id= 9, w.avg_load= 0.7173988056106957
+w._id= 10, w.avg_load= 0.7046852462325132
+w._id= 11, w.avg_load= 0.7029332028429126
+w._id= 12, w.avg_load= 0.7073018750362544
+w._id= 13, w.avg_load= 0.6987191288485533
+w._id= 14, w.avg_load= 0.686477138382851
+w._id= 15, w.avg_load= 0.6791410263271463
+w._id= 16, w.avg_load= 0.6868155797289109
+w._id= 17, w.avg_load= 0.6809252448228367
+w._id= 18, w.avg_load= 0.686938432600473
+w._id= 19, w.avg_load= 0.6742087358308329
+  frac_jobs_waited_inq: 0.06329113924050633
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 15.65828611000487, sEW= 0.08717767749525657, sPrqing= 0.06329113924050633
+w._id= 0, w.avg_load= 0.7766305141271627
+w._id= 1, w.avg_load= 0.7771590840101571
+w._id= 2, w.avg_load= 0.7715313282253864
+w._id= 3, w.avg_load= 0.759245690872825
+w._id= 4, w.avg_load= 0.7546930128625162
+w._id= 5, w.avg_load= 0.7490598779491681
+w._id= 6, w.avg_load= 0.752368249194119
+w._id= 7, w.avg_load= 0.7298828204705743
+w._id= 8, w.avg_load= 0.726009029839604
+w._id= 9, w.avg_load= 0.7234213740230991
+w._id= 10, w.avg_load= 0.7210449749995913
+w._id= 11, w.avg_load= 0.7084892603408903
+w._id= 12, w.avg_load= 0.7149092844478644
+w._id= 13, w.avg_load= 0.7039856624791421
+w._id= 14, w.avg_load= 0.7069041068143258
+w._id= 15, w.avg_load= 0.6979051148891909
+w._id= 16, w.avg_load= 0.7044451801963031
+w._id= 17, w.avg_load= 0.7032272048651728
+w._id= 18, w.avg_load= 0.695648013815874
+w._id= 19, w.avg_load= 0.6999775761041105
+  frac_jobs_waited_inq: 0.05084745762711865
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 15.681026174173207, sEW= 0.051493441938618004, sPrqing= 0.05084745762711865
+w._id= 0, w.avg_load= 0.8493205967979011
+w._id= 1, w.avg_load= 0.8330402289851155
+w._id= 2, w.avg_load= 0.8377900205392809
+w._id= 3, w.avg_load= 0.829955065325734
+w._id= 4, w.avg_load= 0.8347469675619874
+w._id= 5, w.avg_load= 0.8280502795582152
+w._id= 6, w.avg_load= 0.819531931408952
+w._id= 7, w.avg_load= 0.8189026089264324
+w._id= 8, w.avg_load= 0.8076234998064052
+w._id= 9, w.avg_load= 0.8085998462537008
+w._id= 10, w.avg_load= 0.8086950583747785
+w._id= 11, w.avg_load= 0.7981067082362291
+w._id= 12, w.avg_load= 0.7930411554704843
+w._id= 13, w.avg_load= 0.792286704020586
+w._id= 14, w.avg_load= 0.7865123766053881
+w._id= 15, w.avg_load= 0.7811926740225591
+w._id= 16, w.avg_load= 0.7814639829841075
+w._id= 17, w.avg_load= 0.7668133006886771
+w._id= 18, w.avg_load= 0.7728392530782465
+w._id= 19, w.avg_load= 0.7677288080324882
+  ndropped: 0
+  frac_jobs_waited_inq: 0.07468879668049792
+  njobs_wfate: 200
+rank= 1, sET= 16.28829543499033, sEW= 0.07500425573625844, sPrqing= 0.07468879668049792
+w._id= 0, w.avg_load= 0.8567009002827979
+w._id= 1, w.avg_load= 0.8664028283907547
+w._id= 2, w.avg_load= 0.8573609882653793
+w._id= 3, w.avg_load= 0.85713515847264
+w._id= 4, w.avg_load= 0.8527454362559931
+w._id= 5, w.avg_load= 0.8573307056061378
+w._id= 6, w.avg_load= 0.8481181809234482
+w._id= 7, w.avg_load= 0.8465301170175733
+w._id= 8, w.avg_load= 0.8452734948490953
+w._id= 9, w.avg_load= 0.843814168747529
+w._id= 10, w.avg_load= 0.8518670635119926
+w._id= 11, w.avg_load= 0.835384597708674
+w._id= 12, w.avg_load= 0.8323811277717682
+w._id= 13, w.avg_load= 0.8304213979238039
+w._id= 14, w.avg_load= 0.8249824815389704
+w._id= 15, w.avg_load= 0.823742215591353
+w._id= 16, w.avg_load= 0.824069000199964
+w._id= 17, w.avg_load= 0.8079185179122839
+w._id= 18, w.avg_load= 0.8006585934958678
+w._id= 19, w.avg_load= 0.7966055494067656
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.2388663967611336
+rank= 4, sET= 16.07018461314388, sEW= 0.3565965903187429, sPrqing= 0.2388663967611336
+w._id= 0, w.avg_load= 0.8989890922811878
+w._id= 1, w.avg_load= 0.8999354275785804
+w._id= 2, w.avg_load= 0.8918156850757711
+w._id= 3, w.avg_load= 0.8852908682911915
+w._id= 4, w.avg_load= 0.8917115222369265
+w._id= 5, w.avg_load= 0.8872719598469021
+w._id= 6, w.avg_load= 0.8843534963304539
+w._id= 7, w.avg_load= 0.8782931845984977
+w._id= 8, w.avg_load= 0.873788756720916
+w._id= 9, w.avg_load= 0.8710839777115665
+w._id= 10, w.avg_load= 0.8641496707668014
+w._id= 11, w.avg_load= 0.8738399393622374
+w._id= 12, w.avg_load= 0.874608181486966
+w._id= 13, w.avg_load= 0.8684014001890566
+w._id= 14, w.avg_load= 0.8695965271578369
+w._id= 15, w.avg_load= 0.8614379107733886
+w._id= 16, w.avg_load= 0.8612611832389175
+w._id= 17, w.avg_load= 0.8468645973015633
+w._id= 18, w.avg_load= 0.8479192812458478
+w._id= 19, w.avg_load= 0.841672928234
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.3064516129032258
+rank= 2, sET= 16.916977256029334, sEW= 0.5700736355838012, sPrqing= 0.3064516129032258
+w._id= 0, w.avg_load= 0.8835688737475883
+w._id= 1, w.avg_load= 0.8819417824955326
+w._id= 2, w.avg_load= 0.8844965737157489
+w._id= 3, w.avg_load= 0.8804456063168155
+w._id= 4, w.avg_load= 0.8804055909322537
+w._id= 5, w.avg_load= 0.880204583789132
+w._id= 6, w.avg_load= 0.8795263709531531
+w._id= 7, w.avg_load= 0.8749966131494165
+w._id= 8, w.avg_load= 0.8723042104650308
+w._id= 9, w.avg_load= 0.8569292802403471
+w._id= 10, w.avg_load= 0.8638800398493931
+w._id= 11, w.avg_load= 0.8665663910244957
+w._id= 12, w.avg_load= 0.865387372546601
+w._id= 13, w.avg_load= 0.8587863686231005
+w._id= 14, w.avg_load= 0.8602857478007564
+w._id= 15, w.avg_load= 0.8606569303773773
+w._id= 16, w.avg_load= 0.8619923337180384
+w._id= 17, w.avg_load= 0.8593829505909241
+w._id= 18, w.avg_load= 0.852363472120001
+w._id= 19, w.avg_load= 0.8464426650727491
+  frac_jobs_waited_inq: 0.540650406504065
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 18.707899210714785, sEW= 2.6836895319643155, sPrqing= 0.540650406504065
+w._id= 0, w.avg_load= 0.8478284525048231
+w._id= 1, w.avg_load= 0.8347640053246187
+w._id= 2, w.avg_load= 0.832143099833072
+w._id= 3, w.avg_load= 0.8331679692829773
+w._id= 4, w.avg_load= 0.8210309973555691
+w._id= 5, w.avg_load= 0.8208565696572125
+w._id= 6, w.avg_load= 0.8236317500891024
+w._id= 7, w.avg_load= 0.8165886071908872
+w._id= 8, w.avg_load= 0.810964271094276
+w._id= 9, w.avg_load= 0.8123767426903075
+w._id= 10, w.avg_load= 0.8113368607505566
+w._id= 11, w.avg_load= 0.8024627827349988
+w._id= 12, w.avg_load= 0.7929244936104944
+w._id= 13, w.avg_load= 0.7890397799395364
+w._id= 14, w.avg_load= 0.7880211746312024
+w._id= 15, w.avg_load= 0.7886155875884274
+w._id= 16, w.avg_load= 0.7917502693884437
+w._id= 17, w.avg_load= 0.7848559706412712
+w._id= 18, w.avg_load= 0.7738869874153886
+w._id= 19, w.avg_load= 0.7711401593936557
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.208
+rank= 7, sET= 15.871101824783326, sEW= 0.2632730561275522, sPrqing= 0.208
+w._id= 0, w.avg_load= 0.8850877331638669
+w._id= 1, w.avg_load= 0.8821535744808505
+w._id= 2, w.avg_load= 0.8787392586808976
+w._id= 3, w.avg_load= 0.881705082429158
+w._id= 4, w.avg_load= 0.8814234616488762
+w._id= 5, w.avg_load= 0.8712183894811742
+w._id= 6, w.avg_load= 0.8662070048939934
+w._id= 7, w.avg_load= 0.8570563637147294
+w._id= 8, w.avg_load= 0.8642734882341668
+w._id= 9, w.avg_load= 0.861794667054606
+w._id= 10, w.avg_load= 0.8602824694298025
+w._id= 11, w.avg_load= 0.8634098285183984
+w._id= 12, w.avg_load= 0.8489436570602662
+w._id= 13, w.avg_load= 0.8403112358519798
+w._id= 14, w.avg_load= 0.8451988645525441
+w._id= 15, w.avg_load= 0.8492152440761767
+w._id= 16, w.avg_load= 0.8414576811938216
+w._id= 17, w.avg_load= 0.8432082011366859
+w._id= 18, w.avg_load= 0.8276862610282681
+w._id= 19, w.avg_load= 0.8305112109716801
+  frac_jobs_waited_inq: 0.25
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 16.951453626012505, sEW= 0.30140454362771757, sPrqing= 0.25
+w._id= 0, w.avg_load= 0.811072441931718
+w._id= 1, w.avg_load= 0.8014260566018994
+w._id= 2, w.avg_load= 0.7972947004189321
+w._id= 3, w.avg_load= 0.8003812802660478
+w._id= 4, w.avg_load= 0.8013571118000812
+w._id= 5, w.avg_load= 0.7926337062766534
+w._id= 6, w.avg_load= 0.7878376922930176
+w._id= 7, w.avg_load= 0.7907759704805225
+w._id= 8, w.avg_load= 0.7761107287041215
+w._id= 9, w.avg_load= 0.7833090826018048
+w._id= 10, w.avg_load= 0.7809007293854039
+w._id= 11, w.avg_load= 0.7691238043044305
+w._id= 12, w.avg_load= 0.7666460576963293
+w._id= 13, w.avg_load= 0.7649239204010579
+w._id= 14, w.avg_load= 0.7646026526443753
+w._id= 15, w.avg_load= 0.7481473487254763
+w._id= 16, w.avg_load= 0.748392054139424
+w._id= 17, w.avg_load= 0.7474507169975988
+w._id= 18, w.avg_load= 0.7372886120410432
+w._id= 19, w.avg_load= 0.7315439774432161
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.15702479338842976
+rank= 9, sET= 16.03984071671384, sEW= 0.28603271536881925, sPrqing= 0.15702479338842976
+w._id= 0, w.avg_load= 0.8344793352020942
+w._id= 1, w.avg_load= 0.8332371036408007
+w._id= 2, w.avg_load= 0.836471928356551
+w._id= 3, w.avg_load= 0.8358270042588262
+w._id= 4, w.avg_load= 0.8340801322352737
+w._id= 5, w.avg_load= 0.8239581368723036
+w._id= 6, w.avg_load= 0.8307980032989476
+w._id= 7, w.avg_load= 0.8305297409302859
+w._id= 8, w.avg_load= 0.8249658116265247
+w._id= 9, w.avg_load= 0.8192371715298269
+w._id= 10, w.avg_load= 0.815857264044147
+w._id= 11, w.avg_load= 0.825195048653959
+w._id= 12, w.avg_load= 0.8258724211757568
+w._id= 13, w.avg_load= 0.8192789606225236
+w._id= 14, w.avg_load= 0.8134594965487091
+w._id= 15, w.avg_load= 0.8062143432486375
+w._id= 16, w.avg_load= 0.8016032618682366
+w._id= 17, w.avg_load= 0.7902117576619682
+w._id= 18, w.avg_load= 0.8006768538335527
+w._id= 19, w.avg_load= 0.7925331177869731
+  ndropped: 0
+  frac_jobs_waited_inq: 0.2816326530612245
+  njobs_wfate: 200
+rank= 0, sET= 16.805275318622613, sEW= 0.7254344765396784, sPrqing= 0.2816326530612245
+*** sim_ET= 16.499034028518867, sim_EW= 0.540017992470076, sim_Prqing= 0.21714532561662017
+  sET_l: [16.805275318622613,
+ 16.288295434990332,
+ 16.916977256029334,
+ 15.681026174173207,
+ 16.07018461314388,
+ 16.951453626012505,
+ 18.707899210714785,
+ 15.871101824783326,
+ 15.65828611000487,
+ 16.03984071671384]
+  sPrqing_l: [0.2816326530612245,
+ 0.074688796680497924,
+ 0.30645161290322581,
+ 0.050847457627118647,
+ 0.23886639676113361,
+ 0.25,
+ 0.54065040650406504,
+ 0.20799999999999999,
+ 0.063291139240506333,
+ 0.15702479338842976]
+  sEW_l: [0.72543447653967841,
+ 0.075004255736258435,
+ 0.5700736355838012,
+ 0.051493441938618004,
+ 0.35659659031874291,
+ 0.30140454362771757,
+ 2.6836895319643155,
+ 0.2632730561275522,
+ 0.087177677495256567,
+ 0.28603271536881925]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.9298577404222503
+INFO] MMc_EW_Prqing:: ro= 0.9394200801051769, Prqing= 0.5718659315451127
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 79.70098303771086, ro= 0.9298573195059526, ES= 16.456994104032297, EW= 1.9193447306455613, ET= 18.37633883467786
+*** ET_wMGc= 18.37633883467786, EW_wMGc= 1.9193447306455613, Prqing_wMGc= 0.5718659315451127
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 79.70098303771086, ro= 0.9298573195059526, ES= 16.456994104032297, EW= 4.498831288054022, ET= 20.955825392086318
+*** approx_ET_wMGc= 20.955825392086318, approx_EW_wMGc= 4.498831288054022, approx_Prqing_wMGc= 0.9298573195059526
+>> d= 100.37517349334034
+rank= 1, will sim for d= 100
+rank= 4, will sim for d= 100
+rank= 8, will sim for d= 100
+rank= 3, will sim for d= 100
+rank= 7, will sim for d= 100
+rank= 6, will sim for d= 100
+rank= 2, will sim for d= 100
+rank= 5, will sim for d= 100
+rank= 9, will sim for d= 100
+w._id= 0, w.avg_load= 0.8533497524643258
+w._id= 1, w.avg_load= 0.842971490977699
+w._id= 2, w.avg_load= 0.8411235448617164
+w._id= 3, w.avg_load= 0.8390029473903168
+w._id= 4, w.avg_load= 0.8350991304420726
+w._id= 5, w.avg_load= 0.8212213196281545
+w._id= 6, w.avg_load= 0.8175728922111967
+w._id= 7, w.avg_load= 0.8107640117185624
+w._id= 8, w.avg_load= 0.8133559593328091
+w._id= 9, w.avg_load= 0.8140018907585171
+w._id= 10, w.avg_load= 0.8073253772464343
+w._id= 11, w.avg_load= 0.7996508037931718
+w._id= 12, w.avg_load= 0.7881760855876938
+w._id= 13, w.avg_load= 0.8005488486554174
+w._id= 14, w.avg_load= 0.790311576152836
+w._id= 15, w.avg_load= 0.7887035814447193
+w._id= 16, w.avg_load= 0.7896329600786165
+w._id= 17, w.avg_load= 0.7737442326624734
+w._id= 18, w.avg_load= 0.7806042290685421
+w._id= 19, w.avg_load= 0.7656688484154607
+  frac_jobs_waited_inq: 0.06504065040650407
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 15.721732694423697, sEW= 0.01800335011454436, sPrqing= 0.06504065040650407
+w._id= 0, w.avg_load= 0.858915358949342
+w._id= 1, w.avg_load= 0.8601479244794202
+w._id= 2, w.avg_load= 0.8502104428372047
+w._id= 3, w.avg_load= 0.8530577090555539
+w._id= 4, w.avg_load= 0.8464093841069785
+w._id= 5, w.avg_load= 0.8442262224024915
+w._id= 6, w.avg_load= 0.8369114388783507
+w._id= 7, w.avg_load= 0.8403513606625999
+w._id= 8, w.avg_load= 0.8335224046880054
+w._id= 9, w.avg_load= 0.8292585587450176
+w._id= 10, w.avg_load= 0.8204120076872367
+w._id= 11, w.avg_load= 0.8145189752435349
+w._id= 12, w.avg_load= 0.8143172309186442
+w._id= 13, w.avg_load= 0.8118716838294513
+w._id= 14, w.avg_load= 0.8214188153572144
+w._id= 15, w.avg_load= 0.8153680025963942
+w._id= 16, w.avg_load= 0.8075798790547087
+w._id= 17, w.avg_load= 0.8005466817753147
+w._id= 18, w.avg_load= 0.7964744376899006
+w._id= 19, w.avg_load= 0.7927100311803348
+  ndropped: 0
+  frac_jobs_waited_inq: 0.20238095238095238
+  njobs_wfate: 200
+rank= 1, sET= 15.596220816323632, sEW= 0.14109150742965482, sPrqing= 0.20238095238095238
+w._id= 0, w.avg_load= 0.8634396766025647
+w._id= 1, w.avg_load= 0.870948179403695
+w._id= 2, w.avg_load= 0.8737754754770821
+w._id= 3, w.avg_load= 0.8645964397075669
+w._id= 4, w.avg_load= 0.8643985162248733
+w._id= 5, w.avg_load= 0.8612667979539557
+w._id= 6, w.avg_load= 0.8603575003964581
+w._id= 7, w.avg_load= 0.8551375641415089
+w._id= 8, w.avg_load= 0.8584826356857291
+w._id= 9, w.avg_load= 0.8510660277200238
+w._id= 10, w.avg_load= 0.8522048086704451
+w._id= 11, w.avg_load= 0.8544728432095021
+w._id= 12, w.avg_load= 0.8540967786423591
+w._id= 13, w.avg_load= 0.8568809435760333
+w._id= 14, w.avg_load= 0.8512917394720763
+w._id= 15, w.avg_load= 0.8390947055359665
+w._id= 16, w.avg_load= 0.8492758130984759
+w._id= 17, w.avg_load= 0.848324672822187
+w._id= 18, w.avg_load= 0.8353257583737048
+w._id= 19, w.avg_load= 0.8301853871534656
+  frac_jobs_waited_inq: 0.564
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 18.76552650122254, sEW= 2.7886533476807616, sPrqing= 0.564
+w._id= 0, w.avg_load= 0.9009902938913449
+w._id= 1, w.avg_load= 0.9099783731448065
+w._id= 2, w.avg_load= 0.9074299937890683
+w._id= 3, w.avg_load= 0.9065574272480653
+w._id= 4, w.avg_load= 0.91091766234399
+w._id= 5, w.avg_load= 0.9078077263180794
+w._id= 6, w.avg_load= 0.9083866343005297
+w._id= 7, w.avg_load= 0.908613722603926
+w._id= 8, w.avg_load= 0.913036159038671
+w._id= 9, w.avg_load= 0.9063825981442741
+w._id= 10, w.avg_load= 0.9027378917533949
+w._id= 11, w.avg_load= 0.9006477402651264
+w._id= 12, w.avg_load= 0.901875752332114
+w._id= 13, w.avg_load= 0.8995639458665535
+w._id= 14, w.avg_load= 0.8937155755388398
+w._id= 15, w.avg_load= 0.8920416887320721
+w._id= 16, w.avg_load= 0.8895151692919966
+w._id= 17, w.avg_load= 0.8886632315327134
+w._id= 18, w.avg_load= 0.8805345634678526
+w._id= 19, w.avg_load= 0.8753862883617951
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.5378486055776892
+rank= 4, sET= 18.263466803697394, sEW= 2.1689101611626453, sPrqing= 0.5378486055776892
+w._id= 0, w.avg_load= 0.8174216115592371
+w._id= 1, w.avg_load= 0.8036894429983836
+w._id= 2, w.avg_load= 0.7915644012660311
+w._id= 3, w.avg_load= 0.8080283733333729
+w._id= 4, w.avg_load= 0.7900231108807682
+w._id= 5, w.avg_load= 0.7861786232206281
+w._id= 6, w.avg_load= 0.7855853944162695
+w._id= 7, w.avg_load= 0.7732219111202815
+w._id= 8, w.avg_load= 0.7678434677773982
+w._id= 9, w.avg_load= 0.7670282784119523
+w._id= 10, w.avg_load= 0.7643949992391753
+w._id= 11, w.avg_load= 0.7541855920890497
+w._id= 12, w.avg_load= 0.7555865107595474
+w._id= 13, w.avg_load= 0.7528760128417255
+w._id= 14, w.avg_load= 0.7476217037493688
+w._id= 15, w.avg_load= 0.7420118742254025
+w._id= 16, w.avg_load= 0.7303339773429467
+w._id= 17, w.avg_load= 0.7244482174178447
+w._id= 18, w.avg_load= 0.7397858069135129
+w._id= 19, w.avg_load= 0.7287833206916482
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.00411522633744856
+rank= 2, sET= 15.927502963462771, sEW= 4.76394400870106e-07, sPrqing= 0.00411522633744856
+w._id= 0, w.avg_load= 0.8488915550401505
+w._id= 1, w.avg_load= 0.8551942942290129
+w._id= 2, w.avg_load= 0.8637363228636633
+w._id= 3, w.avg_load= 0.8542817485587412
+w._id= 4, w.avg_load= 0.8492479587540593
+w._id= 5, w.avg_load= 0.8496505249282162
+w._id= 6, w.avg_load= 0.85599955017823
+w._id= 7, w.avg_load= 0.8522702743869343
+w._id= 8, w.avg_load= 0.8436404291045212
+w._id= 9, w.avg_load= 0.8358425071968704
+w._id= 10, w.avg_load= 0.8226458893780769
+w._id= 11, w.avg_load= 0.8110690062635199
+w._id= 12, w.avg_load= 0.8058858413490426
+w._id= 13, w.avg_load= 0.7998377589097535
+w._id= 14, w.avg_load= 0.7971164296553113
+w._id= 15, w.avg_load= 0.7943722512539341
+w._id= 16, w.avg_load= 0.7939417736387955
+w._id= 17, w.avg_load= 0.7832469680275689
+w._id= 18, w.avg_load= 0.7919674855305763
+w._id= 19, w.avg_load= 0.7820814687484916
+  frac_jobs_waited_inq: 0.1875
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 16.345676928365428, sEW= 0.2460434752381399, sPrqing= 0.1875
+w._id= 0, w.avg_load= 0.8476433325678177
+w._id= 1, w.avg_load= 0.8515015860581403
+w._id= 2, w.avg_load= 0.8525471080094119
+w._id= 3, w.avg_load= 0.854976681483694
+w._id= 4, w.avg_load= 0.8407874032900319
+w._id= 5, w.avg_load= 0.8344204234215723
+w._id= 6, w.avg_load= 0.8339006593924815
+w._id= 7, w.avg_load= 0.8377376524596624
+w._id= 8, w.avg_load= 0.8355469802795983
+w._id= 9, w.avg_load= 0.8206341221425413
+w._id= 10, w.avg_load= 0.8179064583379821
+w._id= 11, w.avg_load= 0.8174461195807375
+w._id= 12, w.avg_load= 0.8154832994281737
+w._id= 13, w.avg_load= 0.7987473545508037
+w._id= 14, w.avg_load= 0.7944717169882871
+w._id= 15, w.avg_load= 0.7977838291578814
+w._id= 16, w.avg_load= 0.7955143520597505
+w._id= 17, w.avg_load= 0.789385298967168
+w._id= 18, w.avg_load= 0.7871394503897949
+w._id= 19, w.avg_load= 0.7814961663735799
+  frac_jobs_waited_inq: 0.15966386554621848
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 14.593260800175676, sEW= 0.09090078944879913, sPrqing= 0.15966386554621848
+w._id= 0, w.avg_load= 0.9081061794467022
+w._id= 1, w.avg_load= 0.9105963629192271
+w._id= 2, w.avg_load= 0.9018264873085705
+w._id= 3, w.avg_load= 0.906999380889879
+w._id= 4, w.avg_load= 0.9042971815031042
+w._id= 5, w.avg_load= 0.9028234583525631
+w._id= 6, w.avg_load= 0.9064317056910145
+w._id= 7, w.avg_load= 0.9000515322389522
+w._id= 8, w.avg_load= 0.8993571412185233
+w._id= 9, w.avg_load= 0.9013648187122238
+w._id= 10, w.avg_load= 0.9036051830939898
+w._id= 11, w.avg_load= 0.8912749754518007
+w._id= 12, w.avg_load= 0.8947296680400283
+w._id= 13, w.avg_load= 0.8891502940701438
+w._id= 14, w.avg_load= 0.8902259106354248
+w._id= 15, w.avg_load= 0.8796211576691405
+w._id= 16, w.avg_load= 0.8853922722398053
+w._id= 17, w.avg_load= 0.881687129158161
+w._id= 18, w.avg_load= 0.8726126022744312
+w._id= 19, w.avg_load= 0.8772437060437844
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.5020408163265306
+rank= 7, sET= 17.83110609598647, sEW= 2.1305324845676847, sPrqing= 0.5020408163265306
+w._id= 0, w.avg_load= 0.8787330425943899
+w._id= 1, w.avg_load= 0.870644263821912
+w._id= 2, w.avg_load= 0.867473584634041
+w._id= 3, w.avg_load= 0.8654763736656135
+w._id= 4, w.avg_load= 0.8554525287974313
+w._id= 5, w.avg_load= 0.8695203468940133
+w._id= 6, w.avg_load= 0.8642343076350234
+w._id= 7, w.avg_load= 0.8600497493254212
+w._id= 8, w.avg_load= 0.860354838581129
+w._id= 9, w.avg_load= 0.857164161764014
+w._id= 10, w.avg_load= 0.855905191947811
+w._id= 11, w.avg_load= 0.8613627146507262
+w._id= 12, w.avg_load= 0.8550230897467197
+w._id= 13, w.avg_load= 0.8445320802624453
+w._id= 14, w.avg_load= 0.8485213035462088
+w._id= 15, w.avg_load= 0.838685999441504
+w._id= 16, w.avg_load= 0.8472304047718106
+w._id= 17, w.avg_load= 0.8470297580486197
+w._id= 18, w.avg_load= 0.838592951759576
+w._id= 19, w.avg_load= 0.8374079724989338
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.5313807531380753
+rank= 9, sET= 17.013638520791623, sEW= 1.71544640451338, sPrqing= 0.5313807531380753
+w._id= 0, w.avg_load= 0.8405846675410714
+w._id= 1, w.avg_load= 0.829313773710695
+w._id= 2, w.avg_load= 0.8319025307287962
+w._id= 3, w.avg_load= 0.8375785476425956
+w._id= 4, w.avg_load= 0.8248669766759043
+w._id= 5, w.avg_load= 0.8168701934964641
+w._id= 6, w.avg_load= 0.8149957827697067
+w._id= 7, w.avg_load= 0.8160702114838763
+w._id= 8, w.avg_load= 0.7986706093830949
+w._id= 9, w.avg_load= 0.8131020744478451
+w._id= 10, w.avg_load= 0.7954842070284378
+w._id= 11, w.avg_load= 0.7899743606859829
+w._id= 12, w.avg_load= 0.7981371573528032
+w._id= 13, w.avg_load= 0.7915452623473525
+w._id= 14, w.avg_load= 0.7858337167139972
+w._id= 15, w.avg_load= 0.7892139038646329
+w._id= 16, w.avg_load= 0.7828223058080304
+w._id= 17, w.avg_load= 0.781769802645388
+w._id= 18, w.avg_load= 0.7774138722821002
+w._id= 19, w.avg_load= 0.761759579043328
+  ndropped: 0
+  frac_jobs_waited_inq: 0.092
+  njobs_wfate: 200
+rank= 0, sET= 15.49160398690679, sEW= 0.09561232479164339, sPrqing= 0.092
+*** sim_ET= 16.554973611135605, sim_EW= 0.9395194321341653, sim_Prqing= 0.2845970869713419
+  sET_l: [15.491603986906791,
+ 15.596220816323632,
+ 15.927502963462771,
+ 18.765526501222539,
+ 18.263466803697394,
+ 14.593260800175676,
+ 16.345676928365428,
+ 17.83110609598647,
+ 15.721732694423697,
+ 17.013638520791623]
+  sPrqing_l: [0.092,
+ 0.20238095238095238,
+ 0.00411522633744856,
+ 0.56399999999999995,
+ 0.53784860557768921,
+ 0.15966386554621848,
+ 0.1875,
+ 0.50204081632653064,
+ 0.065040650406504072,
+ 0.53138075313807531]
+  sEW_l: [0.095612324791643388,
+ 0.14109150742965482,
+ 4.7639440087010599e-07,
+ 2.7886533476807616,
+ 2.1689101611626453,
+ 0.090900789448799132,
+ 0.24604347523813991,
+ 2.1305324845676847,
+ 0.018003350114544361,
+ 1.7154464045133799]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.9412653161602398
+INFO] MMc_EW_Prqing:: ro= 0.9528237875724084, Prqing= 0.6565726802053966
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 100.37517349334034, ro= 0.9412653160639112, ES= 16.344057670037664, EW= 2.827958505354577, ET= 19.17201617539224
+*** ET_wMGc= 19.17201617539224, EW_wMGc= 2.827958505354577, Prqing_wMGc= 0.6565726802053966
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 100.37517349334034, ro= 0.9412653160639112, ES= 16.344057670037664, EW= 5.505273673695331, ET= 21.849331343732995
+*** approx_ET_wMGc= 21.849331343732995, approx_EW_wMGc= 5.505273673695331, approx_Prqing_wMGc= 0.9412653160639112
+>> d= 126.41218551910536
+rank= 1, will sim for d= 126
+rank= 4, will sim for d= 126
+rank= 3, will sim for d= 126
+rank= 8, will sim for d= 126
+rank= 7, will sim for d= 126
+rank= 2, will sim for d= 126
+rank= 6, will sim for d= 126
+rank= 5, will sim for d= 126
+rank= 9, will sim for d= 126
+w._id= 0, w.avg_load= 0.83022565485204
+w._id= 1, w.avg_load= 0.825436623533708
+w._id= 2, w.avg_load= 0.8240559191244804
+w._id= 3, w.avg_load= 0.8219516416472098
+w._id= 4, w.avg_load= 0.8160010968721708
+w._id= 5, w.avg_load= 0.8098494501161744
+w._id= 6, w.avg_load= 0.8106041176597266
+w._id= 7, w.avg_load= 0.8152160170699574
+w._id= 8, w.avg_load= 0.797230855069529
+w._id= 9, w.avg_load= 0.8025093789141574
+w._id= 10, w.avg_load= 0.8008027238013594
+w._id= 11, w.avg_load= 0.792546206434692
+w._id= 12, w.avg_load= 0.7956184678698192
+w._id= 13, w.avg_load= 0.7850093903957382
+w._id= 14, w.avg_load= 0.7719873105115874
+w._id= 15, w.avg_load= 0.7714317499656405
+w._id= 16, w.avg_load= 0.7701601447885549
+w._id= 17, w.avg_load= 0.7660089192267107
+w._id= 18, w.avg_load= 0.7662801523336117
+w._id= 19, w.avg_load= 0.7509660989074647
+  frac_jobs_waited_inq: 0.06722689075630252
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 15.092291488160658, sEW= 0.06024437947054942, sPrqing= 0.06722689075630252
+w._id= 0, w.avg_load= 0.8690672666140831
+w._id= 1, w.avg_load= 0.8711531296673626
+w._id= 2, w.avg_load= 0.8726318410310983
+w._id= 3, w.avg_load= 0.8688797844980944
+w._id= 4, w.avg_load= 0.8683795208101556
+w._id= 5, w.avg_load= 0.8607244500754885
+w._id= 6, w.avg_load= 0.8503662139672655
+w._id= 7, w.avg_load= 0.8486055512567254
+w._id= 8, w.avg_load= 0.8573807760944036
+w._id= 9, w.avg_load= 0.8465062248854309
+w._id= 10, w.avg_load= 0.8573927924643827
+w._id= 11, w.avg_load= 0.8524597994195042
+w._id= 12, w.avg_load= 0.8461309594300911
+w._id= 13, w.avg_load= 0.8423138098262625
+w._id= 14, w.avg_load= 0.8416355851664162
+w._id= 15, w.avg_load= 0.8442841534442206
+w._id= 16, w.avg_load= 0.8392342412876704
+w._id= 17, w.avg_load= 0.8370586982588205
+w._id= 18, w.avg_load= 0.8426105266422562
+w._id= 19, w.avg_load= 0.8347528901109845
+  frac_jobs_waited_inq: 0.5311203319502075
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 18.567321126535653, sEW= 2.1902727559481407, sPrqing= 0.5311203319502075
+w._id= 0, w.avg_load= 0.8683601015006905
+w._id= 1, w.avg_load= 0.8679501025234109
+w._id= 2, w.avg_load= 0.8650865910553941
+w._id= 3, w.avg_load= 0.8615214694493633
+w._id= 4, w.avg_load= 0.8644044893812125
+w._id= 5, w.avg_load= 0.8658487216503039
+w._id= 6, w.avg_load= 0.864117700602586
+w._id= 7, w.avg_load= 0.863294301871534
+w._id= 8, w.avg_load= 0.8476681531108187
+w._id= 9, w.avg_load= 0.8590726626744258
+w._id= 10, w.avg_load= 0.8568855860769092
+w._id= 11, w.avg_load= 0.8496488704512283
+w._id= 12, w.avg_load= 0.8505120237608083
+w._id= 13, w.avg_load= 0.847766799486707
+w._id= 14, w.avg_load= 0.8471330523261821
+w._id= 15, w.avg_load= 0.843531504748303
+w._id= 16, w.avg_load= 0.8373809650035753
+w._id= 17, w.avg_load= 0.850273146135492
+w._id= 18, w.avg_load= 0.8305628601078565
+w._id= 19, w.avg_load= 0.8204451756435627
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.5061728395061729
+rank= 4, sET= 16.579882655649364, sEW= 1.0901676928021842, sPrqing= 0.5061728395061729
+w._id= 0, w.avg_load= 0.8791801307695797
+w._id= 1, w.avg_load= 0.8802654466621807
+w._id= 2, w.avg_load= 0.8757509786418842
+w._id= 3, w.avg_load= 0.8757742032718651
+w._id= 4, w.avg_load= 0.871888541182605
+w._id= 5, w.avg_load= 0.8777963280778611
+w._id= 6, w.avg_load= 0.860833368466102
+w._id= 7, w.avg_load= 0.8626554148912298
+w._id= 8, w.avg_load= 0.8639479361984305
+w._id= 9, w.avg_load= 0.8665880838567815
+w._id= 10, w.avg_load= 0.8534459843089289
+w._id= 11, w.avg_load= 0.8572868498571447
+w._id= 12, w.avg_load= 0.8511456210226511
+w._id= 13, w.avg_load= 0.8476676468663624
+w._id= 14, w.avg_load= 0.8461772792893894
+w._id= 15, w.avg_load= 0.8305460751813459
+w._id= 16, w.avg_load= 0.833930104799455
+w._id= 17, w.avg_load= 0.8269048334095301
+w._id= 18, w.avg_load= 0.8324379429857797
+w._id= 19, w.avg_load= 0.8153637978058551
+  ndropped: 0
+  frac_jobs_waited_inq: 0.30677290836653387
+  njobs_wfate: 200
+rank= 1, sET= 16.296129501363342, sEW= 0.6626967883861558, sPrqing= 0.30677290836653387
+w._id= 0, w.avg_load= 0.8236398019646433
+w._id= 1, w.avg_load= 0.8096844561017384
+w._id= 2, w.avg_load= 0.8131013798040349
+w._id= 3, w.avg_load= 0.8133992565579984
+w._id= 4, w.avg_load= 0.8056150505492209
+w._id= 5, w.avg_load= 0.8066554374508055
+w._id= 6, w.avg_load= 0.7820101410383739
+w._id= 7, w.avg_load= 0.7830396594166431
+w._id= 8, w.avg_load= 0.7819320446838013
+w._id= 9, w.avg_load= 0.7777241480178924
+w._id= 10, w.avg_load= 0.767495316736918
+w._id= 11, w.avg_load= 0.7693540137865775
+w._id= 12, w.avg_load= 0.7738680552056987
+w._id= 13, w.avg_load= 0.7680628162329002
+w._id= 14, w.avg_load= 0.7728464523650962
+w._id= 15, w.avg_load= 0.7665825374053956
+w._id= 16, w.avg_load= 0.7604903360979649
+w._id= 17, w.avg_load= 0.7450774207467252
+w._id= 18, w.avg_load= 0.7513721933189601
+w._id= 19, w.avg_load= 0.7387973703930135
+  frac_jobs_waited_inq: 0.12698412698412698
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 15.418243596746365, sEW= 0.22151951160231367, sPrqing= 0.12698412698412698
+w._id= 0, w.avg_load= 0.8950695891879222
+w._id= 1, w.avg_load= 0.8992912456736436
+w._id= 2, w.avg_load= 0.9025460087385477
+w._id= 3, w.avg_load= 0.8976545691420611
+w._id= 4, w.avg_load= 0.8926618894414083
+w._id= 5, w.avg_load= 0.8923806893255191
+w._id= 6, w.avg_load= 0.8885700811860375
+w._id= 7, w.avg_load= 0.8915061328029973
+w._id= 8, w.avg_load= 0.8858287092711951
+w._id= 9, w.avg_load= 0.8885097917826852
+w._id= 10, w.avg_load= 0.8773629554181133
+w._id= 11, w.avg_load= 0.8898483711767177
+w._id= 12, w.avg_load= 0.8803090535719167
+w._id= 13, w.avg_load= 0.8716835583574606
+w._id= 14, w.avg_load= 0.8768593229221285
+w._id= 15, w.avg_load= 0.8689514136647956
+w._id= 16, w.avg_load= 0.8720886715170687
+w._id= 17, w.avg_load= 0.8669802159047424
+w._id= 18, w.avg_load= 0.8694765501074028
+w._id= 19, w.avg_load= 0.856032921528464
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.42323651452282157
+rank= 2, sET= 16.65596071581051, sEW= 1.142393469405307, sPrqing= 0.42323651452282157
+w._id= 0, w.avg_load= 0.8850297808919492
+w._id= 1, w.avg_load= 0.890016203398134
+w._id= 2, w.avg_load= 0.8901169839043409
+w._id= 3, w.avg_load= 0.8845523224265035
+w._id= 4, w.avg_load= 0.884694548683118
+w._id= 5, w.avg_load= 0.8810602665048315
+w._id= 6, w.avg_load= 0.878895625858989
+w._id= 7, w.avg_load= 0.8839792306795586
+w._id= 8, w.avg_load= 0.8813704796358494
+w._id= 9, w.avg_load= 0.8792950582531539
+w._id= 10, w.avg_load= 0.8788560515186804
+w._id= 11, w.avg_load= 0.8762772405698654
+w._id= 12, w.avg_load= 0.8716409334552317
+w._id= 13, w.avg_load= 0.869563704745056
+w._id= 14, w.avg_load= 0.8616420240173949
+w._id= 15, w.avg_load= 0.8704269278398498
+w._id= 16, w.avg_load= 0.8687931717362959
+w._id= 17, w.avg_load= 0.8652981038683077
+w._id= 18, w.avg_load= 0.8656221465992858
+w._id= 19, w.avg_load= 0.8601304017677945
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.5813008130081301
+rank= 7, sET= 21.871977276421376, sEW= 6.267773778506812, sPrqing= 0.5813008130081301
+w._id= 0, w.avg_load= 0.8708015364409205
+w._id= 1, w.avg_load= 0.8601769430729552
+w._id= 2, w.avg_load= 0.862522077976104
+w._id= 3, w.avg_load= 0.8644946246918225
+w._id= 4, w.avg_load= 0.8652101800201144
+w._id= 5, w.avg_load= 0.8571082393216068
+w._id= 6, w.avg_load= 0.8568836790334025
+w._id= 7, w.avg_load= 0.8589179858653667
+w._id= 8, w.avg_load= 0.8446213227017149
+w._id= 9, w.avg_load= 0.8496890405932734
+w._id= 10, w.avg_load= 0.8433965411748687
+w._id= 11, w.avg_load= 0.8433566382159621
+w._id= 12, w.avg_load= 0.8340009317585274
+w._id= 13, w.avg_load= 0.8308651730918442
+w._id= 14, w.avg_load= 0.8363253492642047
+w._id= 15, w.avg_load= 0.8181285093067882
+w._id= 16, w.avg_load= 0.8072529344343751
+w._id= 17, w.avg_load= 0.8161259390238979
+w._id= 18, w.avg_load= 0.8130605101156834
+w._id= 19, w.avg_load= 0.8140134985169741
+  frac_jobs_waited_inq: 0.2572614107883817
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 15.745569280204968, sEW= 0.277086932492988, sPrqing= 0.2572614107883817
+w._id= 0, w.avg_load= 0.8786045547481802
+w._id= 1, w.avg_load= 0.8834259592142486
+w._id= 2, w.avg_load= 0.8813014058368575
+w._id= 3, w.avg_load= 0.8767498011169036
+w._id= 4, w.avg_load= 0.874952607240153
+w._id= 5, w.avg_load= 0.8720718641059463
+w._id= 6, w.avg_load= 0.8668459364423999
+w._id= 7, w.avg_load= 0.8644663026955756
+w._id= 8, w.avg_load= 0.8600549341263364
+w._id= 9, w.avg_load= 0.8581945466960235
+w._id= 10, w.avg_load= 0.8549597266782148
+w._id= 11, w.avg_load= 0.850428039112436
+w._id= 12, w.avg_load= 0.846615626910198
+w._id= 13, w.avg_load= 0.8389404333520806
+w._id= 14, w.avg_load= 0.8499626179723547
+w._id= 15, w.avg_load= 0.8348462942371669
+w._id= 16, w.avg_load= 0.8411933271754691
+w._id= 17, w.avg_load= 0.8309267377857856
+w._id= 18, w.avg_load= 0.8235199822742812
+w._id= 19, w.avg_load= 0.8134484566469389
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.19421487603305784
+rank= 9, sET= 16.177936859648035, sEW= 0.42450224809716636, sPrqing= 0.19421487603305784
+w._id= 0, w.avg_load= 0.8605616428267576
+w._id= 1, w.avg_load= 0.8630257738206588
+w._id= 2, w.avg_load= 0.850044180702858
+w._id= 3, w.avg_load= 0.864178853585396
+w._id= 4, w.avg_load= 0.8564899622724369
+w._id= 5, w.avg_load= 0.8518790409644453
+w._id= 6, w.avg_load= 0.8481976799918352
+w._id= 7, w.avg_load= 0.8457683257730835
+w._id= 8, w.avg_load= 0.8442886284965679
+w._id= 9, w.avg_load= 0.8449485573769739
+w._id= 10, w.avg_load= 0.8418465638081527
+w._id= 11, w.avg_load= 0.8333980458458623
+w._id= 12, w.avg_load= 0.8326191447787127
+w._id= 13, w.avg_load= 0.8351936029319985
+w._id= 14, w.avg_load= 0.8276584644735926
+w._id= 15, w.avg_load= 0.8281073820209502
+w._id= 16, w.avg_load= 0.8264285736146235
+w._id= 17, w.avg_load= 0.8203827668790005
+w._id= 18, w.avg_load= 0.8135740175281533
+w._id= 19, w.avg_load= 0.8074681589494668
+  ndropped: 0
+  frac_jobs_waited_inq: 0.4875
+  njobs_wfate: 200
+rank= 0, sET= 16.62705987933957, sEW= 0.8937574667484998, sPrqing= 0.4875
+*** sim_ET= 16.903237237987987, sim_EW= 1.3230415023460118, sim_Prqing= 0.3481790711915735
+  sET_l: [16.627059879339569,
+ 16.296129501363342,
+ 16.655960715810512,
+ 15.092291488160658,
+ 16.579882655649364,
+ 15.745569280204968,
+ 15.418243596746365,
+ 21.871977276421376,
+ 18.567321126535653,
+ 16.177936859648035]
+  sPrqing_l: [0.4875,
+ 0.30677290836653387,
+ 0.42323651452282157,
+ 0.067226890756302518,
+ 0.50617283950617287,
+ 0.25726141078838172,
+ 0.12698412698412698,
+ 0.58130081300813008,
+ 0.53112033195020747,
+ 0.19421487603305784]
+  sEW_l: [0.89375746674849976,
+ 0.66269678838615576,
+ 1.1423934694053071,
+ 0.06024437947054942,
+ 1.0901676928021842,
+ 0.27708693249298799,
+ 0.22151951160231367,
+ 6.2677737785068119,
+ 2.1902727559481407,
+ 0.42450224809716636]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.9472736912637347
+INFO] MMc_EW_Prqing:: ro= 0.950206591547936, Prqing= 0.640201880747535
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 126.41218551910536, ro= 0.9472736912882197, ES= 16.299164161588685, EW= 2.589526547340329, ET= 18.888690708929012
+*** ET_wMGc= 18.888690708929012, EW_wMGc= 2.589526547340329, Prqing_wMGc= 0.640201880747535
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 126.41218551910536, ro= 0.9472736912882197, ES= 16.299164161588685, EW= 6.211164344517204, ET= 22.51032850610589
+*** approx_ET_wMGc= 22.51032850610589, approx_EW_wMGc= 6.211164344517204, approx_Prqing_wMGc= 0.9472736912882197
+>> d= 159.2031185756999
+rank= 1, will sim for d= 159
+rank= 3, will sim for d= 159
+rank= 4, will sim for d= 159
+rank= 8, will sim for d= 159
+rank= 2, will sim for d= 159
+rank= 5, will sim for d= 159
+rank= 6, will sim for d= 159
+rank= 7, will sim for d= 159
+rank= 9, will sim for d= 159
+w._id= 0, w.avg_load= 0.8955474446933768
+w._id= 1, w.avg_load= 0.8917111205993262
+w._id= 2, w.avg_load= 0.8957997840698448
+w._id= 3, w.avg_load= 0.8880074841407399
+w._id= 4, w.avg_load= 0.8837795095949255
+w._id= 5, w.avg_load= 0.8883542652668686
+w._id= 6, w.avg_load= 0.8878947528301555
+w._id= 7, w.avg_load= 0.8821279986468591
+w._id= 8, w.avg_load= 0.8819490468599616
+w._id= 9, w.avg_load= 0.8768838865621886
+w._id= 10, w.avg_load= 0.8782867513401769
+w._id= 11, w.avg_load= 0.8804294012995965
+w._id= 12, w.avg_load= 0.8711109819848145
+w._id= 13, w.avg_load= 0.8730653118158909
+w._id= 14, w.avg_load= 0.8716665536747833
+w._id= 15, w.avg_load= 0.8582118581689269
+w._id= 16, w.avg_load= 0.8703341984459643
+w._id= 17, w.avg_load= 0.8551245908430816
+w._id= 18, w.avg_load= 0.855436214294178
+w._id= 19, w.avg_load= 0.8361509901872733
+  frac_jobs_waited_inq: 0.18218623481781376
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 16.543210194317194, sEW= 0.3252222624557431, sPrqing= 0.18218623481781376
+w._id= 0, w.avg_load= 0.8570774644841163
+w._id= 1, w.avg_load= 0.8653841740982864
+w._id= 2, w.avg_load= 0.8619812918168913
+w._id= 3, w.avg_load= 0.858790421055219
+w._id= 4, w.avg_load= 0.8530117794240865
+w._id= 5, w.avg_load= 0.8556599967383591
+w._id= 6, w.avg_load= 0.8544508650633453
+w._id= 7, w.avg_load= 0.8457457904417119
+w._id= 8, w.avg_load= 0.8344837561792657
+w._id= 9, w.avg_load= 0.8360293974814952
+w._id= 10, w.avg_load= 0.8374294821917982
+w._id= 11, w.avg_load= 0.8258260912325686
+w._id= 12, w.avg_load= 0.8315810856303372
+w._id= 13, w.avg_load= 0.8258727272970301
+w._id= 14, w.avg_load= 0.8237047098797929
+w._id= 15, w.avg_load= 0.8171876567500126
+w._id= 16, w.avg_load= 0.808076487296116
+w._id= 17, w.avg_load= 0.8169501671457192
+w._id= 18, w.avg_load= 0.804688846779889
+w._id= 19, w.avg_load= 0.800922430897536
+  frac_jobs_waited_inq: 0.325
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 16.910862194759552, sEW= 0.5009462342377684, sPrqing= 0.325
+w._id= 0, w.avg_load= 0.8549263786590923
+w._id= 1, w.avg_load= 0.8464043722219444
+w._id= 2, w.avg_load= 0.8531481431813439
+w._id= 3, w.avg_load= 0.8494866837965478
+w._id= 4, w.avg_load= 0.8488556931772665
+w._id= 5, w.avg_load= 0.8352081336648407
+w._id= 6, w.avg_load= 0.8463348663135272
+w._id= 7, w.avg_load= 0.8415296977061842
+w._id= 8, w.avg_load= 0.8379879141043555
+w._id= 9, w.avg_load= 0.8381050580938016
+w._id= 10, w.avg_load= 0.8371885062052992
+w._id= 11, w.avg_load= 0.8317768609124867
+w._id= 12, w.avg_load= 0.8290057113673698
+w._id= 13, w.avg_load= 0.8315384159860824
+w._id= 14, w.avg_load= 0.8162069225856126
+w._id= 15, w.avg_load= 0.8290417337147215
+w._id= 16, w.avg_load= 0.8222202407909103
+w._id= 17, w.avg_load= 0.8107012658744787
+w._id= 18, w.avg_load= 0.8036542991436025
+w._id= 19, w.avg_load= 0.8019647290006715
+  ndropped: 0
+  frac_jobs_waited_inq: 0.3252032520325203
+  njobs_wfate: 200
+rank= 1, sET= 17.383485598428592, sEW= 1.604905091337022, sPrqing= 0.3252032520325203
+w._id= 0, w.avg_load= 0.9468284652356707
+w._id= 1, w.avg_load= 0.9467353752143517
+w._id= 2, w.avg_load= 0.9462146067003764
+w._id= 3, w.avg_load= 0.9422043626082404
+w._id= 4, w.avg_load= 0.9459908850206658
+w._id= 5, w.avg_load= 0.9454528162016202
+w._id= 6, w.avg_load= 0.9362793383557393
+w._id= 7, w.avg_load= 0.9358510063862359
+w._id= 8, w.avg_load= 0.9414290783128841
+w._id= 9, w.avg_load= 0.9384127759970582
+w._id= 10, w.avg_load= 0.9302259950710604
+w._id= 11, w.avg_load= 0.9364197400570413
+w._id= 12, w.avg_load= 0.9292389440878324
+w._id= 13, w.avg_load= 0.9346333343365965
+w._id= 14, w.avg_load= 0.9272583466156409
+w._id= 15, w.avg_load= 0.9270648302309437
+w._id= 16, w.avg_load= 0.9281983405242065
+w._id= 17, w.avg_load= 0.9279736374828407
+w._id= 18, w.avg_load= 0.9294017023073824
+w._id= 19, w.avg_load= 0.9212263302208321
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.610655737704918
+rank= 4, sET= 19.266775925465087, sEW= 3.0177162031105316, sPrqing= 0.610655737704918
+w._id= 0, w.avg_load= 0.8947081228439485
+w._id= 1, w.avg_load= 0.898826689049452
+w._id= 2, w.avg_load= 0.8911077288965572
+w._id= 3, w.avg_load= 0.8945626257555961
+w._id= 4, w.avg_load= 0.8855685567509415
+w._id= 5, w.avg_load= 0.886571326439317
+w._id= 6, w.avg_load= 0.8807236122985092
+w._id= 7, w.avg_load= 0.8830649117136039
+w._id= 8, w.avg_load= 0.8843450676383449
+w._id= 9, w.avg_load= 0.8817967400494517
+w._id= 10, w.avg_load= 0.8758453219419876
+w._id= 11, w.avg_load= 0.8777197530941596
+w._id= 12, w.avg_load= 0.8735472386055108
+w._id= 13, w.avg_load= 0.8749149615443512
+w._id= 14, w.avg_load= 0.8686148187863014
+w._id= 15, w.avg_load= 0.8697568126878573
+w._id= 16, w.avg_load= 0.8652841008454116
+w._id= 17, w.avg_load= 0.84820124704478
+w._id= 18, w.avg_load= 0.8473762914647555
+w._id= 19, w.avg_load= 0.8528230319882409
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.3991769547325103
+rank= 2, sET= 15.990432676435184, sEW= 0.6279200335483287, sPrqing= 0.3991769547325103
+w._id= 0, w.avg_load= 0.8599552474505356
+w._id= 1, w.avg_load= 0.8791827078768043
+w._id= 2, w.avg_load= 0.87001660881767
+w._id= 3, w.avg_load= 0.8754124634471314
+w._id= 4, w.avg_load= 0.8725590900135329
+w._id= 5, w.avg_load= 0.8778853580737556
+w._id= 6, w.avg_load= 0.8565928295068128
+w._id= 7, w.avg_load= 0.865028166854064
+w._id= 8, w.avg_load= 0.8588127270045663
+w._id= 9, w.avg_load= 0.857808605578021
+w._id= 10, w.avg_load= 0.8530345686572374
+w._id= 11, w.avg_load= 0.8417981317151586
+w._id= 12, w.avg_load= 0.8428013386631685
+w._id= 13, w.avg_load= 0.8478077360202946
+w._id= 14, w.avg_load= 0.8488427038619674
+w._id= 15, w.avg_load= 0.832415656548386
+w._id= 16, w.avg_load= 0.8403910296186965
+w._id= 17, w.avg_load= 0.8397683987901404
+w._id= 18, w.avg_load= 0.8333297002845609
+w._id= 19, w.avg_load= 0.8256027255745265
+  frac_jobs_waited_inq: 0.39748953974895396
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 17.87049348230802, sEW= 1.3477043605926946, sPrqing= 0.39748953974895396
+w._id= 0, w.avg_load= 0.8913364093792614
+w._id= 1, w.avg_load= 0.8802139338811368
+w._id= 2, w.avg_load= 0.8734323180858492
+w._id= 3, w.avg_load= 0.8751365330402646
+w._id= 4, w.avg_load= 0.8724593105580087
+w._id= 5, w.avg_load= 0.8730833424305072
+w._id= 6, w.avg_load= 0.8717490103774852
+w._id= 7, w.avg_load= 0.8601342371233286
+w._id= 8, w.avg_load= 0.8594106738131362
+w._id= 9, w.avg_load= 0.8541612906309016
+w._id= 10, w.avg_load= 0.8508977809146969
+w._id= 11, w.avg_load= 0.8631404394457196
+w._id= 12, w.avg_load= 0.8581235848280063
+w._id= 13, w.avg_load= 0.8492591005332272
+w._id= 14, w.avg_load= 0.8422930059811834
+w._id= 15, w.avg_load= 0.8419321077372351
+w._id= 16, w.avg_load= 0.8411330391186518
+w._id= 17, w.avg_load= 0.8300659886936884
+w._id= 18, w.avg_load= 0.8301590095822213
+w._id= 19, w.avg_load= 0.8263556973850946
+  frac_jobs_waited_inq: 0.1951219512195122
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 16.157350258366407, sEW= 0.325689231991454, sPrqing= 0.1951219512195122
+w._id= 0, w.avg_load= 0.9412935347762477
+w._id= 1, w.avg_load= 0.9414004923562712
+w._id= 2, w.avg_load= 0.9375731947189576
+w._id= 3, w.avg_load= 0.9413692548573778
+w._id= 4, w.avg_load= 0.9379879238156035
+w._id= 5, w.avg_load= 0.9378435952614333
+w._id= 6, w.avg_load= 0.9417671544224755
+w._id= 7, w.avg_load= 0.9389924715077095
+w._id= 8, w.avg_load= 0.9366549784881476
+w._id= 9, w.avg_load= 0.9371250343041845
+w._id= 10, w.avg_load= 0.9287142158369854
+w._id= 11, w.avg_load= 0.9280977997194003
+w._id= 12, w.avg_load= 0.9367470809938792
+w._id= 13, w.avg_load= 0.9331065742647929
+w._id= 14, w.avg_load= 0.9350039320752146
+w._id= 15, w.avg_load= 0.9188012285106394
+w._id= 16, w.avg_load= 0.9328882379774465
+w._id= 17, w.avg_load= 0.9311033365849319
+w._id= 18, w.avg_load= 0.9211887042677558
+w._id= 19, w.avg_load= 0.9146998825415369
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.6846473029045643
+rank= 7, sET= 19.91059671953476, sEW= 4.697551171917709, sPrqing= 0.6846473029045643
+w._id= 0, w.avg_load= 0.8990946486224738
+w._id= 1, w.avg_load= 0.9048537720359702
+w._id= 2, w.avg_load= 0.9011165423509073
+w._id= 3, w.avg_load= 0.8932019482903485
+w._id= 4, w.avg_load= 0.8940789551354578
+w._id= 5, w.avg_load= 0.8925729886049434
+w._id= 6, w.avg_load= 0.8989252083399998
+w._id= 7, w.avg_load= 0.8992921020175323
+w._id= 8, w.avg_load= 0.8924462881025992
+w._id= 9, w.avg_load= 0.891310179634083
+w._id= 10, w.avg_load= 0.8867197302102816
+w._id= 11, w.avg_load= 0.890559400675502
+w._id= 12, w.avg_load= 0.8843216170980992
+w._id= 13, w.avg_load= 0.8847597222097426
+w._id= 14, w.avg_load= 0.8751329560636064
+w._id= 15, w.avg_load= 0.8700452656103883
+w._id= 16, w.avg_load= 0.8726003685852042
+w._id= 17, w.avg_load= 0.8696143672650098
+w._id= 18, w.avg_load= 0.8665991190939714
+w._id= 19, w.avg_load= 0.8559646336960509
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.4048582995951417
+rank= 9, sET= 16.093470237702334, sEW= 0.8061966105872028, sPrqing= 0.4048582995951417
+w._id= 0, w.avg_load= 0.9096361508986265
+w._id= 1, w.avg_load= 0.9020265089894811
+w._id= 2, w.avg_load= 0.8974104901692408
+w._id= 3, w.avg_load= 0.900315949177734
+w._id= 4, w.avg_load= 0.8975520213863083
+w._id= 5, w.avg_load= 0.8896877075179574
+w._id= 6, w.avg_load= 0.8888235922121812
+w._id= 7, w.avg_load= 0.9002812495518311
+w._id= 8, w.avg_load= 0.8893445084566782
+w._id= 9, w.avg_load= 0.8933758292738538
+w._id= 10, w.avg_load= 0.8904758070795457
+w._id= 11, w.avg_load= 0.8883566652862205
+w._id= 12, w.avg_load= 0.8865138405653727
+w._id= 13, w.avg_load= 0.8774606606903119
+w._id= 14, w.avg_load= 0.8730711879145642
+w._id= 15, w.avg_load= 0.8716984946071197
+w._id= 16, w.avg_load= 0.8746404401652426
+w._id= 17, w.avg_load= 0.869434635022586
+w._id= 18, w.avg_load= 0.8717613512952456
+w._id= 19, w.avg_load= 0.8598988513832921
+  ndropped: 0
+  frac_jobs_waited_inq: 0.6068376068376068
+  njobs_wfate: 200
+rank= 0, sET= 18.29815646221499, sEW= 2.436830719518927, sPrqing= 0.6068376068376068
+*** sim_ET= 17.442483374953213, sim_EW= 1.569068191929738, sim_Prqing= 0.4131176879593541
+  sET_l: [18.29815646221499,
+ 17.383485598428592,
+ 15.990432676435184,
+ 16.910862194759552,
+ 19.266775925465087,
+ 16.157350258366407,
+ 17.870493482308021,
+ 19.910596719534759,
+ 16.543210194317194,
+ 16.093470237702334]
+  sPrqing_l: [0.6068376068376068,
+ 0.32520325203252032,
+ 0.3991769547325103,
+ 0.32500000000000001,
+ 0.61065573770491799,
+ 0.1951219512195122,
+ 0.39748953974895396,
+ 0.68464730290456433,
+ 0.18218623481781376,
+ 0.40485829959514169]
+  sEW_l: [2.4368307195189272,
+ 1.604905091337022,
+ 0.6279200335483287,
+ 0.50094623423776841,
+ 3.0177162031105316,
+ 0.325689231991454,
+ 1.3477043605926946,
+ 4.6975511719177092,
+ 0.32522226245574309,
+ 0.80619661058720282]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.950431849290713
+INFO] MMc_EW_Prqing:: ro= 0.9698002749630533, Prqing= 0.7718146483553879
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 159.2031185756999, ro= 0.9504318494488518, ES= 16.28131848478119, EW= 5.240639419482622, ET= 21.52195790426381
+*** ET_wMGc= 21.52195790426381, EW_wMGc= 5.240639419482622, Prqing_wMGc= 0.7718146483553879
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 159.2031185756999, ro= 0.9504318494488518, ES= 16.28131848478119, EW= 6.651026598503127, ET= 22.932345083284314
+*** approx_ET_wMGc= 22.932345083284314, approx_EW_wMGc= 6.651026598503127, approx_Prqing_wMGc= 0.9504318494488518
+>> d= 200.4999190556494
+rank= 1, will sim for d= 200
+rank= 4, will sim for d= 200
+rank= 3, will sim for d= 200
+rank= 6, will sim for d= 200
+rank= 2, will sim for d= 200
+rank= 5, will sim for d= 200
+rank= 8, will sim for d= 200
+rank= 7, will sim for d= 200
+rank= 9, will sim for d= 200
+w._id= 0, w.avg_load= 0.8402940097085588
+w._id= 1, w.avg_load= 0.8364541039442716
+w._id= 2, w.avg_load= 0.8231158172946635
+w._id= 3, w.avg_load= 0.8210194468740938
+w._id= 4, w.avg_load= 0.8224523000766211
+w._id= 5, w.avg_load= 0.8093576893039827
+w._id= 6, w.avg_load= 0.808119718100345
+w._id= 7, w.avg_load= 0.8145985976162994
+w._id= 8, w.avg_load= 0.8064792258545429
+w._id= 9, w.avg_load= 0.8064875960240292
+w._id= 10, w.avg_load= 0.810230919682331
+w._id= 11, w.avg_load= 0.7989573190310851
+w._id= 12, w.avg_load= 0.7985331085618045
+w._id= 13, w.avg_load= 0.7930901097222497
+w._id= 14, w.avg_load= 0.7865776893649791
+w._id= 15, w.avg_load= 0.785934164910764
+w._id= 16, w.avg_load= 0.7717802193076493
+w._id= 17, w.avg_load= 0.7693673786904003
+w._id= 18, w.avg_load= 0.7622425365391066
+w._id= 19, w.avg_load= 0.7555911271996414
+  frac_jobs_waited_inq: 0.09387755102040816
+  njobs_wfate: 200
+  ndropped: 0
+rank= 3, sET= 16.037686175715717, sEW= 0.0610061523752818, sPrqing= 0.09387755102040816
+w._id= 0, w.avg_load= 0.8597035264099174
+w._id= 1, w.avg_load= 0.8582004818677825
+w._id= 2, w.avg_load= 0.8555623486965217
+w._id= 3, w.avg_load= 0.8554224958019228
+w._id= 4, w.avg_load= 0.8537115861623147
+w._id= 5, w.avg_load= 0.852250519436193
+w._id= 6, w.avg_load= 0.8482505587669288
+w._id= 7, w.avg_load= 0.8476907347477779
+w._id= 8, w.avg_load= 0.8463913639451164
+w._id= 9, w.avg_load= 0.8415637358899803
+w._id= 10, w.avg_load= 0.837306367844187
+w._id= 11, w.avg_load= 0.8420455424974599
+w._id= 12, w.avg_load= 0.8391246093765944
+w._id= 13, w.avg_load= 0.8299019124242949
+w._id= 14, w.avg_load= 0.8227976260320332
+w._id= 15, w.avg_load= 0.8136243222806742
+w._id= 16, w.avg_load= 0.8064595600719117
+w._id= 17, w.avg_load= 0.8140689917325769
+w._id= 18, w.avg_load= 0.8056975217208001
+w._id= 19, w.avg_load= 0.7955713030387924
+  frac_jobs_waited_inq: 0.2863070539419087
+  ndropped: 0
+  njobs_wfate: 200
+rank= 8, sET= 16.514504925119855, sEW= 0.6916883660632266, sPrqing= 0.2863070539419087
+w._id= 0, w.avg_load= 0.9087026855307219
+w._id= 1, w.avg_load= 0.9054885676242902
+w._id= 2, w.avg_load= 0.9100264548568036
+w._id= 3, w.avg_load= 0.9041876518375823
+w._id= 4, w.avg_load= 0.9097197010986036
+w._id= 5, w.avg_load= 0.9080413274185338
+w._id= 6, w.avg_load= 0.902748048294226
+w._id= 7, w.avg_load= 0.9031066300722923
+w._id= 8, w.avg_load= 0.8993056844723614
+w._id= 9, w.avg_load= 0.9011656220973566
+w._id= 10, w.avg_load= 0.8978781965394235
+w._id= 11, w.avg_load= 0.8998798678326951
+w._id= 12, w.avg_load= 0.8908182385590169
+w._id= 13, w.avg_load= 0.8826387903568532
+w._id= 14, w.avg_load= 0.8898016595109963
+w._id= 15, w.avg_load= 0.8838261041397186
+w._id= 16, w.avg_load= 0.8879268532850291
+w._id= 17, w.avg_load= 0.8769068488731452
+w._id= 18, w.avg_load= 0.8723153767731616
+w._id= 19, w.avg_load= 0.8726948708578177
+  njobs_wfate: 200
+  ndropped: 0
+  frac_jobs_waited_inq: 0.40725806451612906
+rank= 4, sET= 17.56581862548662, sEW= 1.9843353095557634, sPrqing= 0.40725806451612906
+w._id= 0, w.avg_load= 0.9002230181101958
+w._id= 1, w.avg_load= 0.9014543709439844
+w._id= 2, w.avg_load= 0.899641953607227
+w._id= 3, w.avg_load= 0.8932217227505921
+w._id= 4, w.avg_load= 0.8990535148408438
+w._id= 5, w.avg_load= 0.9040812643899617
+w._id= 6, w.avg_load= 0.9018503528730474
+w._id= 7, w.avg_load= 0.8995799119991389
+w._id= 8, w.avg_load= 0.8951056031156214
+w._id= 9, w.avg_load= 0.8906494286552349
+w._id= 10, w.avg_load= 0.8886059591481003
+w._id= 11, w.avg_load= 0.885353581424163
+w._id= 12, w.avg_load= 0.8866944460345456
+w._id= 13, w.avg_load= 0.8775745587531707
+w._id= 14, w.avg_load= 0.8850338533829801
+w._id= 15, w.avg_load= 0.881126716423306
+w._id= 16, w.avg_load= 0.8749168021741223
+w._id= 17, w.avg_load= 0.8777359505250434
+w._id= 18, w.avg_load= 0.8703119759605116
+w._id= 19, w.avg_load= 0.8615126355298012
+  ndropped: 0
+  frac_jobs_waited_inq: 0.6008064516129032
+  njobs_wfate: 200
+rank= 1, sET= 18.97603466901556, sEW= 3.223811886693726, sPrqing= 0.6008064516129032
+w._id= 0, w.avg_load= 0.8690652885452003
+w._id= 1, w.avg_load= 0.8711720446209613
+w._id= 2, w.avg_load= 0.8637384506969232
+w._id= 3, w.avg_load= 0.8721228626383156
+w._id= 4, w.avg_load= 0.8643825234124658
+w._id= 5, w.avg_load= 0.85928766979827
+w._id= 6, w.avg_load= 0.8587351699821801
+w._id= 7, w.avg_load= 0.8530651150264633
+w._id= 8, w.avg_load= 0.851569991117386
+w._id= 9, w.avg_load= 0.8460232847606343
+w._id= 10, w.avg_load= 0.8503932962653545
+w._id= 11, w.avg_load= 0.8389529321383615
+w._id= 12, w.avg_load= 0.8381649209721097
+w._id= 13, w.avg_load= 0.8335057657733019
+w._id= 14, w.avg_load= 0.8367646405018199
+w._id= 15, w.avg_load= 0.8213161929290371
+w._id= 16, w.avg_load= 0.8275167146844081
+w._id= 17, w.avg_load= 0.8341489271339835
+w._id= 18, w.avg_load= 0.8184994714967196
+w._id= 19, w.avg_load= 0.8209353967609273
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.3510204081632653
+rank= 2, sET= 17.29892965083722, sEW= 1.145188076296298, sPrqing= 0.3510204081632653
+w._id= 0, w.avg_load= 0.8554385650582848
+w._id= 1, w.avg_load= 0.8436320523910054
+w._id= 2, w.avg_load= 0.8519490836081732
+w._id= 3, w.avg_load= 0.8384747201634924
+w._id= 4, w.avg_load= 0.8495701508434471
+w._id= 5, w.avg_load= 0.8455482829447545
+w._id= 6, w.avg_load= 0.8481827858332707
+w._id= 7, w.avg_load= 0.8463993051487599
+w._id= 8, w.avg_load= 0.8406247356093619
+w._id= 9, w.avg_load= 0.8390398850357429
+w._id= 10, w.avg_load= 0.8316812569269931
+w._id= 11, w.avg_load= 0.8369838017031568
+w._id= 12, w.avg_load= 0.8353798709676672
+w._id= 13, w.avg_load= 0.8331447948147289
+w._id= 14, w.avg_load= 0.8362650418732631
+w._id= 15, w.avg_load= 0.8245271344983055
+w._id= 16, w.avg_load= 0.8255329523371544
+w._id= 17, w.avg_load= 0.8299257371175314
+w._id= 18, w.avg_load= 0.8197336924240087
+w._id= 19, w.avg_load= 0.8135673031532735
+  frac_jobs_waited_inq: 0.5203252032520326
+  njobs_wfate: 200
+  ndropped: 0
+rank= 6, sET= 19.403031517910996, sEW= 3.5587367260406766, sPrqing= 0.5203252032520326
+w._id= 0, w.avg_load= 0.8345357997767663
+w._id= 1, w.avg_load= 0.8265225803704853
+w._id= 2, w.avg_load= 0.8323264877348493
+w._id= 3, w.avg_load= 0.8197030932197571
+w._id= 4, w.avg_load= 0.8315794149791843
+w._id= 5, w.avg_load= 0.8160011416252275
+w._id= 6, w.avg_load= 0.8100548191639266
+w._id= 7, w.avg_load= 0.8170331775060627
+w._id= 8, w.avg_load= 0.8032193938920034
+w._id= 9, w.avg_load= 0.8008969428233732
+w._id= 10, w.avg_load= 0.7947478262558052
+w._id= 11, w.avg_load= 0.789216251847596
+w._id= 12, w.avg_load= 0.7866400908123821
+w._id= 13, w.avg_load= 0.7704299576609641
+w._id= 14, w.avg_load= 0.7686331427677935
+w._id= 15, w.avg_load= 0.7701292735119423
+w._id= 16, w.avg_load= 0.7688563765133714
+w._id= 17, w.avg_load= 0.7662935287300324
+w._id= 18, w.avg_load= 0.7555363374071142
+w._id= 19, w.avg_load= 0.7540109119575839
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.046413502109704644
+rank= 7, sET= 15.078632357769402, sEW= 0.03185559478800954, sPrqing= 0.046413502109704644
+w._id= 0, w.avg_load= 0.8339666090385371
+w._id= 1, w.avg_load= 0.8317010509486642
+w._id= 2, w.avg_load= 0.8379019731103872
+w._id= 3, w.avg_load= 0.8313865469877546
+w._id= 4, w.avg_load= 0.8283026656496634
+w._id= 5, w.avg_load= 0.8266938219589521
+w._id= 6, w.avg_load= 0.8214224564629292
+w._id= 7, w.avg_load= 0.8139412878794929
+w._id= 8, w.avg_load= 0.8156261303708949
+w._id= 9, w.avg_load= 0.8158287954984584
+w._id= 10, w.avg_load= 0.8172978254410712
+w._id= 11, w.avg_load= 0.8032611502420041
+w._id= 12, w.avg_load= 0.8097289495404599
+w._id= 13, w.avg_load= 0.8090487482468974
+w._id= 14, w.avg_load= 0.8058827285512769
+w._id= 15, w.avg_load= 0.8050679818875255
+w._id= 16, w.avg_load= 0.7987260679464309
+w._id= 17, w.avg_load= 0.7978380246555363
+w._id= 18, w.avg_load= 0.7849442543591285
+w._id= 19, w.avg_load= 0.7848802303261746
+  frac_jobs_waited_inq: 0.46443514644351463
+  ndropped: 0
+  njobs_wfate: 200
+rank= 5, sET= 18.34589927279257, sEW= 3.1229819946520125, sPrqing= 0.46443514644351463
+w._id= 0, w.avg_load= 0.8262741593592822
+w._id= 1, w.avg_load= 0.8179543975996046
+w._id= 2, w.avg_load= 0.8010887106034711
+w._id= 3, w.avg_load= 0.8057733289757346
+w._id= 4, w.avg_load= 0.8154618580309901
+w._id= 5, w.avg_load= 0.781137394738049
+w._id= 6, w.avg_load= 0.7948755835015311
+w._id= 7, w.avg_load= 0.7823449325489874
+w._id= 8, w.avg_load= 0.7827519838158311
+w._id= 9, w.avg_load= 0.773972142653923
+w._id= 10, w.avg_load= 0.7742402638885427
+w._id= 11, w.avg_load= 0.763969297347425
+w._id= 12, w.avg_load= 0.7680872277348025
+w._id= 13, w.avg_load= 0.7612135311134394
+w._id= 14, w.avg_load= 0.7570485475184414
+w._id= 15, w.avg_load= 0.7554897657962756
+w._id= 16, w.avg_load= 0.7454172148452409
+w._id= 17, w.avg_load= 0.742350732551199
+w._id= 18, w.avg_load= 0.7473207821660156
+w._id= 19, w.avg_load= 0.7449932728152403
+  ndropped: 0
+  njobs_wfate: 200
+  frac_jobs_waited_inq: 0.032520325203252036
+rank= 9, sET= 15.65944314272921, sEW= 0.016959899358678622, sPrqing= 0.032520325203252036
+w._id= 0, w.avg_load= 0.9167499031689659
+w._id= 1, w.avg_load= 0.9127072235733256
+w._id= 2, w.avg_load= 0.9125803141488051
+w._id= 3, w.avg_load= 0.9119964946232639
+w._id= 4, w.avg_load= 0.9123135759822208
+w._id= 5, w.avg_load= 0.9119857309366185
+w._id= 6, w.avg_load= 0.9096003057668187
+w._id= 7, w.avg_load= 0.9144664103997696
+w._id= 8, w.avg_load= 0.9048216649134205
+w._id= 9, w.avg_load= 0.9076550026797869
+w._id= 10, w.avg_load= 0.9005406749669048
+w._id= 11, w.avg_load= 0.8977006643725512
+w._id= 12, w.avg_load= 0.892551283326381
+w._id= 13, w.avg_load= 0.8890292266470643
+w._id= 14, w.avg_load= 0.8905306190250502
+w._id= 15, w.avg_load= 0.8861260862550562
+w._id= 16, w.avg_load= 0.8829510194129669
+w._id= 17, w.avg_load= 0.8807247055200779
+w._id= 18, w.avg_load= 0.8742260441987484
+w._id= 19, w.avg_load= 0.8733086665168263
+  ndropped: 0
+  frac_jobs_waited_inq: 0.4122448979591837
+  njobs_wfate: 200
+rank= 0, sET= 16.78168366011221, sEW= 1.0539890436225343, sPrqing= 0.4122448979591837
+*** sim_ET= 17.16616639974894, sim_EW= 1.4890553049446207, sim_Prqing= 0.32152086042223027
+  sET_l: [16.781683660112211,
+ 18.976034669015561,
+ 17.29892965083722,
+ 16.037686175715717,
+ 17.565818625486621,
+ 18.345899272792568,
+ 19.403031517910996,
+ 15.078632357769402,
+ 16.514504925119855,
+ 15.659443142729209]
+  sPrqing_l: [0.4122448979591837,
+ 0.60080645161290325,
+ 0.3510204081632653,
+ 0.093877551020408165,
+ 0.40725806451612906,
+ 0.46443514644351463,
+ 0.52032520325203258,
+ 0.046413502109704644,
+ 0.2863070539419087,
+ 0.032520325203252036]
+  sEW_l: [1.0539890436225343,
+ 3.223811886693726,
+ 1.145188076296298,
+ 0.0610061523752818,
+ 1.9843353095557634,
+ 3.1229819946520125,
+ 3.5587367260406766,
+ 0.031855594788009541,
+ 0.69168836606322659,
+ 0.016959899358678622]
+l= 0.0001, u= 0.995
+INFO] ET_EW_Prqing_pareto_wMGc:: ar*EC/(N*Cap)= 0.9520816379047125
+INFO] MMc_EW_Prqing:: ro= 0.9693777277603056, Prqing= 0.7688869109339136
+INFO] ET_EW_Prqing_pareto_wMGc:: d= 200.4999190556494, ro= 0.9520816379048556, ES= 16.27422462663287, EW= 5.1414338927564485, ET= 21.415658519389318
+*** ET_wMGc= 21.415658519389318, EW_wMGc= 5.1414338927564485, Prqing_wMGc= 0.7688869109339136
+l= 0.0001, u= 0.995
+INFO] approx_ET_EW_Prqing_pareto_wMGc:: d= 200.4999190556494, ro= 0.9520816379048556, ES= 16.27422462663287, EW= 6.903921598835465, ET= 23.178146225468332
+*** approx_ET_wMGc= 23.178146225468332, approx_EW_wMGc= 6.903921598835465, approx_Prqing_wMGc= 0.9520816379048556
+>> d= 252.50898287025086
+rank= 3, will sim for d= 252
+rank= 8, will sim for d= 252
+rank= 1, will sim for d= 252
+rank= 4, will sim for d= 252
+rank= 6, will sim for d= 252
+rank= 2, will sim for d= 252
+rank= 5, will sim for d= 252
+rank= 9, will sim for d= 252
+rank= 7, will sim for d= 252
