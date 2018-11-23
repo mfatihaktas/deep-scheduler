@@ -205,7 +205,7 @@ def plot_ET_wrt_d():
   for d in [0, *np.logspace(math.log10(l), math.log10(u), 10) ]:
   # for d in np.logspace(math.log10(l), math.log10(u), 40):
     print("\n>> d= {}".format(d) )
-    sim_ET, sim_EW, sim_Prqing = run(d) # 0, 0, 0
+    sim_ET, sim_EW, sim_Prqing = 0, 0, 0 # run(d)
     if d == 0:
       sim_ET0 = sim_ET
     
@@ -225,7 +225,7 @@ def plot_ET_wrt_d():
     if sim_ET > 3*sim_ET0:
       break
   blog(sim_ET=sim_ET_l, ET_wMGc_l=ET_wMGc_l, approx_ET_wMGc_l=approx_ET_wMGc_l)
-  plot.plot(d_l, sim_ET_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
+  # plot.plot(d_l, sim_ET_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
   plot.plot(d_l, ET_wMGc_l, label='M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
   plot.plot(d_l, approx_ET_wMGc_l, label='Approx M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
   # plot.plot(d_l, ET_l, label='Heavy-tail model', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)

@@ -84,9 +84,9 @@ def plot_ET_wrt_d(rank):
     plot.legend(loc='best', framealpha=0.5)
     plot.xscale('log')
     plot.xlabel('d', fontsize=fontsize)
-    plot.ylabel('Pr\{Queueing\}', fontsize=fontsize)
+    plot.ylabel('Pr{Queueing}', fontsize=fontsize)
     
-    plot.subplots_adjust(hspace=1)
+    plot.subplots_adjust(hspace=2)
     st = plot.suptitle(r'$N= {}$, $C= {}$, $\rho_0= {}$, $r= {}$, $k \sim$ {}'.format(N, Cap, ro, r, k) + '\n' + r'$R \sim$ {}, $L \sim$ {}, $S \sim$ {}'.format(R, L, S) )
     fig.set_size_inches(2*5, 5)
     plot.savefig('plot_ET_wrt_d.png', bbox_extra_artists=(st,), bbox_inches='tight')
@@ -129,7 +129,7 @@ if __name__ == "__main__":
   
   ar = round(ar_for_ro(ro, N, Cap, k, R, L, S), 2)
   sinfo_m = {
-    'njob': 10*N, # 5000*N,
+    'njob': 5000*N,
     'nworker': N, 'wcap': Cap, 'ar': ar,
     'k_rv': k,
     'reqed_rv': R,

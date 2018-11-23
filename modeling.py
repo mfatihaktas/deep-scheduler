@@ -1,92 +1,6 @@
-import numpy as np
-import mpmath, scipy, collections
-
-from rvs import *
+from math_utils import *
 from plot_utils import *
 from sim_objs_lessreal import *
-
-# ##########################################  Basics  ############################################ #
-def G(z):
-  return scipy.special.gamma(z)
-
-def I(u_l, m, n):
-  # den = B(m, n)
-  # if den == 0:
-  #   return None
-  # return B(m, n, u_l=u_l)/den
-  return scipy.special.betainc(m, n, u_l)
-
-def B(m, n, u_l=1):
-  # return mpmath.quad(lambda x: x**(m-1) * (1-x)**(n-1), [0.0001, u_l] )
-  func = lambda x: x**(m-1) * (1-x)**(n-1)
-  result, abserr = scipy.integrate.quad(func, 0.0001, u_l)
-  return result # round(result, 2)
-  # if u_l == 1:
-  #   return scipy.special.beta(m, n)
-  # else:
-  #   return I(u_l, m, n)*B(m, n)
-
-def E_X_i_j_pareto(n, i, j, loc, a):
-  if i > j:
-    _j = j
-    j = i
-    i = _j
-  if a <= max(2/(n-i+1), 1/(n-j+1) ):
-    return 0 # None
-  return loc**2*G(n+1)/G(n+1-2/a) * G(n-i+1-2/a)/G(n-i+1-1/a) * G(n-j+1-1/a)/G(n-j+1)
-
-def ET_k_c_pareto(k, c, loc, a):
-  return loc*G(k+1)*G(1-1/(c+1)/a)/G(k+1-1/(c+1)/a)
-
-def EC_k_c_pareto(k, c, loc, a):
-  return k*(c+1) * a*(c+1)*loc/(a*(c+1)-1)
-
-def ET2_k_c_pareto(k, c, loc, a):
-  a_ = (c+1)*a
-  if a_ > 1:
-    return E_X_i_j_pareto(k, k, k, loc, a_)
-  else:
-    return None
-
-def EC2_k_c_pareto(k, c, loc, a):
-  a_ = (c+1)*a
-  # if a_ > 2:
-  #   return (k*(c+1))**2 * loc**2*a_/(a_-2)
-  # else:
-  #   None
-  EC2 = 0
-  for i in range(1, k+1):
-    for j in range(1, k+1):
-      EC2 += E_X_i_j_pareto(k, i, j, loc, a_)
-
-  return (c+1)**2 * EC2
-
-def ET_k_n_pareto(k, n, loc, a):
-  if k == 0:
-    return 0
-  elif n == k and n > 170:
-    return loc*(k+1)**(1/a) * G(1-1/a)
-  elif n > 170:
-    return loc*((n+1)/(n-k+1))**(1/a)
-  return loc*G(n+1)/G(n-k+1)*G(n-k+1-1/a)/G(n+1-1/a)
-
-def EC_k_n_pareto(k, n, loc, a):
-  if n > 170:
-    return loc/(a-1) * (a*n - (n-k)*((n+1)/(n-k+1))**(1/a) )
-  return loc*n/(a-1) * (a - G(n)/G(n-k)*G(n-k+1-1/a)/G(n+1-1/a) )
-
-def ET2_k_n_pareto(k, n, loc, a):
-  return E_X_i_j_pareto(n, k, k, loc, a)
-
-def EC2_k_n_pareto(k, n, loc, a):
-  EC2 = (n-k)**2*E_X_i_j_pareto(n, k, k, loc, a)
-  for i in range(1, k+1):
-    EC2 += 2*(n-k)*E_X_i_j_pareto(n, i, k, loc, a)
-  for i in range(1, k+1):
-    for j in range(1, k+1):
-      EC2 += E_X_i_j_pareto(n, i, j, loc, a)
-  
-  return EC2
 
 # #########################################  Modeling  ########################################### #
 '''
@@ -150,12 +64,12 @@ def sim_red(k, r, L, Sl, d, red, nrun=10000):
 
 def EC_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   D = Pareto(b, beta)
-  S = Pareto(a, alpha)
+  Sl = Pareto(a, alpha)
   if d is None:
-    return k.mean()*S.mean()*D.mean()
+    return k.mean()*Sl.mean()*D.mean()
   
   Ek = k.mean()
-  ES = S.mean()
+  ESl = Sl.mean()
   ED = D.mean() # b/(1 - 1/beta)
   
   ED_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
@@ -196,7 +110,7 @@ def EC_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   #                   / (1 - Pr_kD_leq_d) if Pr_kD_leq_d != 0 else Ek*ED
   
   # EkD_given_kD_g_d = (Ek*ED - E_kD_given_kD_leq_d*Pr_kD_leq_d)/(1 - Pr_kD_leq_d)
-  EC_given_kD_g_d = ES*EkD_given_kD_g_d
+  EC_given_kD_g_d = ESl*EkD_given_kD_g_d
   
   # log(INFO, "", diff=(Ek*ED - (E_kD_given_kD_leq_d*Pr_kD_leq_d + EkD_given_kD_g_d*(1 - Pr_kD_leq_d) ) ) )
   # blog(E_kD_given_kD_leq_d=E_kD_given_kD_leq_d, EkD_given_kD_g_d=EkD_given_kD_g_d, Pr_kD_leq_d=Pr_kD_leq_d)
@@ -206,9 +120,9 @@ def EC_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
 
 def EC2_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   D = Pareto(b, beta)
-  S = Pareto(a, alpha)
+  Sl = Pareto(a, alpha)
   if d is None:
-    return k.moment(2)*S.moment(2)*D.moment(2)
+    return k.moment(2)*Sl.moment(2)*D.moment(2)
   
   ED2_given_D_leq_doverk = lambda k: moment(D, 2, given_X_leq_x=True, x=d/k)
   if red == 'Coding':
@@ -219,18 +133,18 @@ def EC2_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
   Ek2D2_given_kD_leq_d = sum([i**2*ED2_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
   Ek2D2_given_kD_g_d = (k.moment(2)*D.moment(2) - Pr_kD_leq_d*Ek2D2_given_kD_leq_d)/(1 - Pr_kD_leq_d)
-  EC_given_kD_g_d = S.moment(2)*Ek2D2_given_kD_g_d
+  EC_given_kD_g_d = Sl.moment(2)*Ek2D2_given_kD_g_d
   
   return EC_given_kD_leq_d*Pr_kD_leq_d + \
          EC_given_kD_g_d*(1 - Pr_kD_leq_d)
 
-# D ~ Pareto(b, beta), S ~ Pareto(a, alpha)
+# D ~ Pareto(b, beta), Sl ~ Pareto(a, alpha)
 def EC_model_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   Ek = k.mean()
   ED = b/(1 - 1/beta)
-  ES = a/(1 - 1/alpha)
+  ESl = a/(1 - 1/alpha)
   if d is None:
-    return Ek*ES*ED
+    return Ek*ESl*ED
   
   def ED_given_D_leq_doverk(k):
     if b >= d/k:
@@ -253,7 +167,7 @@ def EC_model_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   E_kD_given_kD_leq_d = sum([i*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
   # EkD_given_kD_g_d = sum([i*ED_given_D_g_doverk(i)*k.pdf(i) for i in k.v_l] )
   EkD_given_kD_g_d = (Ek*ED - Pr_kD_leq_d*E_kD_given_kD_leq_d)/(1 - Pr_kD_leq_d)
-  EC_given_kD_g_d = ES*EkD_given_kD_g_d
+  EC_given_kD_g_d = ESl*EkD_given_kD_g_d
   # return EC_given_kD_g_d
   # log(INFO, "***", EC_given_kD_leq_d=EC_given_kD_leq_d, EC_given_kD_g_d=EC_given_kD_g_d)
   
@@ -263,10 +177,10 @@ def EC_model_pareto(k, r, b, beta, a, alpha, d=None, red=None):
 def EC_approx_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   D = Pareto(b, beta)
   ED = b/(1 - 1/beta)
-  ES = a/(1 - 1/alpha)
+  ESl = a/(1 - 1/alpha)
   Ek = k.mean()
   if d is None:
-    return Ek*ES*ED
+    return Ek*ESl*ED
   
   ED_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
   E_kD_given_kD_leq_d = sum([i*ED_given_D_leq_doverk(i)*k.pdf(i) for i in k.v_l] )
@@ -290,8 +204,8 @@ def EC_approx_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   E_kD_ = E_kD_given_kD_leq_d*Pr_kD_leq_d + EkD_given_kD_g_d*(1 - Pr_kD_leq_d)
   # log(INFO, "E_kD= {}, E_kD_= {}".format(E_kD, E_kD_) )
   
-  # return f()*E_kD_given_kD_leq_d*Pr_kD_leq_d + ES*EkD_given_kD_g_d*(1 - Pr_kD_leq_d)
-  return Ek*ES*ED + E_kD_given_kD_leq_d*Pr_kD_leq_d*(f() - ES)
+  # return f()*E_kD_given_kD_leq_d*Pr_kD_leq_d + ESl*EkD_given_kD_g_d*(1 - Pr_kD_leq_d)
+  return Ek*ESl*ED + E_kD_given_kD_leq_d*Pr_kD_leq_d*(f() - ESl)
   
   '''
   # Debugging
@@ -383,10 +297,10 @@ def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
 
 def ar_for_ro_pareto(ro, N, Cap, k, b, beta, a, alpha_gen):
   D = Pareto(b, beta)
-  S = Pareto(a, alpha_gen(ro) )
-  return ro*N*Cap/k.mean()/D.mean()/S.mean()
+  Sl = Pareto(a, alpha_gen(ro) )
+  return ro*N*Cap/k.mean()/D.mean()/Sl.mean()
 
-def Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
+def ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   alpha = alpha_gen(ro)
   if d is None:
     return sum([ET_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
@@ -408,20 +322,20 @@ def Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   return ES_given_kD_leq_d*Pr_kD_leq_d + \
          ES_given_kD_g_d*(1 - Pr_kD_leq_d)
 
-def Esl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
+def ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   alpha = alpha_gen(ro)
   if d is None:
     return sum([ET_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
   
   Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
   
-  ES2_given_kD_g_d = sum([ET2_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+  ESl2_given_kD_g_d = sum([ET2_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
   if red == 'Coding':
-    ES2_given_kD_leq_d = sum([ET2_k_n_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
+    ESl2_given_kD_leq_d = sum([ET2_k_n_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
   elif red == 'Rep':
-    ES2_given_kD_leq_d = sum([ET2_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
-  return ES2_given_kD_leq_d*Pr_kD_leq_d + \
-         ES2_given_kD_g_d*(1 - Pr_kD_leq_d)
+    ESl2_given_kD_leq_d = sum([ET2_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
+  return ESl2_given_kD_leq_d*Pr_kD_leq_d + \
+         ESl2_given_kD_g_d*(1 - Pr_kD_leq_d)
 
 def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
@@ -433,7 +347,11 @@ def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   def MGc_EW_Prqing(ar, c, EX, EX2):
     def MMc_EW_Prqing(ar, EX, c):
       ro = ar*EX/c
-      Prqing = 1/(1 + (1-ro)*G(c+1)/(c*ro)**c * sum([(c*ro)**k/G(k+1) for k in range(c) ] ) )
+      ro_ = c*ro
+      # Prqing = 1/(1 + (1-ro)*G(c+1)/ro_**c * sum([ro_**i/G(i+1) for i in range(c) ] ) )
+      c_times_ro__power_c = math.exp(c*math.log(c*ro) )
+      Prqing = 1/(1 + (1-ro) * math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
+      
       # EN = ro/(1-ro)*Prqing + c*ro
       log(INFO, "ro= {}, Prqing= {}".format(ro, Prqing) )
       return Prqing/(c/EX - ar), Prqing
@@ -442,12 +360,12 @@ def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
     MMc_EW, MMc_Prqing = MMc_EW_Prqing(ar, EX, c)
     return (1 + (EX2 - EX**2)/EX**2)/2 * MMc_EW, MMc_Prqing
   L = Pareto(b, beta)
-  ES = L.mean()*Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-  ES2 = L.moment(2)*Esl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES = L.mean()*ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES2 = L.moment(2)*ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   EC = EC_exact_pareto(k, r, b, beta, a, alpha, d, red)
   
   log(INFO, "ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
-  EW, Prqing = MGc_EW_Prqing(ar, int(N*Cap*ES/EC), ES, ES2)
+  EW, Prqing = MGc_EW_Prqing(ar, N*Cap*ES/EC, ES, ES2)
   ET = ES + EW
   log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
   return ET, EW, Prqing
@@ -460,7 +378,7 @@ def approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d,
   alpha = alpha_gen(ro)
   
   L = Pareto(b, beta)
-  ES = L.mean()*Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES = L.mean()*ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   EW = 1/ar * ro**2/(1 - ro)
   
   ET = ES + EW
@@ -479,8 +397,8 @@ def ET_EW_pareto(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None):
   alpha = alpha_gen(ro)
   
   L = Pareto(b, beta) # Take D as the lifetime; D = LR, R = 1
-  ES = L.mean()*Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-  ES2 = L.moment(2)*Esl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES = L.mean()*ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES2 = L.moment(2)*ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   print("ES= {}, ES2= {}".format(ES, ES2) )
   EC = EC_exact_pareto(k, r, b, beta, a, alpha, d, red)
   EC2 = EC2_exact_pareto(k, r, b, beta, a, alpha, d, red)
@@ -563,7 +481,7 @@ def plot_ro_Esl():
   d = None
   ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d)
   print("ro= {}".format(ro) )
-  Esl = Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d)
+  Esl = ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d)
   print("\n>> d= {}".format(d) )
   blog(ro=ro, Esl=Esl)
   
@@ -577,14 +495,14 @@ def plot_ro_Esl():
     
     red = 'Rep'
     ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-    Esl = Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red) if ro is not None else None
+    Esl = ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red) if ro is not None else None
     blog(ro=ro, Esl=Esl)
     ro_wrep_l.append(ro)
     Esl_wrep_l.append(Esl)
     
     red = 'Coding'
     ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-    Esl = Esl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red) if ro is not None else None
+    Esl = ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red) if ro is not None else None
     blog(ro=ro, Esl=Esl)
     ro_wcoding_l.append(ro)
     Esl_wcoding_l.append(Esl)
