@@ -145,11 +145,11 @@ def plot_sim():
   plot.gcf().clear()
   log(INFO, "done.")
 
-# def ar_for_ro(ro, N, Cap, k, D, S):
-#   return ro*N*Cap/k.mean()/D.mean()/S.mean()
+# def ar_for_ro(ro, N, Cap, k, D, Sl):
+#   return ro*N*Cap/k.mean()/D.mean()/Sl.mean()
 
-def ar_for_ro(ro, N, Cap, k, R, L, S):
-  return ro*N*Cap/k.mean()/R.mean()/L.mean()/S.mean()
+def ar_for_ro(ro, N, Cap, k, R, L, Sl):
+  return ro*N*Cap/k.mean()/R.mean()/L.mean()/Sl.mean()
 
 def EW_MMc(ar, EX, c):
   ro = ar*EX/c
@@ -163,31 +163,31 @@ def EW_MGc(ar, X, c):
   return (1 + CoeffVar**2)/2 * EW_MMc(ar, EX, c)
 
 def plot_ET_wrt_d():
-  N, Cap = 10, 10
-  k = BZipf(1, 3) # DUniform(1, 1)
+  N, Cap = 20, 10
+  k = BZipf(1, 5) # DUniform(1, 1)
   R = Uniform(1, 1)
   b, beta = 10, 4
   L = Pareto(b, beta) # TPareto(10, 10**6, 4)
   a, alpha = 1, 3 # 1, 4
-  S = Pareto(a, alpha) # Uniform(1, 1)
+  Sl = Pareto(a, alpha) # Uniform(1, 1)
   def alpha_gen(ro):
     return alpha
-  ro = 0.6
+  ro = 0.65
   red, r = 'Coding', 2
   print("ro= {}".format(ro) )
   
-  ar = round(ar_for_ro(ro, N, Cap, k, R, L, S), 2)
+  ar = round(ar_for_ro(ro, N, Cap, k, R, L, Sl), 2)
   sinfo_m.update({
     'njob': 5000*N,
     'nworker': N, 'wcap': Cap, 'ar': ar,
     'k_rv': k,
     'reqed_rv': R,
     'lifetime_rv': L,
-    'straggle_m': {'slowdown': lambda load: S.sample() } } )
+    'straggle_m': {'slowdown': lambda load: Sl.sample() } } )
   sching_m = {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold': None}
   log(INFO, "", sinfo_m=sinfo_m, sching_m=sching_m, mapping_m=mapping_m)
   
-  def run(d, nrun=3):
+  def run(d, nrun=1):
     sching_m['threshold'] = d
     sum_ET, sum_EW, sum_Prqing = 0, 0, 0
     for i in range(nrun):
@@ -199,10 +199,10 @@ def plot_ET_wrt_d():
       sum_Prqing += sim_m['frac_jobs_waited_inq']
     return sum_ET/nrun, sum_EW/nrun, sum_Prqing/nrun
   
-  l = L.l_l*S.l_l
-  u = 40*L.mean()*S.mean()
+  l = L.l_l*Sl.l_l
+  u = 40*L.mean()*Sl.mean()
   d_l, sim_ET_l, ET_wMGc_l, approx_ET_wMGc_l, ET_l = [], [], [], [], []
-  for d in [0, *np.logspace(math.log10(l), math.log10(u), 10) ]:
+  for d in [0, *np.logspace(math.log10(l), math.log10(u), 20) ]:
   # for d in np.logspace(math.log10(l), math.log10(u), 40):
     print("\n>> d= {}".format(d) )
     sim_ET, sim_EW, sim_Prqing = 0, 0, 0 # run(d)
@@ -224,7 +224,9 @@ def plot_ET_wrt_d():
     # ET_l.append(ET)
     if sim_ET > 3*sim_ET0:
       break
-  blog(sim_ET=sim_ET_l, ET_wMGc_l=ET_wMGc_l, approx_ET_wMGc_l=approx_ET_wMGc_l)
+    # elif ET_wMGc is None:
+    #   break
+  blog(d_l=d_l, sim_ET=sim_ET_l, ET_wMGc_l=ET_wMGc_l, approx_ET_wMGc_l=approx_ET_wMGc_l)
   # plot.plot(d_l, sim_ET_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
   plot.plot(d_l, ET_wMGc_l, label='M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
   plot.plot(d_l, approx_ET_wMGc_l, label='Approx M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
@@ -235,7 +237,7 @@ def plot_ET_wrt_d():
   fontsize = 14
   plot.xlabel('d', fontsize=fontsize)
   plot.ylabel('E[T]', fontsize=fontsize)
-  plot.title(r'$N= {}$, $C= {}$, $\rho_0= {}$, $r= {}$, $k \sim$ {}'.format(N, Cap, ro, r, k) + '\n' + r'$R \sim$ {}, $L \sim$ {}, $S \sim$ {}'.format(R, L, S) )
+  plot.title(r'$N= {}$, $C= {}$, $\rho_0= {}$, $r= {}$, $k \sim$ {}'.format(N, Cap, ro, r, k) + '\n' + r'$R \sim$ {}, $L \sim$ {}, $Sl \sim$ {}'.format(R, L, Sl) )
   plot.gcf().set_size_inches(5, 5)
   plot.savefig('plot_ET_wrt_d.png', bbox_inches='tight')
   plot.gcf().clear()
@@ -250,7 +252,7 @@ if __name__ == "__main__":
   # log(INFO, "", k=k, r=r, b=b, beta=beta, a=a, alpha=alpha)
   def alpha_gen(ro):
     return alpha
-  S = Pareto(a, alpha)
+  Sl = Pareto(a, alpha)
   ar = round(ar_for_ro_pareto(1/2, N, Cap, k, b, beta, a, alpha_gen), 2)
   
   sinfo_m = {
@@ -258,7 +260,7 @@ if __name__ == "__main__":
     'lifetime_rv': Pareto(b, beta),
     'reqed_rv': DUniform(1, 1),
     'k_rv': k,
-    'straggle_m': {'slowdown': lambda load: S.sample() } }
+    'straggle_m': {'slowdown': lambda load: Sl.sample() } }
   mapping_m = {'type': 'spreading'}
   sching_m = {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold': None}
   # blog(sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)

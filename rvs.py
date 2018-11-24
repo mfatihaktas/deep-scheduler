@@ -158,8 +158,9 @@ class Pareto(RV):
   def __repr__(self):
     return "Pareto(loc= {}, a= {})".format(self.loc, self.a)
   
-  def tolatex(self):
-    return r'Pareto(\min= {}, \alpha= {})'.format(self.loc, self.a)
+  def to_latex(self):
+    # return r'Pareto($\min= {}$, tail index= ${}$)'.format(self.loc, self.a)
+    return r'Pareto(${}$, ${}$)'.format(self.loc, self.a)
   
   def tail(self, x):
     if x < self.l_l:
@@ -438,6 +439,9 @@ class BZipf(RV):
   
   def __repr__(self):
     return "BZipf([{}, {}], tail index= {})".format(self.l_l, self.u_l, self.a)
+  
+  def to_latex(self):
+    return r'Zipf($[{}, {}]$, ${}$)'.format(self.l_l, self.u_l, self.a)
   
   def pdf(self, x):
     return self.dist.pmf(x)

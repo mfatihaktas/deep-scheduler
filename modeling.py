@@ -275,7 +275,7 @@ def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
     if eq_u > max_eq:
       max_eq = eq_u
       u_w_max_eq = u
-    u -= 0.005
+    u -= 0.001
   if u < l:
     print("u < l; u_w_max_eq= {}, max_eq= {}".format(u_w_max_eq, max_eq) )
     found_it = False
@@ -285,7 +285,7 @@ def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
         break
     if not found_it:
       return None
-  print("l= {}, u= {}".format(l, u) )
+  # print("l= {}, u= {}".format(l, u) )
   try:
     ro = scipy.optimize.brentq(eq, l, u)
   except ValueError:
@@ -338,10 +338,13 @@ def ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
          ESl2_given_kD_g_d*(1 - Pr_kD_leq_d)
 
 def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
+  '''Using the result for M/M/c to approximate E[T] in M/G/c.
+     [https://en.wikipedia.org/wiki/M/G/k_queue]
+  '''
   ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
   ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   if ro is None:
-    return None, None
+    return None, None, None
   alpha = alpha_gen(ro)
   
   def MGc_EW_Prqing(ar, c, EX, EX2):
@@ -353,7 +356,7 @@ def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
       Prqing = 1/(1 + (1-ro) * math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
       
       # EN = ro/(1-ro)*Prqing + c*ro
-      log(INFO, "ro= {}, Prqing= {}".format(ro, Prqing) )
+      # log(INFO, "ro= {}, Prqing= {}".format(ro, Prqing) )
       return Prqing/(c/EX - ar), Prqing
     # CoeffVar = math.sqrt(EX2 - EX**2)/EX
     # return (1 + CoeffVar**2)/2 * MMc_EW_Prqing(ar, EX, c)
@@ -364,17 +367,17 @@ def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   ES2 = L.moment(2)*ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   EC = EC_exact_pareto(k, r, b, beta, a, alpha, d, red)
   
-  log(INFO, "ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
+  # log(INFO, "ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
   EW, Prqing = MGc_EW_Prqing(ar, N*Cap*ES/EC, ES, ES2)
   ET = ES + EW
-  log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
-  return ET, EW, Prqing
+  # log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
+  return round(ET, 2), round(EW, 2), round(Prqing, 2)
 
 def approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
   ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   if ro is None:
-    return None, None
+    return None, None, None
   alpha = alpha_gen(ro)
   
   L = Pareto(b, beta)
@@ -382,10 +385,13 @@ def approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d,
   EW = 1/ar * ro**2/(1 - ro)
   
   ET = ES + EW
-  log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
-  return ET, EW, ro
+  # log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
+  return round(ET, 2), round(EW, 2), round(ro, 2)
 
 def ET_EW_pareto(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None):
+  '''Using (1) to approximate E[T] in M/G/c with heavy tailed job sizes.
+     [Konstantinos Psounis, "Systems with Multiple Servers under Heavy-tailed Workloads"
+      http://www-bcf.usc.edu/~kpsounis/EE650/Readlist07/Papers07/multiserver.pdf] '''
   if K is None:
     alpha0 = alpha_gen(ro0)
     K = EW0/(ro0/(1-ro0)*EC2_exact_pareto(k, r, b, beta, a, alpha0)/EC_exact_pareto(k, r, b, beta, a, alpha0) )

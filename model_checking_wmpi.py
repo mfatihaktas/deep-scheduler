@@ -14,12 +14,13 @@ def plot_ET_wrt_d(rank):
   sys.stdout.flush()
   
   if rank == 0:
-    l = L.l_l*S.l_l
-    u = 40*L.mean()*S.mean()
+    l = L.l_l*Sl.l_l
+    u = 40*L.mean()*Sl.mean()
     d_l = []
-    sim_Prqing_l, Prqing_wMGc_l, approx_Prqing_wMGc_l = [], [], []
-    sim_ET_l, ET_wMGc_l, approx_ET_wMGc_l = [], [], []
+    sim_EPrqing_l, sim_StdPrqing_l, Prqing_wMGc_l, approx_Prqing_wMGc_l = [], [], [], []
+    sim_ET_l, sim_StdT_l, ET_wMGc_l, approx_ET_wMGc_l = [], [], [], []
     for d in [0, *np.logspace(math.log10(l), math.log10(u), 20) ]:
+      d = round(d, 2)
       print(">> d= {}".format(d) )
       sys.stdout.flush()
       for prank in range(1, num_mpiprocs):
@@ -35,10 +36,12 @@ def plot_ET_wrt_d(rank):
         sET_l.append(sET_sEW_sPrqing[0] )
         sEW_l.append(sET_sEW_sPrqing[1] )
         sPrqing_l.append(sET_sEW_sPrqing[2] )
-      sim_ET, sim_EW, sim_Prqing = np.mean(sET_l), np.mean(sEW_l), np.mean(sPrqing_l)
+      sim_ET, sim_EW, sim_EPrqing = np.mean(sET_l), np.mean(sEW_l), np.mean(sPrqing_l)
+      sim_StdT, sim_StdW, sim_StdPrqing = np.std(sET_l), np.std(sEW_l), np.std(sPrqing_l)
       if d == 0:
         sim_ET0 = sim_ET
-      print("*** sim_ET= {}, sim_EW= {}, sim_Prqing= {}".format(sim_ET, sim_EW, sim_Prqing) )
+      print("*** sim_ET= {}, sim_EW= {}, sim_EPrqing= {}".format(sim_ET, sim_EW, sim_EPrqing) )
+      print("    sim_StdT= {}, sim_StdW= {}, sim_StdPrqing= {}".format(sim_StdT, sim_StdW, sim_StdPrqing) )
       blog(sET_l=sET_l, sEW_l=sEW_l, sPrqing_l=sPrqing_l)
       
       ET_wMGc, EW_wMGc, Prqing_wMGc = ET_EW_Prqing_pareto_wMGc(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
@@ -48,25 +51,33 @@ def plot_ET_wrt_d(rank):
       sys.stdout.flush()
       
       d_l.append(d)
-      sim_Prqing_l.append(sim_Prqing)
-      Prqing_wMGc_l.append(Prqing_wMGc)
-      approx_Prqing_wMGc_l.append(approx_Prqing_wMGc)
       sim_ET_l.append(sim_ET)
+      sim_StdT_l.append(sim_StdT)
       ET_wMGc_l.append(ET_wMGc)
       approx_ET_wMGc_l.append(approx_ET_wMGc)
       
-      if sim_ET > 2*sim_ET0:
+      sim_EPrqing_l.append(sim_EPrqing)
+      sim_StdPrqing_l.append(sim_StdPrqing)
+      Prqing_wMGc_l.append(Prqing_wMGc)
+      approx_Prqing_wMGc_l.append(approx_Prqing_wMGc)
+      
+      if sim_ET > 2.5*sim_ET0:
         break
     for prank in range(1, num_mpiprocs):
       d = np.array([-1], dtype='i')
       comm.Send([d, MPI.INT], dest=prank)
-    blog(sim_ET_l=sim_ET_l, ET_wMGc_l=ET_wMGc_l, approx_ET_wMGc_l=approx_ET_wMGc_l)
+    blog(d_l=d_l)
+    blog(sim_ET_l=sim_ET_l, sim_StdT_l=sim_StdT_l)
+    # blog(ET_wMGc_l=ET_wMGc_l, approx_ET_wMGc_l=approx_ET_wMGc_l)
+    blog(sim_EPrqing_l=sim_EPrqing_l, sim_StdPrqing_l=sim_StdPrqing_l)
+    # blog(Prqing_wMGc_l=Prqing_wMGc_l, approx_Prqing_wMGc_l=approx_Prqing_wMGc_l)
     
     fig, axs = plot.subplots(1, 2)
     fontsize = 14
     ax = axs[0]
     plot.sca(ax)
-    plot.plot(d_l, sim_ET_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':')
+    # plot.plot(d_l, sim_ET_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':')
+    plot.errorbar(d_l, sim_ET_l, yerr=sim_StdT_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':')
     plot.plot(d_l, ET_wMGc_l, label='M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':')
     plot.plot(d_l, approx_ET_wMGc_l, label='Approx M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':')
     prettify(ax)
@@ -77,7 +88,8 @@ def plot_ET_wrt_d(rank):
     # 
     ax = axs[1]
     plot.sca(ax)
-    plot.plot(d_l, sim_Prqing_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':')
+    # plot.plot(d_l, sim_EPrqing_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':')
+    plot.errorbar(d_l, sim_EPrqing_l, yerr=sim_StdPrqing_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':')
     plot.plot(d_l, Prqing_wMGc_l, label='M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':')
     plot.plot(d_l, approx_Prqing_wMGc_l, label='Approx M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':')
     prettify(ax)
@@ -86,9 +98,9 @@ def plot_ET_wrt_d(rank):
     plot.xlabel('d', fontsize=fontsize)
     plot.ylabel('Pr{Queueing}', fontsize=fontsize)
     
-    plot.subplots_adjust(hspace=2)
-    st = plot.suptitle(r'$N= {}$, $C= {}$, $\rho_0= {}$, $r= {}$, $k \sim$ {}'.format(N, Cap, ro, r, k) + '\n' + r'$R \sim$ {}, $L \sim$ {}, $S \sim$ {}'.format(R, L, S) )
-    fig.set_size_inches(2*5, 5)
+    plot.subplots_adjust(hspace=1)
+    st = plot.suptitle(r'$N= {}$, $C= {}$, $\rho_0= {}$, $r= {}$, $k \sim$ {}'.format(N, Cap, ro, r, k) + '\n' + r'$R \sim$ {}, $L \sim$ {}, $Sl \sim$ {}'.format(R, L, Sl) )
+    fig.set_size_inches(2*7, 5)
     plot.savefig('plot_ET_wrt_d.png', bbox_extra_artists=(st,), bbox_inches='tight')
     fig.clear()
   else:
@@ -120,21 +132,21 @@ if __name__ == "__main__":
   b, beta = 10, 4
   L = Pareto(b, beta) # TPareto(10, 10**6, 4)
   a, alpha = 1, 3 # 1, 4
-  S = Pareto(a, alpha) # Uniform(1, 1)
+  Sl = Pareto(a, alpha) # Uniform(1, 1)
   def alpha_gen(ro):
     return alpha
-  ro = 0.6
+  ro = 0.5
   red, r = 'Coding', 2
-  print("ro= {}".format(ro) )
+  log(INFO, "red= {}, r= {}, ro= {}".format(red, r, ro) )
   
-  ar = round(ar_for_ro(ro, N, Cap, k, R, L, S), 2)
+  ar = round(ar_for_ro(ro, N, Cap, k, R, L, Sl), 2)
   sinfo_m = {
     'njob': 5000*N,
     'nworker': N, 'wcap': Cap, 'ar': ar,
     'k_rv': k,
     'reqed_rv': R,
     'lifetime_rv': L,
-    'straggle_m': {'slowdown': lambda load: S.sample() } }
+    'straggle_m': {'slowdown': lambda load: Sl.sample() } }
   mapping_m = {'type': 'spreading'}
   sching_m = {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold': None}
   log(INFO, "rank= {}, num_mpiprocs= {}".format(rank, num_mpiprocs) , sinfo_m=sinfo_m, sching_m=sching_m, mapping_m=mapping_m)
