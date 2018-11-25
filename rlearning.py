@@ -4,22 +4,27 @@ import tensorflow as tf
 
 from log_utils import *
 from sim_objs import *
+from sim_objs_lessreal import *
 
 LEARNING_RATE = 0.01 # 0.0001
 STATE_LEN = 6 # 4
 def state(j, wload_l=None, cluster=None):
+  try:
+    D = j.totaldemand # j.k
+  except AttributeError:
+    D = j.k*j.reqed*j.lifetime
   if STATE_LEN == 1:
-    return [j.totaldemand] # j.k
+    return [D]
   elif STATE_LEN == 3:
-    return [j.totaldemand, min(wload_l), max(wload_l) ]
-    # return [j.totaldemand, np.mean(wload_l), np.std(wload_l) ]
+    return [D, min(wload_l), max(wload_l) ]
+    # return [D, np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 4:
-    # return [j.totaldemand, len(cluster.store.items), min(wload_l), max(wload_l) ]
-    return [j.totaldemand, len(cluster.store.items), np.mean(wload_l), np.std(wload_l) ]
+    # return [D, len(cluster.store.items), min(wload_l), max(wload_l) ]
+    return [D, len(cluster.store.items), np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 5:
-    return [j.totaldemand, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
+    return [D, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 6:
-    return [j.totaldemand, len(cluster.store.items), min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
+    return [D, len(cluster.store.items), min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
 
 def state_(jtotaldemand, wload_l=None, cluster_qlen=None):
   if STATE_LEN == 1:
@@ -33,7 +38,7 @@ def state_(jtotaldemand, wload_l=None, cluster_qlen=None):
   elif STATE_LEN == 6:
     return [jtotaldemand, cluster_qlen, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
 
-def sample_traj(sinfo_m, scher):
+def sample_traj(sinfo_m, scher, use_lessreal_sim=False):
   def reward(slowdown):
     # return 1/slowdown
     # return 10 if slowdown < 1.5 else -10
@@ -48,15 +53,14 @@ def sample_traj(sinfo_m, scher):
     
     # return -slowdown
     return -slowdown**2
-    
-    # if slowdown < 2:
-    #   return 10/slowdown
-    # else:
-    #   return -10*slowdown
   
   env = simpy.Environment()
-  cl = Cluster(env, scher=scher, **sinfo_m)
-  jg = JobGen(env, out=cl, **sinfo_m)
+  if use_lessreal_sim:
+    cl = Cluster_LessReal(env, scher=scher, **sinfo_m)
+    jg = JobGen_LessReal(env, out=cl, **sinfo_m)
+  else:
+    cl = Cluster(env, scher=scher, **sinfo_m)
+    jg = JobGen(env, out=cl, **sinfo_m)
   env.run(until=cl.wait_for_alljobs)
   
   T = sinfo_m['njob']
@@ -76,8 +80,7 @@ def sample_traj(sinfo_m, scher):
   
   return t_s_l, t_a_l, t_r_l, t_sl_l, \
          np.mean([w.avg_load() for w in cl.w_l] ), \
-         0
-         # sum([1 for _, jinfo_m in cl.jid_info_m.items() if 'fate' in jinfo_m and jinfo_m['fate'] == 'dropped'] )/len(cl.jid_info_m)
+         0 # sum([1 for _, jinfo_m in cl.jid_info_m.items() if 'fate' in jinfo_m and jinfo_m['fate'] == 'dropped'] )/len(cl.jid_info_m)
 
 def evaluate(sinfo_m, scher):
   alog("scher= {}".format(scher) )

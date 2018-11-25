@@ -303,7 +303,7 @@ class QLearner_wTargetNet(Learner):
   
     op_holder = []
     # Update TargetNet parameters with QNet parameters
-    for from_var, to_var in zip(from_vars,to_vars):
+    for from_var, to_var in zip(from_vars, to_vars):
       op_holder.append(to_var.assign(from_var) )
     return op_holder
   

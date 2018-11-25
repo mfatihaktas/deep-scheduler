@@ -295,6 +295,12 @@ def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   # ro = scipy.optimize.fixed_point(ro_, [0.01, 0.99] )
   return ro
 
+# def ar_for_ro(ro, N, Cap, k, D, Sl):
+#   return ro*N*Cap/k.mean()/D.mean()/Sl.mean()
+
+def ar_for_ro(ro, N, Cap, k, R, L, Sl):
+  return ro*N*Cap/k.mean()/R.mean()/L.mean()/Sl.mean()
+
 def ar_for_ro_pareto(ro, N, Cap, k, b, beta, a, alpha_gen):
   D = Pareto(b, beta)
   Sl = Pareto(a, alpha_gen(ro) )
@@ -371,6 +377,7 @@ def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   EW, Prqing = MGc_EW_Prqing(ar, N*Cap*ES/EC, ES, ES2)
   ET = ES + EW
   # log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
+  log(INFO, "d= {}, ro= {}".format(d, ro) )
   return round(ET, 2), round(EW, 2), round(Prqing, 2)
 
 def approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
@@ -386,6 +393,7 @@ def approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d,
   
   ET = ES + EW
   # log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
+  log(INFO, "d= {}, ro= {}".format(d, ro) )
   return round(ET, 2), round(EW, 2), round(ro, 2)
 
 def ET_EW_pareto(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None):

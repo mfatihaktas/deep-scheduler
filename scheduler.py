@@ -88,30 +88,39 @@ class RLScher():
   
   def summarize(self):
     print("////////////////////////////////////////////////////")
-    job_totaldemand_rv = self.sinfo_m['totaldemand_rv']
-    log_intermediate_totaldemand, log_max_totaldemand = math.log10(job_totaldemand_rv.u_l/10), math.log10(job_totaldemand_rv.u_l)
-    totaldemand_l = list(np.logspace(0.1, log_intermediate_totaldemand, 5, endpoint=False) ) + \
-                    list(np.logspace(log_intermediate_totaldemand, log_max_totaldemand, 5) )
+    if 'totaldemand_rv' in self.sinfo_m:
+      D = self.sinfo_m['totaldemand_rv']
+      l, u = D.l_l, D.u_l
+      i = u/10
+    elif 'reqed_rv' in self.sinfo_m:
+      R = self.sinfo_m['reqed_rv']
+      L = self.sinfo_m['lifetime_rv']
+      l = R.l_l*L.l_l
+      u = 400*l
+      i = u/10
+    logl, logi, logu = math.log10(l), math.log10(i), math.log10(u)
+    D_l = list(np.logspace(0.1, logi, 5, endpoint=False) ) + list(np.logspace(logi, logu, 5) )
     if STATE_LEN == 1:
-      for totaldemand in totaldemand_l:
-      # for totaldemand in np.linspace(1, 300, 10):
-        qa_l = self.learner.get_a_q_l(state_(totaldemand) )
-        print("totaldemand= {}, qa_l= {}".format(totaldemand, qa_l) )
+      for D in D_l:
+      # for D in np.linspace(1, 300, 10):
+        qa_l = self.learner.get_a_q_l(state_(D) )
+        print("D= {}, qa_l= {}".format(D, qa_l) )
         blog(a=np.argmax(qa_l) )
     elif STATE_LEN == 3 or STATE_LEN == 5:
       for load1 in np.linspace(0, 0.9, 5):
         for load2 in np.linspace(load1, 1, 2):
-          for totaldemand in totaldemand_l:
-            qa_l = self.learner.get_a_q_l(state_(totaldemand, [load1, load2] ) )
-            print("load1= {}, load2= {}, totaldemand= {}, qa_l= {}".format(load1, load2, totaldemand, qa_l) )
+          for D in D_l:
+            qa_l = self.learner.get_a_q_l(state_(D, [load1, load2] ) )
+            print("load1= {}, load2= {}, D= {}, qa_l= {}".format(load1, load2, D, qa_l) )
             blog(a=np.argmax(qa_l) )
     elif STATE_LEN == 4 or STATE_LEN == 6:
-      for wload_l in [[0, 0, 0, 0, 0, 0], [0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.9, 0.9, 0.9, 0.9, 0.9, 0.9]]:
-        print(">> wload_l= {}".format(wload_l) )
-        for cluster_qlen in [0, 1, 2, 3, 10]:
-          for totaldemand in totaldemand_l:
-            qa_l = self.learner.get_a_q_l(state_(totaldemand, wload_l, cluster_qlen) )
-            print("cluster_qlen= {}, totaldemand= {}, qa_l= {}".format(cluster_qlen, totaldemand, qa_l) )
+      for wload_l in [[0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.9, 0.9, 0.9, 0.9, 0.9, 0.9]]:
+        print(">>> wload_l= {}".format(wload_l) )
+        for cluster_qlen in [0, 1, 2, 10]:
+          print(">> cluster_qlen= {}".format(cluster_qlen) )
+          for D in D_l:
+            qa_l = self.learner.get_a_q_l(state_(D, wload_l, cluster_qlen) )
+            print("D= {}, qa_l= {}".format(D, qa_l) )
             blog(a=np.argmax(qa_l) )
     print("----------------------------------------------------")
   

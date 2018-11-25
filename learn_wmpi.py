@@ -4,6 +4,7 @@ from mpi4py import MPI
 
 from rvs import *
 from scheduler import *
+from modeling import *
 
 def eval_wmpi(rank):
   log(INFO, "starting;", rank=rank)
@@ -60,7 +61,7 @@ def eval_wmpi(rank):
       scher = Scher(mapping_m, sching_m_l[eval_i] )
       # log(INFO, "simulating;", rank=rank, eval_i=eval_i, scher=scher)
       sys.stdout.flush()
-      t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher)
+      t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher, use_lessreal_sim)
       print("rank= {}, eval_i= {}, a_mean= {}, sl_mean= {}, load_mean= {}, droprate_mean= {}".format(rank, eval_i, np.mean(t_a_l), np.mean(t_sl_l), load_mean, droprate_mean) )
       
       sl_E_std = np.array([np.mean(t_sl_l), np.std(t_sl_l) ], dtype=np.float64)
@@ -75,7 +76,7 @@ def learn_wmpi(rank):
   
   if rank == 0:
     blog(sinfo_m=sinfo_m)
-    for i in range(L):
+    for i in range(nlearningsteps):
       scher.save(i)
       n_t_s_l, n_t_a_l, n_t_r_l, n_t_sl_l = np.zeros((N, T, s_len)), np.zeros((N, T, 1)), np.zeros((N, T, 1)), np.zeros((N, T, 1))
       for n in range(N):
@@ -103,7 +104,7 @@ def learn_wmpi(rank):
       if i % 10 == 0:
         scher.summarize()
       sys.stdout.flush()
-    scher.save(L)
+    scher.save(nlearningsteps)
     for p in range(1, num_mpiprocs):
       sim_step = np.array([-1], dtype='i')
       comm.Send([sim_step, MPI.INT], dest=p)
@@ -119,7 +120,7 @@ def learn_wmpi(rank):
         break
       
       scher.restore(sim_step)
-      t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher)
+      t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher, use_lessreal_sim)
       print("rank= {}, sim_step= {}, a_mean= {}, r_mean= {}, sl_mean= {}, load_mean= {}, droprate_mean= {}".format(rank, sim_step, np.mean(t_a_l), np.mean(t_r_l), np.mean(t_sl_l), load_mean, droprate_mean) )
       scher.learner.explorer.refine()
       comm.Send([t_s_l.flatten(), MPI.FLOAT], dest=0)
@@ -164,25 +165,46 @@ if __name__ == "__main__":
   num_mpiprocs = comm.Get_size()
   rank = comm.Get_rank()
   
-  sinfo_m = {
-    'njob': 2000*4, 'nworker': 6, 'wcap': 10,
-    'totaldemand_rv': TPareto(10, 1000, 1.1),
-    'demandperslot_mean_rv': TPareto(0.1, 5, 1),
-    'k_rv': DUniform(1, 1),
-    'straggle_m': {
-      'slowdown': slowdown,
-      'straggle_dur_rv': DUniform(20, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
-      'normal_dur_rv': DUniform(1, 1) } } # TPareto(1, 10, 1)
-  ar_ub = arrival_rate_upperbound(sinfo_m)
-  sinfo_m['ar'] = 2/5*ar_ub
-  mapping_m = {'type': 'spreading'}
-  sching_m = {'a': 1, 'N': num_mpiprocs-1}
-  # sching_m.update({
-  #   'learner': 'QLearner_wTargetNet_wExpReplay',
-  #   'exp_buffer_size': 10**2*10*10**3, 'exp_batch_size': 10*10**3} )
-  sching_m.update({'learner': 'QLearner_wTargetNet'} )
+  N, Cap = 20, 10
+  k = BZipf(1, 5) # DUniform(1, 1)
+  R = Uniform(1, 1)
   
-  L = 1000 # number of learning steps
+  mapping_m = {'type': 'spreading'}
+  sching_m = {
+    'a': 5, 'N': num_mpiprocs-1,
+    'learner': 'QLearner_wTargetNet'}
+  # 'learner': 'QLearner_wTargetNet_wExpReplay',
+  # 'exp_buffer_size': 10**2*10*10**3, 'exp_batch_size': 10*10**3
+  nlearningsteps = 1000 # number of learning steps
+  
+  use_lessreal_sim = True # False
+  if use_lessreal_sim:
+    b, beta = 10, 4
+    L = Pareto(b, beta) # TPareto(10, 10**6, 4)
+    a, alpha = 1, 3 # 1, 4
+    Sl = Pareto(a, alpha) # Uniform(1, 1)
+    def alpha_gen(ro):
+      return alpha
+    ro = 0.5
+    log(INFO, "ro= {}".format(ro) )
+    
+    sinfo_m = {
+      'njob': 2000*N, # 100*N,
+      'nworker': N, 'wcap': Cap, 'ar': ar_for_ro(ro, N, Cap, k, R, L, Sl),
+      'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L,
+      'straggle_m': {'slowdown': lambda load: Sl.sample() } }
+  else:
+    sinfo_m = {
+      'njob': 2000*4, 'nworker': 6, 'wcap': 10,
+      'totaldemand_rv': TPareto(10, 1000, 1.1),
+      'demandperslot_mean_rv': TPareto(0.1, 5, 1),
+      'k_rv': DUniform(1, 1),
+      'straggle_m': {
+        'slowdown': slowdown,
+        'straggle_dur_rv': DUniform(20, 100), # DUniform(100, 200) # TPareto(1, 1000, 1),
+        'normal_dur_rv': DUniform(1, 1) } } # TPareto(1, 10, 1)
+    ar_ub = arrival_rate_upperbound(sinfo_m)
+    sinfo_m['ar'] = 2/5*ar_ub
   
   # {'type': 'plain', 'a': 1},
   # {'type': 'opportunistic', 'mapping_type': 'spreading', 'a': 1}
@@ -191,7 +213,7 @@ if __name__ == "__main__":
     {'type': 'expand_if_totaldemand_leq', 'threshold': 20, 'a': 1},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1},
     {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 1} ]
-  eval_wmpi(rank)
+  # eval_wmpi(rank)
   
   learn_wmpi(rank)
   

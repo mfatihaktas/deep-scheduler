@@ -143,9 +143,7 @@ if __name__ == "__main__":
   sinfo_m = {
     'njob': 5000*N,
     'nworker': N, 'wcap': Cap, 'ar': ar,
-    'k_rv': k,
-    'reqed_rv': R,
-    'lifetime_rv': L,
+    'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L,
     'straggle_m': {'slowdown': lambda load: Sl.sample() } }
   mapping_m = {'type': 'spreading'}
   sching_m = {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold': None}

@@ -222,9 +222,9 @@ class Cluster_LessReal():
       j = yield self.store.get()
       
       while True:
-        s, r, w_l = self.scher.schedule(j, self.w_l, self)
-        if r == -1:
-          slog(DEBUG, self.env, self, "r= -1", j)
+        s, a, w_l = self.scher.schedule(j, self.w_l, self)
+        if a == -1:
+          slog(DEBUG, self.env, self, "a= -1", j)
           yield self.env.timeout(0.01)
         else:
           break
@@ -241,7 +241,7 @@ class Cluster_LessReal():
       self.jid_info_m[j._id].update({
         'expected_run_time': j.lifetime,
         'wid_l': wid_l,
-        's': s, 'r': r} )
+        's': s, 'a': a} )
   
   def put(self, j):
     slog(DEBUG, self.env, self, "received", j)
@@ -276,15 +276,16 @@ class Cluster_LessReal():
         slog(DEBUG, self.env, self, "finished jid= {}".format(t.jid), t)
         
         ## This causes (s1, a1, r1), (s2, a2, r2) to be interleaved by more than one job
-        self.njob_finished += 1
+        # self.njob_finished += 1
         # blog(njob_finished=self.njob_finished)
-        if self.njob_finished >= self.njob:
-          return
-        # if t.jid <= self.njob:
-        #   self.njob_finished += 1
-        #   # log(WARNING, "job completion;", jid=t.jid, njob=self.njob, njob_finished=self.njob_finished)
-        #   if self.njob_finished >= self.njob:
-        #     return
+        # if self.njob_finished >= self.njob:
+        #   return
+        
+        if t.jid <= self.njob:
+          self.njob_finished += 1
+          # log(WARNING, "job completion;", jid=t.jid, njob=self.njob, njob_finished=self.njob_finished)
+          if self.njob_finished >= self.njob:
+            return
   
   def put_c(self, t):
     slog(DEBUG, self.env, self, "received", t)

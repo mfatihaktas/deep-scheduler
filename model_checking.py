@@ -145,12 +145,6 @@ def plot_sim():
   plot.gcf().clear()
   log(INFO, "done.")
 
-# def ar_for_ro(ro, N, Cap, k, D, Sl):
-#   return ro*N*Cap/k.mean()/D.mean()/Sl.mean()
-
-def ar_for_ro(ro, N, Cap, k, R, L, Sl):
-  return ro*N*Cap/k.mean()/R.mean()/L.mean()/Sl.mean()
-
 def EW_MMc(ar, EX, c):
   ro = ar*EX/c
   C = 1/(1 + (1-ro)*G(c+1)/(c*ro)**c * sum([(c*ro)**k/G(k+1) for k in range(c) ] ) )
@@ -168,11 +162,11 @@ def plot_ET_wrt_d():
   R = Uniform(1, 1)
   b, beta = 10, 4
   L = Pareto(b, beta) # TPareto(10, 10**6, 4)
-  a, alpha = 1, 3 # 1, 4
+  a, alpha = 1, 10 # 1, 3
   Sl = Pareto(a, alpha) # Uniform(1, 1)
   def alpha_gen(ro):
     return alpha
-  ro = 0.65
+  ro = 0.6
   red, r = 'Coding', 2
   print("ro= {}".format(ro) )
   
@@ -244,7 +238,7 @@ def plot_ET_wrt_d():
   log(INFO, "done.")
 
 if __name__ == "__main__":
-  N, Cap = 10, 1
+  N, Cap = 10, 10
   b, beta = 10, 5
   a, alpha = 1, 1000 # 2
   k = BZipf(1, 1)
