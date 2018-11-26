@@ -116,8 +116,9 @@ class Cluster_wExpReplay(Cluster_LessReal if use_lessreal_sim else Cluster):
 
 def eval_scher(scher):
   print(">> scher= {}".format(scher) )
-  t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher)
+  t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher, use_lessreal_sim)
   print("a_mean= {}, sl_mean= {}, sl_std= {}, load_mean= {}, droprate_mean= {}".format(np.mean(t_a_l), np.mean(t_sl_l), np.std(t_sl_l), load_mean, droprate_mean) )
+  return t_sl_l
 
 def eval_sching_m_l():
   for sching_m in sching_m_l:
@@ -140,12 +141,22 @@ def slowdown(load):
   p = 0.4
   return random.uniform(0, 0.01) if random.uniform(0, 1) < p else 1
 
-def learn_w_experience_replay(sinfo_m, mapping_m, sching_m):
-  M = 1000
-  sching_m.update({
-    'learner': 'QLearner_wTargetNet_wExpReplay',
-    'exp_buffer_size': 100*M, 'exp_batch_size': M} )
-  # sching_m.update({'learner': 'QLearner_wTargetNet'} )
+def plot_scher_learned_vs_plain(learning_count):
+  scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay')
+  if not scher.restore(learning_count):
+    log(ERROR, "scher.restore failed;", learning_count=learning_count)
+    return
+  scher.summarize()
+  
+  eval_scher(scher)
+  sching_m_l = [
+    {'type': 'plain', 'a': 0},
+    {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 2},
+    {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 2} ]
+  for sm in sching_m_l:
+    eval_scher(Scher(mapping_m, sm) )
+
+def learn_w_experience_replay():
   scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay')
   log(INFO, "", sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
   
@@ -159,8 +170,12 @@ if __name__ == '__main__':
   N, Cap = 20, 10
   k = BZipf(1, 5) # DUniform(1, 1)
   R = Uniform(1, 1)
+  M = 1000
+  sching_m = {
+    'a': 3, 'N': -1,
+    'learner': 'QLearner_wTargetNet_wExpReplay',
+    'exp_buffer_size': 100*M, 'exp_batch_size': M}
   mapping_m = {'type': 'spreading'}
-  sching_m = {'a': 3, 'N': -1}
   
   log(INFO, "use_lessreal_sim= {}".format(use_lessreal_sim) )
   if use_lessreal_sim:
@@ -168,7 +183,7 @@ if __name__ == '__main__':
     L = Pareto(b, beta) # TPareto(10, 10**6, 4)
     a, alpha = 1, 3 # 1, 4
     Sl = Pareto(a, alpha) # Uniform(1, 1)
-    ro = 0.6
+    ro = 0.75
     log(INFO, "ro= {}".format(ro) )
     
     sinfo_m = {
@@ -195,5 +210,6 @@ if __name__ == '__main__':
     {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1} ]
   # eval_sching_m_l()
   
-  learn_w_experience_replay(sinfo_m, mapping_m, sching_m)
+  # learn_w_experience_replay()
+  plot_scher_learned_vs_plain(learning_count=960)
 
