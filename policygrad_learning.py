@@ -25,8 +25,8 @@ def rewards_to_qvals(t_r_l, gamma):
 
 # ####################################  Policy Gradient Learner  ################################# #
 class PolicyGradLearner(Learner):
-  def __init__(self, s_len, a_len, nn_len=10, w_actorcritic=False):
-    super().__init__(s_len, a_len, nn_len)
+  def __init__(self, s_len, a_len, nn_len=10, save_dir='save', w_actorcritic=False):
+    super().__init__(s_len, a_len, nn_len, save_dir)
     self.w_actorcritic = w_actorcritic
     
     self.v_ester = VEster(s_len, nn_len)

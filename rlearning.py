@@ -90,10 +90,11 @@ def evaluate(sinfo_m, scher):
 
 # #############################################  Learner  ###################################### #
 class Learner(object):
-  def __init__(self, s_len, a_len, nn_len):
+  def __init__(self, s_len, a_len, nn_len, save_dir='save'):
     self.s_len = s_len
     self.a_len = a_len
     self.nn_len = nn_len
+    self.save_dir = save_dir
     
     self.gamma = 0.99 # 0.9
     
@@ -101,12 +102,12 @@ class Learner(object):
     self.sess = None
   
   def save(self, step):
-    save_name = 'save/{}'.format(self)
+    save_name = '{}/{}'.format(self.save_dir, self)
     save_path = self.saver.save(self.sess, save_name, global_step=step)
     log(WARNING, "saved; ", save_path=save_path)
   
   def restore(self, step):
-    save_name = 'save/{}-{}'.format(self, step)
+    save_name = '{}/{}-{}'.format(self.save_dir, self, step)
     try:
       save_path = self.saver.restore(self.sess, save_name)
       # log(WARNING, "restored; ", save_path=save_path)

@@ -59,7 +59,7 @@ class Scher(object):
 
 # ###########################################  RLScher  ########################################## #
 class RLScher():
-  def __init__(self, sinfo_m, mapping_m, sching_m):
+  def __init__(self, sinfo_m, mapping_m, sching_m, save_dir='save'):
     self.sinfo_m = sinfo_m
     
     self.mapper = Mapper(mapping_m)
@@ -69,13 +69,13 @@ class RLScher():
     self.N, self.T = sching_m['N'], sinfo_m['njob']
     
     if sching_m['learner'] == 'PolicyGradLearner':
-      self.learner = PolicyGradLearner(self.s_len, self.a_len, nn_len=10, w_actorcritic=True)
+      self.learner = PolicyGradLearner(self.s_len, self.a_len, nn_len=10, save_dir=save_dir, w_actorcritic=True)
     elif sching_m['learner'] == 'QLearner':
-      self.learner = QLearner(self.s_len, self.a_len, nn_len=10)
+      self.learner = QLearner(self.s_len, self.a_len, nn_len=10, save_dir=save_dir)
     elif sching_m['learner'] == 'QLearner_wTargetNet':
-      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=10)
+      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=10, save_dir=save_dir)
     elif sching_m['learner'] == 'QLearner_wTargetNet_wExpReplay':
-      self.learner = QLearner_wTargetNet_wExpReplay(self.s_len, self.a_len, exp_buffer_size=sching_m['exp_buffer_size'], exp_batch_size=sching_m['exp_batch_size'], nn_len=10)
+      self.learner = QLearner_wTargetNet_wExpReplay(self.s_len, self.a_len, exp_buffer_size=sching_m['exp_buffer_size'], exp_batch_size=sching_m['exp_batch_size'], nn_len=10, save_dir=save_dir)
   
   def __repr__(self):
     return 'RLScher[learner= {}]'.format(self.learner)
@@ -99,7 +99,7 @@ class RLScher():
       u = 400*l
       i = u/10
     logl, logi, logu = math.log10(l), math.log10(i), math.log10(u)
-    D_l = list(np.logspace(0.1, logi, 5, endpoint=False) ) + list(np.logspace(logi, logu, 5) )
+    D_l = list(np.logspace(logl, logi, 5, endpoint=False) ) + list(np.logspace(logi, logu, 5) )
     if STATE_LEN == 1:
       for D in D_l:
       # for D in np.linspace(1, 300, 10):
@@ -162,7 +162,7 @@ class RLScher():
           alog("n= {}, avg_a= {}, avg_r= {}, avg_sl= {}".format(n, np.mean(t_a_l), np.mean(t_r_l), np.mean(t_sl_l) ) )
           n_t_s_l[n], n_t_a_l[n], n_t_r_l[n] = t_s_l, t_a_l, t_r_l
         self.learner.train_w_mult_trajs(n_t_s_l, n_t_a_l, n_t_r_l)
-        self.learner.save(i)
+        # self.learner.save(i)
 
 if __name__ == '__main__':
   sinfo_m = {

@@ -111,12 +111,12 @@ class UCBExplorer(Explorer):
 
 # ###########################################  Q Learning  ####################################### #
 class QLearner(Learner):
-  def __init__(self, s_len, a_len, nn_len=10):
-    super().__init__(s_len, a_len, nn_len)
+  def __init__(self, s_len, a_len, nn_len=10, save_dir='save'):
+    super().__init__(s_len, a_len, nn_len, save_dir)
     self.init()
     # self.explorer = EpsGreedyExplorer(a_len)
     self.explorer = UCBExplorer(a_len)
-    self.saver = tf.train.Saver(max_to_keep=5)
+    self.saver = tf.train.Saver(max_to_keep=2)
     
   def __repr__(self):
     return 'QLearner(s_len= {}, a_len= {}, explorer= {})'.format(self.s_len, self.a_len, self.explorer)
@@ -272,7 +272,8 @@ class DQNNet:
       N, T = sh[0], sh[1]
       indices = tf.range(0, N*T)*sh[2] + tf.reshape(self.a_ph, [-1] )
       self.resp_outputs = tf.reshape(tf.gather(tf.reshape(self.Qa_ph, [-1] ), indices), (N, T, 1) )
-      self.loss = tf.losses.mean_squared_error(self.resp_outputs, self.targetq_ph)
+      # self.loss = tf.losses.mean_squared_error(self.resp_outputs, self.targetq_ph)
+      self.loss = tf.losses.huber_loss(self.resp_outputs, self.targetq_ph)
       
       self.optimizer = tf.train.AdamOptimizer(LEARNING_RATE)
       self.train_op = self.optimizer.minimize(self.loss)
@@ -282,8 +283,8 @@ class DQNNet:
 
 NUM_TRAINING_BEFORE_QNET_TO_TARGET = 5
 class QLearner_wTargetNet(Learner):
-  def __init__(self, s_len, a_len, nn_len=10):
-    super().__init__(s_len, a_len, nn_len)
+  def __init__(self, s_len, a_len, nn_len=10, save_dir='save'):
+    super().__init__(s_len, a_len, nn_len, save_dir)
     self.q_net = DQNNet('QNet', s_len, a_len, nn_len)
     self.target_net = DQNNet('TargetNet', s_len, a_len, nn_len)
     self.num_training = 0
@@ -292,7 +293,7 @@ class QLearner_wTargetNet(Learner):
     
     self.sess = tf.Session()
     self.sess.run(tf.global_variables_initializer() )
-    self.saver = tf.train.Saver(max_to_keep=5)
+    self.saver = tf.train.Saver(max_to_keep=2)
   
   def __repr__(self):
     return 'QLearner_wTargetNet(s_len= {}, a_len= {}, explorer= {})'.format(self.s_len, self.a_len, self.explorer)
@@ -439,8 +440,8 @@ class ExpQueue(Queue):
       return []
 
 class QLearner_wTargetNet_wExpReplay(QLearner_wTargetNet):
-  def __init__(self, s_len, a_len, exp_buffer_size, exp_batch_size, nn_len=10):
-    super().__init__(s_len, a_len, nn_len)
+  def __init__(self, s_len, a_len, exp_buffer_size, exp_batch_size, nn_len=10, save_dir='save'):
+    super().__init__(s_len, a_len, nn_len, save_dir)
     self.exp_buffer_size = exp_buffer_size
     self.exp_batch_size = exp_batch_size
     

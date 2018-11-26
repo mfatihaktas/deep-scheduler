@@ -168,7 +168,6 @@ if __name__ == "__main__":
   N, Cap = 20, 10
   k = BZipf(1, 5) # DUniform(1, 1)
   R = Uniform(1, 1)
-  
   mapping_m = {'type': 'spreading'}
   sching_m = {
     'a': 5, 'N': num_mpiprocs-1,
@@ -183,9 +182,7 @@ if __name__ == "__main__":
     L = Pareto(b, beta) # TPareto(10, 10**6, 4)
     a, alpha = 1, 3 # 1, 4
     Sl = Pareto(a, alpha) # Uniform(1, 1)
-    def alpha_gen(ro):
-      return alpha
-    ro = 0.5
+    ro = 0.6
     log(INFO, "ro= {}".format(ro) )
     
     sinfo_m = {

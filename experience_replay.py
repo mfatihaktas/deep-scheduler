@@ -2,9 +2,11 @@ import random
 
 from sim_objs import *
 from scheduler import *
+from modeling import *
 
 # ###################################  Cluster_wExpReplay  ####################################### #
-class Cluster_wExpReplay(Cluster):
+use_lessreal_sim = True # False
+class Cluster_wExpReplay(Cluster_LessReal if use_lessreal_sim else Cluster):
   def __init__(self, env, nworker, wcap, straggle_m, scher, M, **kwargs):
     super().__init__(env, float('Inf'), nworker, wcap, straggle_m, scher)
     self.M = M # number of (s, a, r, snext, anext) to collect per training
@@ -15,11 +17,10 @@ class Cluster_wExpReplay(Cluster):
     self.waitfor_njob = M
     self.last_sched_jid = None
     
-    self.exp_q = ExpQueue(100*M, M)
     self.learning_count = 0
   
   def __repr__(self):
-    return 'wExpReplay!_' + super()
+    return super() + '_wExpReplay!'
   
   def run(self):
     while True:
@@ -37,19 +38,18 @@ class Cluster_wExpReplay(Cluster):
       wid_l = []
       for i, w in enumerate(w_l):
         type_ = 's' if i+1 <= j.k else 'r'
-        w.put(Task(i+1, j._id, j.reqed, j.demandperslot_rv, j.totaldemand, j.k, type_) )
+        if use_lessreal_sim:
+          w.put(Task_LessReal(i+1, j._id, j.reqed, j.lifetime, j.k, type_) )
+        else:
+          w.put(Task(i+1, j._id, j.reqed, j.demandperslot_rv, j.totaldemand, j.k, type_) )
+        yield self.env.timeout(0.0001)
         wid_l.append(w._id)
       
       self.jid__t_l_m[j._id] = []
       self.jid_info_m[j._id].update({
-        'expected_run_time': j.totaldemand/j.demandperslot_rv.mean(),
+        'expected_run_time': j.lifetime if use_lessreal_sim else j.totaldemand/j.demandperslot_rv.mean(),
         'wid_l': wid_l,
         's': s, 'a': a} )
-  
-  def put(self, j):
-    slog(DEBUG, self.env, self, "received", j)
-    j.arrival_time = self.env.now
-    return self.store.put(j)
   
   def run_c(self):
     while True:
@@ -97,7 +97,7 @@ class Cluster_wExpReplay(Cluster):
             
             # Train
             print(">> learning_count= {}".format(self.learning_count) )
-            log(INFO, "a_mean= {}, sl_mean= {}, sl_std= {}, load_mean= {}".format(np.mean(t_a_l), np.mean(t_sl_l), np.std(t_sl_l), np.mean([w.avg_load for w in self.w_l] ) ) )
+            log(INFO, "a_mean= {}, sl_mean= {}, sl_std= {}, load_mean= {}".format(np.mean(t_a_l), np.mean(t_sl_l), np.std(t_sl_l), np.mean([w.avg_load() for w in self.w_l] ) ) )
             self.scher.learner.train_w_mult_trajs(np.array([t_s_l]), np.array([t_a_l]), np.array([t_r_l]) )
             
             self.waitforjid_begin = self.last_sched_jid + 1 # + self.M
@@ -107,11 +107,12 @@ class Cluster_wExpReplay(Cluster):
             self.learning_count += 1
             if self.learning_count % 10 == 0:
               self.scher.summarize()
-            if self.learning_count % 30 == 0:
-              print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-              eval_scher(self.scher)
-              # eval_sching_m_l()
-              print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+              self.scher.save(self.learning_count)
+            # if self.learning_count % 30 == 0:
+            #   print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            #   eval_scher(self.scher)
+            #   # eval_sching_m_l()
+            #   print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 
 def eval_scher(scher):
   print(">> scher= {}".format(scher) )
@@ -123,7 +124,7 @@ def eval_sching_m_l():
     eval_scher(Scher(mapping_m, sching_m) )
 
 def reward(slowdown):
-  return -slowdown
+  return -slowdown**2
 
 def slowdown(load):
   '''
@@ -145,32 +146,48 @@ def learn_w_experience_replay(sinfo_m, mapping_m, sching_m):
     'learner': 'QLearner_wTargetNet_wExpReplay',
     'exp_buffer_size': 100*M, 'exp_batch_size': M} )
   # sching_m.update({'learner': 'QLearner_wTargetNet'} )
-  scher = RLScher(sinfo_m, mapping_m, sching_m)
-  N, T, s_len = scher.N, scher.T, scher.s_len
-  log(INFO, "starting;", scher=scher)
+  scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay')
+  log(INFO, "", sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
   
   env = simpy.Environment()
   cl = Cluster_wExpReplay(env, scher=scher, M=M, **sinfo_m)
-  jg = JobGen(env, out=cl, **sinfo_m)
+  jg = JobGen_LessReal(env, out=cl, **sinfo_m) if use_lessreal_sim else JobGen(env, out=cl, **sinfo_m) 
   env.run(until=cl.wait_for_alljobs)
   log(INFO, "done.")
 
 if __name__ == '__main__':
-  sinfo_m = {
-    'njob': 10000, 'nworker': 6, 'wcap': 10,
-    'totaldemand_rv': TPareto(10, 1000, 1.1),
-    'demandperslot_mean_rv': TPareto(0.1, 5, 1),
-    'k_rv': DUniform(1, 1),
-    'straggle_m': {
-      'slowdown': slowdown,
-      'straggle_dur_rv': DUniform(10, 100),
-      'normal_dur_rv': DUniform(1, 1) } }
-  ar_ub = arrival_rate_upperbound(sinfo_m)
-  sinfo_m['ar'] = 2/5*ar_ub
+  N, Cap = 20, 10
+  k = BZipf(1, 5) # DUniform(1, 1)
+  R = Uniform(1, 1)
   mapping_m = {'type': 'spreading'}
-  sching_m = {'a': 1, 'N': -1}
+  sching_m = {'a': 3, 'N': -1}
   
-  blog(sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
+  log(INFO, "use_lessreal_sim= {}".format(use_lessreal_sim) )
+  if use_lessreal_sim:
+    b, beta = 10, 4
+    L = Pareto(b, beta) # TPareto(10, 10**6, 4)
+    a, alpha = 1, 3 # 1, 4
+    Sl = Pareto(a, alpha) # Uniform(1, 1)
+    ro = 0.6
+    log(INFO, "ro= {}".format(ro) )
+    
+    sinfo_m = {
+      'njob': 2000*N, # 100*N,
+      'nworker': N, 'wcap': Cap, 'ar': ar_for_ro(ro, N, Cap, k, R, L, Sl),
+      'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L,
+      'straggle_m': {'slowdown': lambda load: Sl.sample() } }
+  else:
+    sinfo_m = {
+      'njob': 10000, 'nworker': 5, 'wcap': 10,
+      'totaldemand_rv': TPareto(10, 1000, 1.1),
+      'demandperslot_mean_rv': TPareto(0.1, 5, 1),
+      'k_rv': DUniform(1, 1),
+      'straggle_m': {
+        'slowdown': slowdown,
+        'straggle_dur_rv': DUniform(10, 100),
+        'normal_dur_rv': DUniform(1, 1) } }
+    ar_ub = arrival_rate_upperbound(sinfo_m)
+    sinfo_m['ar'] = 2/5*ar_ub
   
   sching_m_l = [
     {'type': 'plain', 'a': 0},
