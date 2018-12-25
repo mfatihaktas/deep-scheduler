@@ -67,13 +67,15 @@ class UCBExplorer(Explorer):
   
   def discretize_state(self, s):
     jtotaldemand = int(math.floor(s[0]/self.jtotaldemand_step)*self.jtotaldemand_step)
-    if STATE_LEN == 4:
-      cluster_qlen = s[1]
+    cluster_qlen = s[1]
+    if STATE_LEN == 3:
+      mean_wload = round(math.floor(s[2]/self.wload_step)*self.wload_step, 1)
+      return (jtotaldemand, cluster_qlen, mean_wload)
+    elif STATE_LEN == 4:
       mean_wload = round(math.floor(s[2]/self.wload_step)*self.wload_step, 1)
       std_wload = round(math.floor(s[3]/self.wload_step)*self.wload_step, 1)
       return (jtotaldemand, cluster_qlen, mean_wload, std_wload)
     elif STATE_LEN == 6:
-      cluster_qlen = s[1]
       min_wload = round(math.floor(s[2]/self.wload_step)*self.wload_step, 1)
       max_wload = round(math.floor(s[3]/self.wload_step)*self.wload_step, 1)
       mean_wload = round(math.floor(s[4]/self.wload_step)*self.wload_step, 1)
@@ -99,7 +101,7 @@ class UCBExplorer(Explorer):
     
     _a = np.argmax(a_q_l)
     for a, nvisit in a_nvisit_m.items():
-      a_q_l[a] += 10*math.sqrt(2*math.log(total_nvisit)/nvisit)
+      a_q_l[a] += 2*math.sqrt(2*math.log(total_nvisit)/nvisit) # 10*
     
     a = np.argmax(a_q_l)
     a_nvisit_m[a] += 1
@@ -147,9 +149,6 @@ class QLearner(Learner):
     self.explorer.refine()
     self.num_training += 1
     log(INFO, "{}:: loss= {}".format(self.__class__.__name__, loss), num_training=self.num_training)
-    if self.num_training % NUM_TRAINING_BEFORE_QNET_TO_TARGET == 0:
-      self.sess.run(self.update_target_graph() )
-      log(INFO, "updated TargetNet with QNet!")
   
   def train_w_sarsa_l(self, sarsa_l):
     if len(sarsa_l) == 0:
@@ -298,7 +297,7 @@ class QLearner_wTargetNet(Learner):
   def __repr__(self):
     return 'QLearner_wTargetNet(s_len= {}, a_len= {}, explorer= {})'.format(self.s_len, self.a_len, self.explorer)
   
-  def update_target_graph(self):
+  def update_target_net(self):
     from_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'QNet')
     to_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'TargetNet')
   
@@ -306,15 +305,15 @@ class QLearner_wTargetNet(Learner):
     # Update TargetNet parameters with QNet parameters
     for from_var, to_var in zip(from_vars, to_vars):
       op_holder.append(to_var.assign(from_var) )
-    return op_holder
+    self.sess.run(op_holder)
+    log(INFO, "<< updated TargetNet with QNet >>\n")
   
   def end_of_train(self, loss):
     self.explorer.refine()
     self.num_training += 1
     log(INFO, "{}:: loss= {}".format(self.__class__.__name__, loss), num_training=self.num_training)
     if self.num_training % NUM_TRAINING_BEFORE_QNET_TO_TARGET == 0:
-      self.sess.run(self.update_target_graph() )
-      log(INFO, "updated TargetNet with QNet!\n")
+      self.update_target_net()
   
   def train_w_sarsa_l(self, sarsa_l):
     T = len(sarsa_l)
@@ -329,7 +328,8 @@ class QLearner_wTargetNet(Learner):
       
       a_q_l = self.sess.run(self.target_net.Qa_ph,
                             feed_dict={self.target_net.s_ph: [[snext]] } )[0][0]
-      t_targetq_l[t, :] = r + self.gamma*max(a_q_l)
+      t_targetq_l[t, :] = r + self.gamma*max(a_q_l) # Q-learning
+      # t_targetq_l[t, :] = r + self.gamma*a_q_l[sarsa[4] ] # SARSA
     
     loss, _ = self.sess.run([self.q_net.loss, self.q_net.train_op],
                             feed_dict={self.q_net.s_ph: [t_s_l],

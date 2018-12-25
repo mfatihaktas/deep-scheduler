@@ -127,34 +127,37 @@ def eval_sching_m_l():
 def reward(slowdown):
   return -slowdown**2
 
-def slowdown(load):
-  '''
-  base_Pr_straggling = 0.4
-  threshold = 0.2
-  if load < threshold:
-    return random.uniform(0, 0.1) if random.uniform(0, 1) < base_Pr_straggling else 1
-  else:
-    p_max = 0.7
-    p = base_Pr_straggling + (p_max - base_Pr_straggling)/(math.e**(1-threshold) - 1) * (math.e**(load-threshold) - 1)
-    return random.uniform(0, 0.1) if random.uniform(0, 1) < p else 1
-  '''
-  p = 0.4
-  return random.uniform(0, 0.01) if random.uniform(0, 1) < p else 1
-
-def plot_scher_learned_vs_plain(learning_count):
-  scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay')
-  if not scher.restore(learning_count):
-    log(ERROR, "scher.restore failed;", learning_count=learning_count)
-    return
-  scher.summarize()
+def plot_scher_learned_vs_plain(ro):
+  def plot_(sl_l, label):
+    x_l = sorted(sl_l, reverse=True)
+    y_l = np.arange(len(x_l) )/len(x_l)
+    plot.step(x_l, y_l, label=label, color=next(darkcolor_c), marker=next(marker_c), linestyle=':', mew=0)
   
-  eval_scher(scher)
-  sching_m_l = [
-    {'type': 'plain', 'a': 0},
-    {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 2},
-    {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 2} ]
-  for sm in sching_m_l:
-    eval_scher(Scher(mapping_m, sm) )
+  scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist')
+  scher.restore(ro__learning_count_m[ro] )
+  
+  scher.summarize()
+  sl_l = eval_scher(scher)
+  a = sching_m['a']
+  plot_(sl_l, label='Redundant-DRL, a= {}'.format(a) )
+  
+  for s_m in sching_m_l:
+    sl_l = eval_scher(Scher(mapping_m, s_m) )
+    plot_(sl_l, label=s_m['label'] )
+  
+  prettify(plot.gca() )
+  fontsize = 14
+  plot.legend(loc='best', framealpha=0.5, fontsize=12)
+  plot.xscale('log')
+  plot.yscale('log')
+  plot.xlabel('x', fontsize=fontsize)
+  plot.ylabel('Pr{Slowdown > x}', fontsize=fontsize)
+  plot.title(r'$N= {}$, $Cap= {}$, $\rho_0= {}$'.format(N, Cap, ro) + '\n' \
+    + r'$k \sim${}, $L \sim${}, $Sl \sim${}'.format(k.to_latex(), L.to_latex(), Sl.to_latex() ) )
+  plot.gca().title.set_position([.5, 1.05] )
+  plot.gcf().set_size_inches(7, 5)
+  plot.savefig('plot_scher_learned_vs_plain_ro{}.png'.format(ro), bbox_inches='tight')
+  plot.gcf().clear()
 
 def learn_w_experience_replay():
   scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay')
@@ -172,7 +175,7 @@ if __name__ == '__main__':
   R = Uniform(1, 1)
   M = 1000
   sching_m = {
-    'a': 3, 'N': -1,
+    'a': 3, 'N': -1, # repeat for a=5
     'learner': 'QLearner_wTargetNet_wExpReplay',
     'exp_buffer_size': 100*M, 'exp_batch_size': M}
   mapping_m = {'type': 'spreading'}
@@ -183,33 +186,47 @@ if __name__ == '__main__':
     L = Pareto(b, beta) # TPareto(10, 10**6, 4)
     a, alpha = 1, 3 # 1, 4
     Sl = Pareto(a, alpha) # Uniform(1, 1)
-    ro = 0.75
+    ro = 0.85 # 0.3 # 0.5 # 0.6 # 0.75 # 0.85
     log(INFO, "ro= {}".format(ro) )
     
     sinfo_m = {
-      'njob': 2000*N, # 100*N,
+      'njob': 2000*N, # 10*N,
       'nworker': N, 'wcap': Cap, 'ar': ar_for_ro(ro, N, Cap, k, R, L, Sl),
       'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L,
       'straggle_m': {'slowdown': lambda load: Sl.sample() } }
   else:
     sinfo_m = {
-      'njob': 10000, 'nworker': 5, 'wcap': 10,
+      'njob': 2000*N,
+      'nworker': 5, 'wcap': 10,
       'totaldemand_rv': TPareto(10, 1000, 1.1),
       'demandperslot_mean_rv': TPareto(0.1, 5, 1),
       'k_rv': DUniform(1, 1),
       'straggle_m': {
-        'slowdown': slowdown,
+        'slowdown': lambda load: random.uniform(0, 0.01) if random.uniform(0, 1) < 0.4 else 1,
         'straggle_dur_rv': DUniform(10, 100),
         'normal_dur_rv': DUniform(1, 1) } }
     ar_ub = arrival_rate_upperbound(sinfo_m)
     sinfo_m['ar'] = 2/5*ar_ub
   
+  # {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 3, 'label': r'Redundant-$D \leq$1000, a=3'}
+  a = sching_m['a']
   sching_m_l = [
-    {'type': 'plain', 'a': 0},
-    {'type': 'expand_if_totaldemand_leq', 'threshold': 20, 'a': 1},
-    {'type': 'expand_if_totaldemand_leq', 'threshold': 100, 'a': 1} ]
+    {'type': 'plain', 'a': 0, 'label': 'Redundant-none'},
+    {'type': 'plain', 'a': a, 'label': 'Redundant-all, a= {}'.format(a) } ]
   # eval_sching_m_l()
   
   # learn_w_experience_replay()
-  plot_scher_learned_vs_plain(learning_count=960)
-
+  
+  # ro__learning_count_m = {
+  #   0.3: 1910,
+  #   0.5: 590,
+  #   0.6: 720,
+  #   0.75: 960,
+  #   0.85: 1290}
+  ro__learning_count_m = {
+    0.3: 170,
+    0.5: None,
+    0.6: 280,
+    0.75: 520,
+    0.85: 840}
+  plot_scher_learned_vs_plain(ro)

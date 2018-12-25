@@ -133,10 +133,10 @@ def plot_ET_wrt_d():
   plot.errorbar(d_l, sim_ET_l, yerr=sim_StdT_l, label='Sim', c=next(darkcolor_c), marker=next(marker_c), ls=':')
   plot.plot(d_l, ET_wMGc_l, label='M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':')
   plot.plot(d_l, approx_ET_wMGc_l, label='Asymptotic M/G/c model', c=next(darkcolor_c), marker=next(marker_c), ls=':')
-  fontsize = 14
-  prettify(plot.gca() )
-  plot.legend(loc='best', framealpha=0.5, fontsize=12)
   plot.xscale('log')
+  prettify(plot.gca() )
+  fontsize = 14
+  plot.legend(loc='best', framealpha=0.5, fontsize=12)
   plot.xlabel('d', fontsize=fontsize)
   plot.ylabel('E[T]', fontsize=fontsize)
   
@@ -149,14 +149,29 @@ def plot_ET_wrt_d():
   fig.clear()
   log(INFO, "done.")
 
+# #############################  Learning plots  ############################# #
+def plot_Esl_vs_ro():
+  ro_l = []
+  
+
+
+RedAll_ro__Esl_l_m = {
+  0.3: [],
+  0.5: [],
+  0.6: [],
+  0.75: [],
+  0.85: [] }
+
+
+
 if __name__ == "__main__":
   N, Cap = 20, 10
-  k = BZipf(1, 5) # DUniform(1, 1)
+  k = BZipf(1, 5)
   R = Uniform(1, 1)
   b, beta = 10, 4
-  L = Pareto(b, beta) # TPareto(10, 10**6, 4)
-  a, alpha = 1, 3 # 1, 4
-  Sl = Pareto(a, alpha) # Uniform(1, 1)
+  L = Pareto(b, beta)
+  a, alpha = 1, 3
+  Sl = Pareto(a, alpha)
   def alpha_gen(ro):
     return alpha
   

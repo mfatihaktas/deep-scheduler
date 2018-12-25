@@ -29,6 +29,7 @@ elif [ $1 = 's' ]; then
   $PY sim_exp.py
   # $PY scheduler.py
 elif [ $1 = 'e' ]; then
+  rm save_expreplay/*
   $PY experience_replay.py
   # nohup $PY experience_replay.py > experience_replay.out 2>&1 &
 elif [ $1 = 'r' ]; then

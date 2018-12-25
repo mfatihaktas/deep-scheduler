@@ -35,7 +35,12 @@ class Scher(object):
     return None, a, w_l[:j.n]
   
   def expand_if_totaldemand_leq(self, j, w_l, cluster):
-    expand = True if j.totaldemand < self.sching_m['threshold'] else False
+    try:
+      D = j.totaldemand
+    except AttributeError: # use_lessreal_sim = True
+      D = j.k*j.reqed*j.lifetime
+    
+    expand = True if D < self.sching_m['threshold'] else False
     return self.plain(j, w_l, cluster, expand)
   
   def opportunistic(self, j, w_l, cluster):
@@ -106,14 +111,7 @@ class RLScher():
         qa_l = self.learner.get_a_q_l(state_(D) )
         print("D= {}, qa_l= {}".format(D, qa_l) )
         blog(a=np.argmax(qa_l) )
-    elif STATE_LEN == 3 or STATE_LEN == 5:
-      for load1 in np.linspace(0, 0.9, 5):
-        for load2 in np.linspace(load1, 1, 2):
-          for D in D_l:
-            qa_l = self.learner.get_a_q_l(state_(D, [load1, load2] ) )
-            print("load1= {}, load2= {}, D= {}, qa_l= {}".format(load1, load2, D, qa_l) )
-            blog(a=np.argmax(qa_l) )
-    elif STATE_LEN == 4 or STATE_LEN == 6:
+    elif 3 <= STATE_LEN <= 6:
       for wload_l in [[0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.9, 0.9, 0.9, 0.9, 0.9, 0.9]]:
         print(">>> wload_l= {}".format(wload_l) )
         for cluster_qlen in [0, 1, 2, 10]:

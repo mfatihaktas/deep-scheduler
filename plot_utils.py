@@ -13,10 +13,10 @@ NICE_GREEN = '#99ff99'
 NICE_ORANGE = '#ffcc99'
 
 nicecolor_c = itertools.cycle((NICE_BLUE, NICE_RED, NICE_GREEN, NICE_ORANGE))
-darkcolor_c = itertools.cycle(('green', 'red', 'blue', 'goldenrod', 'magenta', 'purple', 'gray', 'brown', 'turquoise', 'gold', 'olive', 'silver', 'rosybrown', 'plum', 'lightsteelblue', 'lightpink', 'orange', 'darkgray', 'orangered'))
+darkcolor_c = itertools.cycle(('green', 'red', 'blue', 'gray', 'magenta', 'goldenrod', 'purple', 'brown', 'turquoise', 'gold', 'olive', 'silver', 'rosybrown', 'plum', 'lightsteelblue', 'lightpink', 'orange', 'darkgray', 'orangered'))
 lightcolor_c = itertools.cycle(('silver', 'rosybrown', 'plum', 'lightsteelblue', 'lightpink', 'orange', 'turquoise'))
 linestyle_c = itertools.cycle(('-', '--', '-.', ':') )
-marker_c = itertools.cycle(('^', 'p', 'd', '+', 'v', '<', '>', '1' , '2', '3', '4', 'x') )
+marker_c = itertools.cycle(('^', 'p', 'd', 'v', '<', '>', '1', '2', '3', '4', 'x', '+') )
 skinnym_l = ['x', '+', '1', '2', '3', '4']
 
 def prettify(ax):

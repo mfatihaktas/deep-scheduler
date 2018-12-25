@@ -7,7 +7,7 @@ if [ $1 = 'i' ]; then
   module load intel/16.0.3 mvapich2/2.1
   # source ~/tensorflow/bin/activate
 elif [ $1 = 'r' ]; then
-  FILE='learn_wmpi' # 'eval_wmpi'
+  FILE='eval_wmpi' # 'learn_wmpi'
   NTASKS=11
   echo "#!/bin/bash
 #SBATCH --partition=main             # Partition (job queue)

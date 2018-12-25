@@ -7,20 +7,22 @@ from sim_objs import *
 from sim_objs_lessreal import *
 
 LEARNING_RATE = 0.01 # 0.0001
-STATE_LEN = 6 # 4
+STATE_LEN = 3 # 6 # 4
 def state(j, wload_l=None, cluster=None):
   try:
     D = j.totaldemand # j.k
   except AttributeError:
     D = j.k*j.reqed*j.lifetime
+  
   if STATE_LEN == 1:
     return [D]
   elif STATE_LEN == 3:
-    return [D, min(wload_l), max(wload_l) ]
+    return [D, len(cluster.store.items), np.mean(wload_l) ]
     # return [D, np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 4:
     # return [D, len(cluster.store.items), min(wload_l), max(wload_l) ]
     return [D, len(cluster.store.items), np.mean(wload_l), np.std(wload_l) ]
+    # return [j.k, j.lifetime, len(cluster.store.items), np.mean(wload_l) ]
   elif STATE_LEN == 5:
     return [D, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 6:
@@ -30,7 +32,7 @@ def state_(jtotaldemand, wload_l=None, cluster_qlen=None):
   if STATE_LEN == 1:
     return [jtotaldemand]
   elif STATE_LEN == 3:
-    return [jtotaldemand, min(wload_l), max(wload_l) ]
+    return [jtotaldemand, cluster_qlen, np.mean(wload_l) ]
   elif STATE_LEN == 4:
     return [jtotaldemand, cluster_qlen, np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 5:
