@@ -31,7 +31,10 @@ class Scher(object):
       return None, -1, None
     
     a = self.sching_m['a'] if expand else 0
-    j.n = min(int(j.k + a), len(w_l) )
+    # j.n = min(int(j.k + a), len(w_l) )
+    j.n = int(j.k + a)
+    if len(w_l) < j.n:
+      return None, -1, None
     return None, a, w_l[:j.n]
   
   def expand_if_totaldemand_leq(self, j, w_l, cluster):
@@ -130,6 +133,8 @@ class RLScher():
     s = state(j, [w.sched_load() for w in cluster.w_l], cluster)
     a = self.learner.get_random_action(s)
     j.n = int(j.k + a)
+    if len(w_l) < j.n:
+      return None, -1, None
     return s, a, w_l[:j.n]
   
   def train(self, nsteps):

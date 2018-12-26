@@ -10,38 +10,41 @@ def eval_wmpi(rank):
   if rank == 0:
     blog(sinfo_m=sinfo_m)
     ro__scheri__Esl_l_l_m = {}
+    ro__scheri__std_l_l_m = {}
   sys.stdout.flush()
   
   for ro in ro_l:
     sinfo_m['ar'] = ar_for_ro(ro, N, Cap, k, R, L, Sl)
     if rank == 0:
-      scheri__Esl_l_l = []
+      scheri__Esl_l_l, scheri__std_l_l = [], []
       for i, scher in enumerate(scher_l):
-        log(INFO, "Master will send for scher_i= {}".format(i) )
-        sys.stdout.flush()
-        
+        # log(INFO, "Master will send for scher_i= {}".format(i) )
+        # sys.stdout.flush()
         for p in range(1, num_mpiprocs):
           scher_i = np.array([i], dtype='i')
           comm.Send([scher_i, MPI.INT], dest=p)
         
-        Esl_l = []
+        Esl_l, std_l = [], []
         for p in range(1, num_mpiprocs):
-          Esl = np.empty(1, dtype=np.float64)
-          comm.Recv(Esl, source=p)
-          Esl_l.append(Esl)
-        log(INFO, "Master; ro= {}".format(ro), scher=scher, Esl_l=Esl_l)
+          Esl_std = np.empty(2, dtype=np.float64)
+          comm.Recv(Esl_std, source=p)
+          Esl_l.append(Esl_std[0] )
+          std_l.append(Esl_std[1] )
+        log(INFO, "Master; ro= {}".format(ro), scher=scher, Esl_l=Esl_l, std_l=std_l)
         sys.stdout.flush()
         scheri__Esl_l_l.append(Esl_l)
+        scheri__std_l_l.append(std_l)
       ro__scheri__Esl_l_l_m[ro] = scheri__Esl_l_l
-      time.sleep(2)
+      ro__scheri__std_l_l_m[ro] = scheri__std_l_l
+      # time.sleep(2)
         
       for p in range(1, num_mpiprocs):
         scher_i = np.array([-1], dtype='i')
         comm.Send([scher_i, MPI.INT], dest=p)
         print("Sent req scher_i= {} to p= {}".format(scher_i, p) )
     else:
-      log(INFO, "rank= {} waiting for Master".format(rank) )
-      sys.stdout.flush()
+      # log(INFO, "rank= {} waiting for Master".format(rank) )
+      # sys.stdout.flush()
       while True:
         scher_i = np.empty(1, dtype='i')
         comm.Recv([scher_i, MPI.INT], source=0)
@@ -57,11 +60,11 @@ def eval_wmpi(rank):
         t_s_l, t_a_l, t_r_l, t_sl_l, load_mean, droprate_mean = sample_traj(sinfo_m, scher, lessreal_sim)
         log(INFO, "rank= {}".format(rank), load_mean=load_mean, scher=scher)
         
-        Esl = np.array([np.mean(t_sl_l) ], dtype=np.float64)
-        comm.Send([Esl, MPI.FLOAT], dest=0)
+        Esl_std = np.array([np.mean(t_sl_l), np.std(t_sl_l) ], dtype=np.float64)
+        comm.Send([Esl_std, MPI.FLOAT], dest=0)
         sys.stdout.flush()
   if rank == 0:
-    blog(scher_l=scher_l, ro__scheri__Esl_l_l_m=ro__scheri__Esl_l_l_m)
+    blog(scher_l=scher_l, ro__scheri__Esl_l_l_m=ro__scheri__Esl_l_l_m, ro__scheri__std_l_l_m=ro__scheri__std_l_l_m)
 
 if __name__ == "__main__":
   comm = MPI.COMM_WORLD
@@ -73,7 +76,7 @@ if __name__ == "__main__":
   R = Uniform(1, 1)
   M = 1000
   sching_m = {
-    'a': 5, 'N': -1,
+    'a': 3, 'N': -1,
     'learner': 'QLearner_wTargetNet_wExpReplay',
     'exp_buffer_size': 100*M, 'exp_batch_size': M}
   mapping_m = {'type': 'spreading'}
@@ -87,7 +90,7 @@ if __name__ == "__main__":
     Sl = Pareto(a, alpha)
     
     sinfo_m = {
-      'njob': 10*N, # 3000*N,
+      'njob': 2000*N, # 10*N,
       'nworker': N, 'wcap': Cap, 'ar': None,
       'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L,
       'straggle_m': {'slowdown': lambda load: Sl.sample() } }
@@ -113,7 +116,7 @@ if __name__ == "__main__":
     0.85: None}
   
   # ro_l = [0.3, 0.5, 0.6, 0.75, 0.85]
-  ro_l = [0.75, 0.85]
+  ro_l = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
   # scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist')
   scher_l = [
     # scher, 
