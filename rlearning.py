@@ -7,32 +7,49 @@ from sim_objs import *
 from sim_objs_lessreal import *
 
 LEARNING_RATE = 0.01 # 0.0001
-STATE_LEN = 3 # 6 # 4
+STATE_LEN = 3 # 2
+
+# from experience_replay import L, k
+# D_min, D_max = k.l_l*L.l_l, k.u_l*L.u_l
+# blog(D_min=D_min, D_max=D_max)
+# def normalize_jdemand(D):
+#   # return float(D - D_min)/(D_max - D_min) - 0.5
+#   return D/D_max
+
 def state(j, wload_l=None, cluster=None):
   try:
     D = j.totaldemand # j.k
   except AttributeError:
     D = j.k*j.reqed*j.lifetime
+    # D = normalize_jdemand(j.k*j.reqed*j.lifetime)
   
   if STATE_LEN == 1:
     return [D]
+  elif STATE_LEN == 2:
+    # return [D, np.mean(wload_l) ]
+    return [D, j.wait_time]
   elif STATE_LEN == 3:
-    return [D, len(cluster.store.items), np.mean(wload_l) ]
+    # return [D, len(cluster.store.items), np.mean(wload_l) ]
     # return [D, np.mean(wload_l), np.std(wload_l) ]
+    return [j.k, j.lifetime, j.wait_time]
   elif STATE_LEN == 4:
     # return [D, len(cluster.store.items), min(wload_l), max(wload_l) ]
     return [D, len(cluster.store.items), np.mean(wload_l), np.std(wload_l) ]
-    # return [j.k, j.lifetime, len(cluster.store.items), np.mean(wload_l) ]
   elif STATE_LEN == 5:
     return [D, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 6:
     return [D, len(cluster.store.items), min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
 
-def state_(jtotaldemand, wload_l=None, cluster_qlen=None):
+def state_(jtotaldemand=None, jk=None, jlifetime=None, jwait_time=None, wload_l=None, cluster_qlen=None):
+  # jtotaldemand = normalize_jdemand(jtotaldemand)
   if STATE_LEN == 1:
     return [jtotaldemand]
+  elif STATE_LEN == 2:
+    # return [jtotaldemand, np.mean(wload_l) ]
+    return [jtotaldemand, jwait_time]
   elif STATE_LEN == 3:
-    return [jtotaldemand, cluster_qlen, np.mean(wload_l) ]
+    # return [jtotaldemand, cluster_qlen, np.mean(wload_l) ]
+    return [jk, jlifetime, jwait_time]
   elif STATE_LEN == 4:
     return [jtotaldemand, cluster_qlen, np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 5:

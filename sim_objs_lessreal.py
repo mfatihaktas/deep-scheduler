@@ -28,6 +28,8 @@ class Job_LessReal(object):
     self.reqed = reqed
     self.lifetime = lifetime
     
+    self.wait_time = None
+    
   def __repr__(self):
     return "Job_LessReal[id= {}, k= {}, reqed= {}, lifetime= {}]".format(self._id, self.k, self.reqed, self.lifetime)
 
@@ -222,6 +224,8 @@ class Cluster_LessReal():
       j = yield self.store.get()
       
       while True:
+        j.wait_time = self.env.now - j.arrival_time
+        
         s, a, w_l = self.scher.schedule(j, self.w_l, self)
         if a == -1:
           slog(DEBUG, self.env, self, "a= -1", j)

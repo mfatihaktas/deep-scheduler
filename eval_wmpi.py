@@ -72,7 +72,7 @@ if __name__ == "__main__":
   rank = comm.Get_rank()
   
   N, Cap = 20, 10
-  k = BZipf(1, 5)
+  k = BZipf(1, 10)
   R = Uniform(1, 1)
   M = 1000
   sching_m = {

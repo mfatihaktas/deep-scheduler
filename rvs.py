@@ -215,8 +215,8 @@ class TPareto(RV): # Truncated
   def __repr__(self):
     return "TPareto(l= {}, u= {}, a= {})".format(self.l, self.u, self.a)
   
-  def tolatex(self):
-    return r'TPareto(\min= {}, \max= {}, \alpha= {})'.format(self.l, self.u, self.a)
+  def to_latex(self):
+    return r'TPareto($\min= {}$, $\max= {}$, $\alpha= {}$)'.format(self.l, self.u, self.a)
   
   def pdf(self, x):
     if x < self.l: return 0
@@ -563,7 +563,7 @@ def binomial(n, k):
 def mean(X, given_X_leq_x=None, x=None):
   return moment(X, 1, given_X_leq_x, x)
 
-def moment(X, i=1, given_X_leq_x=None, x=None):
+def moment(X, i, given_X_leq_x=None, x=None):
   EXi = X.moment(i)
   if given_X_leq_x is None:
     return EXi

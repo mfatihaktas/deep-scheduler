@@ -53,8 +53,9 @@ class UCBExplorer(Explorer):
     
     self.s_a_nvisit_m = {}
     
-    self.jtotaldemand_step = 5
+    self.jtotaldemand_step = 10 # 0
     self.wload_step = 0.1
+    self.waittime_step = 1
     
     self.a_for_uncertain_q = Queue(1000)
   
@@ -68,9 +69,19 @@ class UCBExplorer(Explorer):
   def discretize_state(self, s):
     jtotaldemand = int(math.floor(s[0]/self.jtotaldemand_step)*self.jtotaldemand_step)
     cluster_qlen = s[1]
-    if STATE_LEN == 3:
-      mean_wload = round(math.floor(s[2]/self.wload_step)*self.wload_step, 1)
-      return (jtotaldemand, cluster_qlen, mean_wload)
+    if STATE_LEN == 2:
+      # mean_wload = round(math.floor(s[1]/self.wload_step)*self.wload_step, 1)
+      # return (jtotaldemand, mean_wload)
+      wait_time = int(math.floor(s[1]/self.waittime_step)*self.waittime_step)
+      return (jtotaldemand, wait_time)
+    elif STATE_LEN == 3:
+      # mean_wload = round(math.floor(s[2]/self.wload_step)*self.wload_step, 1)
+      # return (jtotaldemand, cluster_qlen, mean_wload)
+      
+      k = s[0]
+      lifetime = int(math.floor(s[1]/self.jtotaldemand_step)*self.jtotaldemand_step)
+      wait_time = int(math.floor(s[2]/self.waittime_step)*self.waittime_step)
+      return (k, lifetime, wait_time)
     elif STATE_LEN == 4:
       mean_wload = round(math.floor(s[2]/self.wload_step)*self.wload_step, 1)
       std_wload = round(math.floor(s[3]/self.wload_step)*self.wload_step, 1)
@@ -86,6 +97,7 @@ class UCBExplorer(Explorer):
   
   def get_action(self, s, a_q_l):
     disc_s = self.discretize_state(s)
+    # print("disc_s= {}".format(disc_s) )
     if disc_s not in self.s_a_nvisit_m:
       self.s_a_nvisit_m[disc_s] = {a: 0 for a in range(self.a_len) }
     a_nvisit_m = self.s_a_nvisit_m[disc_s]
@@ -101,7 +113,7 @@ class UCBExplorer(Explorer):
     
     _a = np.argmax(a_q_l)
     for a, nvisit in a_nvisit_m.items():
-      a_q_l[a] += 2*math.sqrt(2*math.log(total_nvisit)/nvisit) # 10*
+      a_q_l[a] += 10*math.sqrt(2*math.log(total_nvisit)/nvisit) # 10*
     
     a = np.argmax(a_q_l)
     a_nvisit_m[a] += 1
@@ -280,7 +292,7 @@ class DQNNet:
   def __repr__(self):
     return 'DQNNet(name= {}, s_len= {}, a_len= {})'.format(self.name, self.s_len, self.a_len)
 
-NUM_TRAINING_BEFORE_QNET_TO_TARGET = 5
+NUM_TRAINING_BEFORE_QNET_TO_TARGET = 20 # 5
 class QLearner_wTargetNet(Learner):
   def __init__(self, s_len, a_len, nn_len=10, save_dir='save'):
     super().__init__(s_len, a_len, nn_len, save_dir)

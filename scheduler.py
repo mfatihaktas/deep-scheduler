@@ -66,6 +66,7 @@ class Scher(object):
     return None, 1, w_l_[:int(j.k + self.sching_m['a'] ) ]
 
 # ###########################################  RLScher  ########################################## #
+NN_len = 10
 class RLScher():
   def __init__(self, sinfo_m, mapping_m, sching_m, save_dir='save'):
     self.sinfo_m = sinfo_m
@@ -77,13 +78,13 @@ class RLScher():
     self.N, self.T = sching_m['N'], sinfo_m['njob']
     
     if sching_m['learner'] == 'PolicyGradLearner':
-      self.learner = PolicyGradLearner(self.s_len, self.a_len, nn_len=10, save_dir=save_dir, w_actorcritic=True)
+      self.learner = PolicyGradLearner(self.s_len, self.a_len, nn_len=NN_len, save_dir=save_dir, w_actorcritic=True)
     elif sching_m['learner'] == 'QLearner':
-      self.learner = QLearner(self.s_len, self.a_len, nn_len=10, save_dir=save_dir)
+      self.learner = QLearner(self.s_len, self.a_len, nn_len=NN_len, save_dir=save_dir)
     elif sching_m['learner'] == 'QLearner_wTargetNet':
-      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=10, save_dir=save_dir)
+      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=NN_len, save_dir=save_dir)
     elif sching_m['learner'] == 'QLearner_wTargetNet_wExpReplay':
-      self.learner = QLearner_wTargetNet_wExpReplay(self.s_len, self.a_len, exp_buffer_size=sching_m['exp_buffer_size'], exp_batch_size=sching_m['exp_batch_size'], nn_len=10, save_dir=save_dir)
+      self.learner = QLearner_wTargetNet_wExpReplay(self.s_len, self.a_len, exp_buffer_size=sching_m['exp_buffer_size'], exp_batch_size=sching_m['exp_batch_size'], nn_len=NN_len, save_dir=save_dir)
   
   def __repr__(self):
     return 'RLScher[learner= {}]'.format(self.learner)
@@ -104,7 +105,7 @@ class RLScher():
       R = self.sinfo_m['reqed_rv']
       L = self.sinfo_m['lifetime_rv']
       l = R.l_l*L.l_l
-      u = 400*l
+      u = 500*l
       i = u/10
     logl, logi, logu = math.log10(l), math.log10(i), math.log10(u)
     D_l = list(np.logspace(logl, logi, 5, endpoint=False) ) + list(np.logspace(logi, logu, 5) )
@@ -114,15 +115,32 @@ class RLScher():
         qa_l = self.learner.get_a_q_l(state_(D) )
         print("D= {}, qa_l= {}".format(D, qa_l) )
         blog(a=np.argmax(qa_l) )
-    elif 3 <= STATE_LEN <= 6:
-      for wload_l in [[0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.9, 0.9, 0.9, 0.9, 0.9, 0.9]]:
-        print(">>> wload_l= {}".format(wload_l) )
-        for cluster_qlen in [0, 1, 2, 10]:
-          print(">> cluster_qlen= {}".format(cluster_qlen) )
-          for D in D_l:
-            qa_l = self.learner.get_a_q_l(state_(D, wload_l, cluster_qlen) )
-            print("D= {}, qa_l= {}".format(D, qa_l) )
+    elif STATE_LEN == 2:
+      # for wload_l in [[0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.9, 0.9, 0.9, 0.9, 0.9, 0.9] ]:
+      #   print(">>> wload_l= {}".format(wload_l) )
+      for jwait_time in [0, 10, 1000]:
+        print(">> jwait_time= {}".format(jwait_time) )
+        for D in D_l:
+          # qa_l = self.learner.get_a_q_l(state_(D, wload_l, cluster_qlen=0) )
+          qa_l = self.learner.get_a_q_l(state_(D, jwait_time) )
+          print("D= {}, qa_l= {}".format(D, qa_l) )
+          blog(a=np.argmax(qa_l) )
+    elif STATE_LEN == 3:
+      for wait_time in [0, 10]:
+        for k in [1, 3, 7]:
+          for lifetime in [20, 100, 1000]:
+            qa_l = self.learner.get_a_q_l(state_(jk=k, jlifetime=lifetime, jwait_time=wait_time) )
+            print("wait_time= {}, k= {}, lifetime= {}; qa_l= {}".format(wait_time, k, lifetime, qa_l) )
             blog(a=np.argmax(qa_l) )
+    # elif 3 <= STATE_LEN <= 6:
+    #   for wload_l in [[0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.9, 0.9, 0.9, 0.9, 0.9, 0.9] ]:
+    #     print(">>> wload_l= {}".format(wload_l) )
+    #     for cluster_qlen in [0, 1, 2, 10]:
+    #       print(">> cluster_qlen= {}".format(cluster_qlen) )
+    #       for D in D_l:
+    #         qa_l = self.learner.get_a_q_l(state_(D, wload_l, cluster_qlen) )
+    #         print("D= {}, qa_l= {}".format(D, qa_l) )
+    #         blog(a=np.argmax(qa_l) )
     print("----------------------------------------------------")
   
   def schedule(self, j, w_l, cluster):
@@ -131,6 +149,8 @@ class RLScher():
       return None, -1, None
     # s = state(j, [w.sched_load() for w in w_l], cluster)
     s = state(j, [w.sched_load() for w in cluster.w_l], cluster)
+    # log(INFO, "s= {}".format(s) )
+    
     a = self.learner.get_random_action(s)
     j.n = int(j.k + a)
     if len(w_l) < j.n:
