@@ -66,7 +66,7 @@ class Scher(object):
     return None, 1, w_l_[:int(j.k + self.sching_m['a'] ) ]
 
 # ###########################################  RLScher  ########################################## #
-NN_len = 10
+NN_len = 20 # 10
 class RLScher():
   def __init__(self, sinfo_m, mapping_m, sching_m, save_dir='save'):
     self.sinfo_m = sinfo_m
@@ -116,21 +116,20 @@ class RLScher():
         print("D= {}, qa_l= {}".format(D, qa_l) )
         blog(a=np.argmax(qa_l) )
     elif STATE_LEN == 2:
-      # for wload_l in [[0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.9, 0.9, 0.9, 0.9, 0.9, 0.9] ]:
-      #   print(">>> wload_l= {}".format(wload_l) )
-      for jwait_time in [0, 10, 1000]:
-        print(">> jwait_time= {}".format(jwait_time) )
+      for Eload in [0.1, 0.5, 0.9]:
         for D in D_l:
-          # qa_l = self.learner.get_a_q_l(state_(D, wload_l, cluster_qlen=0) )
-          qa_l = self.learner.get_a_q_l(state_(D, jwait_time) )
-          print("D= {}, qa_l= {}".format(D, qa_l) )
+          qa_l = self.learner.get_a_q_l(state_(jtotaldemand=D, wload_l=[Eload]) )
+          print("Eload= {}, D= {}, qa_l= {}".format(Eload, D, qa_l) )
           blog(a=np.argmax(qa_l) )
     elif STATE_LEN == 3:
-      for wait_time in [0, 10]:
+      # for wait_time in [0, 100, 1000, 100000]:
+      for Eload in [0.1, 0.5, 0.9]:
         for k in [1, 3, 7]:
-          for lifetime in [20, 100, 1000]:
-            qa_l = self.learner.get_a_q_l(state_(jk=k, jlifetime=lifetime, jwait_time=wait_time) )
-            print("wait_time= {}, k= {}, lifetime= {}; qa_l= {}".format(wait_time, k, lifetime, qa_l) )
+          for lifetime in [20, 1000, 10000]:
+            # qa_l = self.learner.get_a_q_l(state_(jk=k, jlifetime=lifetime, wait_time=wait_time) )
+            # print("wait_time= {}, k= {}, lifetime= {}; qa_l= {}".format(wait_time, k, lifetime, qa_l) )
+            qa_l = self.learner.get_a_q_l(state_(jk=k, jlifetime=lifetime, wload_l=[Eload] ) )
+            print("Eload= {}, k= {}, lifetime= {}; qa_l= {}".format(Eload, k, lifetime, qa_l) )
             blog(a=np.argmax(qa_l) )
     # elif 3 <= STATE_LEN <= 6:
     #   for wload_l in [[0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.9, 0.9, 0.9, 0.9, 0.9, 0.9] ]:

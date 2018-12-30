@@ -359,7 +359,8 @@ def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
       ro_ = c*ro
       # Prqing = 1/(1 + (1-ro)*G(c+1)/ro_**c * sum([ro_**i/G(i+1) for i in range(c) ] ) )
       c_times_ro__power_c = math.exp(c*math.log(c*ro) )
-      Prqing = 1/(1 + (1-ro) * math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
+      # Prqing = 1/(1 + (1-ro) * math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
+      Prqing = 1/(1 + (1-ro) * c*math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
       
       # EN = ro/(1-ro)*Prqing + c*ro
       # log(INFO, "ro= {}, Prqing= {}".format(ro, Prqing) )

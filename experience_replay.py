@@ -185,7 +185,7 @@ def learn_w_experience_replay():
 N, Cap = 20, 10
 k = BZipf(1, 10) # DUniform(1, 1)
 R = Uniform(1, 1)
-M = 100 # 0
+M = 1000
 sching_m = {
   'a': 3, 'N': -1, # repeat for a=5
   'learner': 'QLearner_wTargetNet_wExpReplay',
@@ -194,11 +194,11 @@ mapping_m = {'type': 'spreading'}
 
 log(INFO, "use_lessreal_sim= {}".format(use_lessreal_sim) )
 if use_lessreal_sim:
-  b, beta = 10, 2
-  L = TPareto(10, 10**5, 2) # Pareto(b, beta) # TPareto(10, 10**6, 4)
+  b, beta = 10, 3 # 2
+  L = Pareto(b, beta) # TPareto(10, 10**5, 2) # TPareto(10, 10**6, 4)
   a, alpha = 1, 3 # 1, 4
   Sl = Pareto(a, alpha) # Uniform(1, 1)
-  ro = 0.8 # 0.6 # 0.9
+  ro = 0.7 # 0.5 # 0.6 # 0.9
   log(INFO, "ro= {}".format(ro) )
   
   sinfo_m = {
@@ -231,14 +231,14 @@ ro__learning_count_m = {
   0.2: None,
   0.3: None,
   0.4: None,
-  0.5: None,
+  0.5: 425,
   0.6: None,
-  0.7: None,
-  0.8: 310,
-  0.9: None}
+  0.7: 530,
+  0.8: 1550,
+  0.9: 280}
 
 if __name__ == '__main__':
   # eval_sching_m_l()
-  # learn_w_experience_replay()
+  learn_w_experience_replay()
   
-  plot_scher_learned_vs_plain(ro)
+  # plot_scher_learned_vs_plain(ro)

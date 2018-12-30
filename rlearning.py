@@ -6,15 +6,31 @@ from log_utils import *
 from sim_objs import *
 from sim_objs_lessreal import *
 
-LEARNING_RATE = 0.01 # 0.0001
-STATE_LEN = 3 # 2
+LEARNING_RATE = 0.01 # 0.01 # 0.0001
+STATE_LEN = 2 # 3
 
-# from experience_replay import L, k
+from experience_replay import L, k
 # D_min, D_max = k.l_l*L.l_l, k.u_l*L.u_l
 # blog(D_min=D_min, D_max=D_max)
 # def normalize_jdemand(D):
 #   # return float(D - D_min)/(D_max - D_min) - 0.5
 #   return D/D_max
+
+EL, EL2 = L.mean(), L.moment(2)
+StdL = math.sqrt(EL2 - EL**2)
+def normalize_lifetime(l):
+  return (l - EL)/StdL
+
+Ek, Ek2 = k.mean(), k.moment(2)
+Stdk = math.sqrt(Ek2 - Ek**2)
+def normalize_k(k):
+  return (k - Ek)/Stdk
+
+ED = EL*Ek
+ED2 = EL2*Ek2
+StdD = math.sqrt(ED2 - ED**2)
+def normalize_D(d):
+  return (d - ED)/StdD
 
 def state(j, wload_l=None, cluster=None):
   try:
@@ -27,11 +43,12 @@ def state(j, wload_l=None, cluster=None):
     return [D]
   elif STATE_LEN == 2:
     # return [D, np.mean(wload_l) ]
-    return [D, j.wait_time]
+    # return [D, j.wait_time]
+    return [normalize_D(D), np.mean(wload_l) ]
   elif STATE_LEN == 3:
     # return [D, len(cluster.store.items), np.mean(wload_l) ]
-    # return [D, np.mean(wload_l), np.std(wload_l) ]
-    return [j.k, j.lifetime, j.wait_time]
+    # return [j.k, normalize_lifetime(j.lifetime), j.wait_time]
+    return [normalize_k(j.k), normalize_lifetime(j.lifetime), np.mean(wload_l) ]
   elif STATE_LEN == 4:
     # return [D, len(cluster.store.items), min(wload_l), max(wload_l) ]
     return [D, len(cluster.store.items), np.mean(wload_l), np.std(wload_l) ]
@@ -46,10 +63,12 @@ def state_(jtotaldemand=None, jk=None, jlifetime=None, jwait_time=None, wload_l=
     return [jtotaldemand]
   elif STATE_LEN == 2:
     # return [jtotaldemand, np.mean(wload_l) ]
-    return [jtotaldemand, jwait_time]
+    # return [jtotaldemand, jwait_time]
+    return [normalize_D(jtotaldemand), np.mean(wload_l) ]
   elif STATE_LEN == 3:
     # return [jtotaldemand, cluster_qlen, np.mean(wload_l) ]
-    return [jk, jlifetime, jwait_time]
+    # return [jk, normalize_lifetime(jlifetime), jwait_time]
+    return [normalize_k(jk), normalize_lifetime(jlifetime), np.mean(wload_l) ]
   elif STATE_LEN == 4:
     return [jtotaldemand, cluster_qlen, np.mean(wload_l), np.std(wload_l) ]
   elif STATE_LEN == 5:
@@ -70,8 +89,8 @@ def sample_traj(sinfo_m, scher, use_lessreal_sim=False):
     # else:
     #   return -slowdown
     
-    # return -slowdown
-    return -slowdown**2
+    return -slowdown
+    # return -slowdown**2
   
   env = simpy.Environment()
   if use_lessreal_sim:

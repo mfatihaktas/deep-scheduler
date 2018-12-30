@@ -240,7 +240,7 @@ def plot_ET_wrt_d():
 if __name__ == "__main__":
   N, Cap = 10, 10
   b, beta = 10, 5
-  a, alpha = 1, 1000 # 2
+  a, alpha = 1, 2
   k = BZipf(1, 1)
   r = 1
   # log(INFO, "", k=k, r=r, b=b, beta=beta, a=a, alpha=alpha)

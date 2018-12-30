@@ -54,8 +54,8 @@ class UCBExplorer(Explorer):
     self.s_a_nvisit_m = {}
     
     self.jtotaldemand_step = 10 # 0
-    self.wload_step = 0.1
-    self.waittime_step = 1
+    self.wload_step = 0.05
+    self.waittime_step = 10
     
     self.a_for_uncertain_q = Queue(1000)
   
@@ -72,16 +72,21 @@ class UCBExplorer(Explorer):
     if STATE_LEN == 2:
       # mean_wload = round(math.floor(s[1]/self.wload_step)*self.wload_step, 1)
       # return (jtotaldemand, mean_wload)
-      wait_time = int(math.floor(s[1]/self.waittime_step)*self.waittime_step)
-      return (jtotaldemand, wait_time)
+      # wait_time = int(math.floor(s[1]/self.waittime_step)*self.waittime_step)
+      jtotaldemand = round(s[0], 1)
+      mean_wload = round(s[1], 1)
+      # log(INFO, "jtotaldemand= {}, mean_wload= {}".format(jtotaldemand, mean_wload), s=s)
+      return (jtotaldemand, mean_wload)
     elif STATE_LEN == 3:
       # mean_wload = round(math.floor(s[2]/self.wload_step)*self.wload_step, 1)
       # return (jtotaldemand, cluster_qlen, mean_wload)
       
-      k = s[0]
-      lifetime = int(math.floor(s[1]/self.jtotaldemand_step)*self.jtotaldemand_step)
-      wait_time = int(math.floor(s[2]/self.waittime_step)*self.waittime_step)
-      return (k, lifetime, wait_time)
+      k = round(s[0], 1)
+      lifetime = s[1] // 5
+      # wait_time = int(math.floor(s[2]/self.waittime_step)*self.waittime_step)
+      mean_wload = round(s[2], 1)
+      # return (k, lifetime, wait_time)
+      return (k, lifetime, mean_wload)
     elif STATE_LEN == 4:
       mean_wload = round(math.floor(s[2]/self.wload_step)*self.wload_step, 1)
       std_wload = round(math.floor(s[3]/self.wload_step)*self.wload_step, 1)
@@ -113,7 +118,7 @@ class UCBExplorer(Explorer):
     
     _a = np.argmax(a_q_l)
     for a, nvisit in a_nvisit_m.items():
-      a_q_l[a] += 10*math.sqrt(2*math.log(total_nvisit)/nvisit) # 10*
+      a_q_l[a] += 5*math.sqrt(2*math.log(total_nvisit)/nvisit) # 10*
     
     a = np.argmax(a_q_l)
     a_nvisit_m[a] += 1
