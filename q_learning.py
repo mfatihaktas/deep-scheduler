@@ -299,8 +299,8 @@ class DQNNet:
 
 NUM_TRAINING_BEFORE_QNET_TO_TARGET = 20 # 5
 class QLearner_wTargetNet(Learner):
-  def __init__(self, s_len, a_len, nn_len=10, save_dir='save'):
-    super().__init__(s_len, a_len, nn_len, save_dir)
+  def __init__(self, s_len, a_len, nn_len=10, save_dir='save', save_suffix=None):
+    super().__init__(s_len, a_len, nn_len, save_dir, save_suffix)
     self.q_net = DQNNet('QNet', s_len, a_len, nn_len)
     self.target_net = DQNNet('TargetNet', s_len, a_len, nn_len)
     self.num_training = 0
@@ -353,6 +353,7 @@ class QLearner_wTargetNet(Learner):
                                        self.q_net.a_ph: [t_a_l],
                                        self.q_net.targetq_ph: [t_targetq_l] } )
     self.end_of_train(loss)
+    return loss
   
   def train_w_mult_trajs(self, n_t_s_l, n_t_a_l, n_t_r_l):
     N = len(n_t_s_l)
@@ -457,8 +458,8 @@ class ExpQueue(Queue):
       return []
 
 class QLearner_wTargetNet_wExpReplay(QLearner_wTargetNet):
-  def __init__(self, s_len, a_len, exp_buffer_size, exp_batch_size, nn_len=10, save_dir='save'):
-    super().__init__(s_len, a_len, nn_len, save_dir)
+  def __init__(self, s_len, a_len, exp_buffer_size, exp_batch_size, nn_len=10, save_dir='save', save_suffix=None):
+    super().__init__(s_len, a_len, nn_len, save_dir, save_suffix)
     self.exp_buffer_size = exp_buffer_size
     self.exp_batch_size = exp_batch_size
     
@@ -484,5 +485,5 @@ class QLearner_wTargetNet_wExpReplay(QLearner_wTargetNet):
     sarsa_l = []
     for _ in range(10):
       sarsa_l.extend(self.exp_q.sample_batch() )
-    self.train_w_sarsa_l(sarsa_l)
+    return self.train_w_sarsa_l(sarsa_l)
   

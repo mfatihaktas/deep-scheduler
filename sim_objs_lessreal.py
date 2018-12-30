@@ -294,30 +294,3 @@ class Cluster_LessReal():
   def put_c(self, t):
     slog(DEBUG, self.env, self, "received", t)
     return self.store_c.put(t)
-
-# ############################################  Scher  ########################################### #
-class Scher_wMultiplicativeExpansion(object):
-  def __init__(self, mapping_m, sching_m):
-    self.sching_m = sching_m
-    self.mapper = Mapper(mapping_m)
-    
-    if sching_m['type'] == 'plain':
-      self.schedule = self.plain
-    elif sching_m['type'] == 'expand_if_totaldemand_leq':
-      self.schedule = self.expand_if_totaldemand_leq
-  
-  def __repr__(self):
-    return 'Scher_wMultiplicativeExpansion[sching_m={}, mapper= {}]'.format(self.sching_m, self.mapper)
-  
-  def plain(self, j, w_l, cluster, expand=True):
-    r = self.sching_m['r'] if expand else 1
-    j.n = int(j.k*r)
-    w_l = self.mapper.worker_l(j, w_l)
-    if len(w_l) < j.n:
-      return None, -1, None
-    return None, r, w_l[:j.n]
-  
-  def expand_if_totaldemand_leq(self, j, w_l, cluster):
-    expand = True if j.k*j.reqed*j.lifetime < self.sching_m['threshold'] else False
-    return self.plain(j, w_l, cluster, expand)
-  

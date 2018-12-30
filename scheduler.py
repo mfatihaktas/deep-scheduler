@@ -65,10 +65,36 @@ class Scher(object):
       return None, -1, None
     return None, 1, w_l_[:int(j.k + self.sching_m['a'] ) ]
 
+# #################################  Scher_wMultiplicativeExpansion  ############################# #
+class Scher_wMultiplicativeExpansion(object):
+  def __init__(self, mapping_m, sching_m):
+    self.sching_m = sching_m
+    self.mapper = Mapper(mapping_m)
+    
+    if sching_m['type'] == 'plain':
+      self.schedule = self.plain
+    elif sching_m['type'] == 'expand_if_totaldemand_leq':
+      self.schedule = self.expand_if_totaldemand_leq
+  
+  def __repr__(self):
+    return 'Scher_wMultiplicativeExpansion[sching_m={}, mapper= {}]'.format(self.sching_m, self.mapper)
+  
+  def plain(self, j, w_l, cluster, expand=True):
+    r = self.sching_m['r'] if expand else 1
+    j.n = int(j.k*r)
+    w_l = self.mapper.worker_l(j, w_l)
+    if len(w_l) < j.n:
+      return None, -1, None
+    return None, r, w_l[:j.n]
+  
+  def expand_if_totaldemand_leq(self, j, w_l, cluster):
+    expand = True if j.k*j.reqed*j.lifetime < self.sching_m['threshold'] else False
+    return self.plain(j, w_l, cluster, expand)
+
 # ###########################################  RLScher  ########################################## #
 NN_len = 20 # 10
 class RLScher():
-  def __init__(self, sinfo_m, mapping_m, sching_m, save_dir='save'):
+  def __init__(self, sinfo_m, mapping_m, sching_m, save_dir='save', save_suffix=None):
     self.sinfo_m = sinfo_m
     
     self.mapper = Mapper(mapping_m)
@@ -78,13 +104,13 @@ class RLScher():
     self.N, self.T = sching_m['N'], sinfo_m['njob']
     
     if sching_m['learner'] == 'PolicyGradLearner':
-      self.learner = PolicyGradLearner(self.s_len, self.a_len, nn_len=NN_len, save_dir=save_dir, w_actorcritic=True)
+      self.learner = PolicyGradLearner(self.s_len, self.a_len, nn_len=NN_len, w_actorcritic=True, save_dir=save_dir, save_suffix=save_suffix)
     elif sching_m['learner'] == 'QLearner':
-      self.learner = QLearner(self.s_len, self.a_len, nn_len=NN_len, save_dir=save_dir)
+      self.learner = QLearner(self.s_len, self.a_len, nn_len=NN_len, save_dir=save_dir, save_suffix=save_suffix)
     elif sching_m['learner'] == 'QLearner_wTargetNet':
-      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=NN_len, save_dir=save_dir)
+      self.learner = QLearner_wTargetNet(self.s_len, self.a_len, nn_len=NN_len, save_dir=save_dir, save_suffix=save_suffix)
     elif sching_m['learner'] == 'QLearner_wTargetNet_wExpReplay':
-      self.learner = QLearner_wTargetNet_wExpReplay(self.s_len, self.a_len, exp_buffer_size=sching_m['exp_buffer_size'], exp_batch_size=sching_m['exp_batch_size'], nn_len=NN_len, save_dir=save_dir)
+      self.learner = QLearner_wTargetNet_wExpReplay(self.s_len, self.a_len, exp_buffer_size=sching_m['exp_buffer_size'], exp_batch_size=sching_m['exp_batch_size'], nn_len=NN_len, save_dir=save_dir, save_suffix=save_suffix)
   
   def __repr__(self):
     return 'RLScher[learner= {}]'.format(self.learner)

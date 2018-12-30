@@ -18,6 +18,10 @@ class Cluster_wExpReplay(Cluster_LessReal if use_lessreal_sim else Cluster):
     self.last_sched_jid = None
     
     self.learning_count = 0
+    
+    self.Er_l = []
+    self.Esl_l = []
+    self.loss_l = []
   
   def __repr__(self):
     return super() + '_wExpReplay!'
@@ -99,7 +103,12 @@ class Cluster_wExpReplay(Cluster_LessReal if use_lessreal_sim else Cluster):
             # Train
             print(">> learning_count= {}".format(self.learning_count) )
             log(INFO, "a_mean= {}, sl_mean= {}, sl_std= {}, load_mean= {}".format(np.mean(t_a_l), np.mean(t_sl_l), np.std(t_sl_l), np.mean([w.avg_load() for w in self.w_l] ) ) )
-            self.scher.learner.train_w_mult_trajs(np.array([t_s_l]), np.array([t_a_l]), np.array([t_r_l]) )
+            loss = self.scher.learner.train_w_mult_trajs(np.array([t_s_l]), np.array([t_a_l]), np.array([t_r_l]) )
+            
+            self.Er_l.append(np.mean(t_r_l) )
+            self.Esl_l.append(np.mean(t_sl_l) )
+            self.loss_l.append(loss)
+            log(INFO, "Er_l= {}\nEsl_l= {}\nloss_l= {}".format(self.Er_l, self.Esl_l, self.loss_l) )
             
             # self.waitforjid_begin = self.last_sched_jid + 1 # + self.M
             # self.waitforjid_end = self.waitforjid_begin + self.M-1
@@ -173,7 +182,7 @@ def plot_scher_learned_vs_plain(ro):
   plot.gcf().clear()
 
 def learn_w_experience_replay():
-  scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay')
+  scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay', save_suffix='ro{}'.format(ro) )
   log(INFO, "", sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
   
   env = simpy.Environment()
@@ -198,7 +207,7 @@ if use_lessreal_sim:
   L = Pareto(b, beta) # TPareto(10, 10**5, 2) # TPareto(10, 10**6, 4)
   a, alpha = 1, 3 # 1, 4
   Sl = Pareto(a, alpha) # Uniform(1, 1)
-  ro = 0.7 # 0.5 # 0.6 # 0.9
+  ro = 0.8
   log(INFO, "ro= {}".format(ro) )
   
   sinfo_m = {

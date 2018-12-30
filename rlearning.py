@@ -102,7 +102,11 @@ def sample_traj(sinfo_m, scher, use_lessreal_sim=False):
   env.run(until=cl.wait_for_alljobs)
   
   T = sinfo_m['njob']
-  t_s_l, t_a_l, t_r_l, t_sl_l = np.zeros((T, scher.s_len)), np.zeros((T, 1)), np.zeros((T, 1)), np.zeros((T, 1))
+  try:
+    s_len = scher.s_len
+  except AttributeError:
+    s_len = STATE_LEN
+  t_s_l, t_a_l, t_r_l, t_sl_l = np.zeros((T, s_len)), np.zeros((T, 1)), np.zeros((T, 1)), np.zeros((T, 1))
   
   # t = 0
   # for jid, jinfo_m in sorted(cl.jid_info_m.items(), key=itemgetter(0) ):
@@ -120,6 +124,31 @@ def sample_traj(sinfo_m, scher, use_lessreal_sim=False):
          np.mean([w.avg_load() for w in cl.w_l] ), \
          0 # sum([1 for _, jinfo_m in cl.jid_info_m.items() if 'fate' in jinfo_m and jinfo_m['fate'] == 'dropped'] )/len(cl.jid_info_m)
 
+def sample_sim(sinfo_m, scher, use_lessreal_sim=False):
+  env = simpy.Environment()
+  if use_lessreal_sim:
+    cl = Cluster_LessReal(env, scher=scher, **sinfo_m)
+    jg = JobGen_LessReal(env, out=cl, **sinfo_m)
+  else:
+    cl = Cluster(env, scher=scher, **sinfo_m)
+    jg = JobGen(env, out=cl, **sinfo_m)
+  env.run(until=cl.wait_for_alljobs)
+  
+  T_l, Sl_l = [], []
+  for jid, info in cl.jid_info_m.items():
+    if 'fate' in info:
+      if info['fate'] == 'finished':
+        T = info['wait_time'] + info['run_time']
+        T_l.append(T)
+        Sl_l.append(T/info['expected_run_time'] )
+  
+  return {
+    'ESl': np.mean(Sl_l),
+    'StdSl': np.std(Sl_l),
+    'Eload': np.mean([w.avg_load() for w in cl.w_l] ),
+    'ET': np.mean(T_l),
+    'StdT': np.mean(T_l) }
+
 def evaluate(sinfo_m, scher):
   alog("scher= {}".format(scher) )
   for _ in range(3):
@@ -128,27 +157,31 @@ def evaluate(sinfo_m, scher):
 
 # #############################################  Learner  ###################################### #
 class Learner(object):
-  def __init__(self, s_len, a_len, nn_len, save_dir='save'):
+  def __init__(self, s_len, a_len, nn_len, save_dir='save', save_suffix=None):
     self.s_len = s_len
     self.a_len = a_len
     self.nn_len = nn_len
     self.save_dir = save_dir
+    self.save_suffix = save_suffix
     
     self.gamma = 0.99 # 0.9
     
+    self.save_path = None
     self.saver = None
     self.sess = None
   
   def save(self, step):
-    save_name = '{}/{}'.format(self.save_dir, self)
-    save_path = self.saver.save(self.sess, save_name, global_step=step)
+    if self.save_path is None:
+      suffix = '' if self.save_suffix is None else '_' + self.save_suffix
+      self.save_path = '{}/{}{}'.format(self.save_dir, self, suffix)
+    
+    save_path = self.saver.save(self.sess, self.save_path, global_step=step)
     log(WARNING, "saved; ", save_path=save_path)
   
   def restore(self, step):
-    save_name = '{}/{}-{}'.format(self.save_dir, self, step)
     try:
-      save_path = self.saver.restore(self.sess, save_name)
-      # log(WARNING, "restored; ", save_path=save_path)
+      save_path = self.saver.restore(self.sess, self.save_path + '-{}'.format(step) )
+      log(WARNING, "restored; ", save_path=save_path)
       return True
     except:
       return False
