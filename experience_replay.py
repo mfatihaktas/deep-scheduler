@@ -108,7 +108,6 @@ class Cluster_wExpReplay(Cluster_LessReal if use_lessreal_sim else Cluster):
             self.Er_l.append(np.mean(t_r_l) )
             self.Esl_l.append(np.mean(t_sl_l) )
             self.loss_l.append(loss)
-            log(INFO, "Er_l= {}\nEsl_l= {}\nloss_l= {}".format(self.Er_l, self.Esl_l, self.loss_l) )
             
             # self.waitforjid_begin = self.last_sched_jid + 1 # + self.M
             # self.waitforjid_end = self.waitforjid_begin + self.M-1
@@ -130,6 +129,8 @@ class Cluster_wExpReplay(Cluster_LessReal if use_lessreal_sim else Cluster):
             if self.learning_count % 5 == 0: # % 10
               self.scher.summarize()
               self.scher.save(self.learning_count)
+              
+              log(INFO, "Er_l= {}\nEsl_l= {}\nloss_l= {}".format(self.Er_l, self.Esl_l, self.loss_l) )
             # if self.learning_count % 30 == 0:
             #   print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
             #   eval_scher(self.scher)
@@ -155,7 +156,7 @@ def plot_scher_learned_vs_plain(ro):
     y_l = np.arange(len(x_l) )/len(x_l)
     plot.step(x_l, y_l, label=label, color=next(darkcolor_c), marker=next(marker_c), linestyle=':', mew=0)
   
-  scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist')
+  scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist', save_suffix='ro{}'.format(ro) )
   scher.restore(ro__learning_count_m[ro] )
   
   scher.summarize()
@@ -191,62 +192,17 @@ def learn_w_experience_replay():
   env.run(until=cl.wait_for_alljobs)
   log(INFO, "done.")
 
-N, Cap = 20, 10
-k = BZipf(1, 10) # DUniform(1, 1)
-R = Uniform(1, 1)
-M = 1000
-sching_m = {
-  'a': 3, 'N': -1, # repeat for a=5
-  'learner': 'QLearner_wTargetNet_wExpReplay',
-  'exp_buffer_size': 100*M, 'exp_batch_size': M}
-mapping_m = {'type': 'spreading'}
-
-log(INFO, "use_lessreal_sim= {}".format(use_lessreal_sim) )
-if use_lessreal_sim:
-  b, beta = 10, 3 # 2
-  L = Pareto(b, beta) # TPareto(10, 10**5, 2) # TPareto(10, 10**6, 4)
-  a, alpha = 1, 3 # 1, 4
-  Sl = Pareto(a, alpha) # Uniform(1, 1)
-  ro = 0.8
-  log(INFO, "ro= {}".format(ro) )
-  
-  sinfo_m = {
-    'njob': 2000*N, # 10*N,
-    'nworker': N, 'wcap': Cap, 'ar': ar_for_ro(ro, N, Cap, k, R, L, Sl),
-    'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L,
-    'straggle_m': {'slowdown': lambda load: Sl.sample() } }
-else:
-  sinfo_m = {
-    'njob': 2000*N,
-    'nworker': 5, 'wcap': 10,
-    'totaldemand_rv': TPareto(10, 1000, 1.1),
-    'demandperslot_mean_rv': TPareto(0.1, 5, 1),
-    'k_rv': DUniform(1, 1),
-    'straggle_m': {
-      'slowdown': lambda load: random.uniform(0, 0.01) if random.uniform(0, 1) < 0.4 else 1,
-      'straggle_dur_rv': DUniform(10, 100),
-      'normal_dur_rv': DUniform(1, 1) } }
-  ar_ub = arrival_rate_upperbound(sinfo_m)
-  sinfo_m['ar'] = 2/5*ar_ub
-
-# {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 3, 'label': r'Redundant-$D \leq$1000, a=3'}
-a = sching_m['a']
-sching_m_l = [
-  {'type': 'plain', 'a': 0, 'label': 'Redundant-none'},
-  {'type': 'plain', 'a': a, 'label': r'Redundant-all, $a_\max= {}$'.format(a) } ]
-
-ro__learning_count_m = {
-  0.1: None,
-  0.2: None,
-  0.3: None,
-  0.4: None,
-  0.5: 425,
-  0.6: None,
-  0.7: 530,
-  0.8: 1550,
-  0.9: 280}
-
 if __name__ == '__main__':
+  ro = 0.9
+  log(INFO, "ro= {}".format(ro) )
+  sinfo_m['ar'] = ar_for_ro(ro, N, Cap, k, R, L, Sl)
+  
+  # {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 3, 'label': r'Redundant-$D \leq$1000, a=3'}
+  a = sching_m['a']
+  sching_m_l = [
+    {'type': 'plain', 'a': 0, 'label': 'Redundant-none'},
+    {'type': 'plain', 'a': a, 'label': r'Redundant-all, $a_\max= {}$'.format(a) } ]
+  
   # eval_sching_m_l()
   learn_w_experience_replay()
   

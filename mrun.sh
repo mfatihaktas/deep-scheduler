@@ -8,7 +8,7 @@ if [ $1 = 'i' ]; then
   # source ~/tensorflow/bin/activate
 elif [ $1 = 'r' ]; then
   FILE='eval_wmpi' # 'learn_wmpi'
-  NTASKS=11
+  NTASKS=21
   echo "#!/bin/bash
 #SBATCH --partition=main             # Partition (job queue)
 #SBATCH --job-name=$FILE
@@ -16,7 +16,7 @@ elif [ $1 = 'r' ]; then
 #SBATCH --ntasks=$NTASKS             # Total # of tasks across all nodes
 #SBATCH --cpus-per-task=1            # Cores per task (>1 if multithread tasks)
 #SBATCH --mem=4000                   # Real memory (RAM) required (MB)
-#SBATCH --time=24:00:00              # Total run time limit (HH:MM:SS)
+#SBATCH --time=48:00:00              # Total run time limit (HH:MM:SS)
 #SBATCH --export=ALL                 # Export your current env to the job env
 #SBATCH --output=log/slurm.%N.%j.out
 

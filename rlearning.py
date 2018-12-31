@@ -9,7 +9,56 @@ from sim_objs_lessreal import *
 LEARNING_RATE = 0.01 # 0.01 # 0.0001
 STATE_LEN = 2 # 3
 
-from experience_replay import L, k
+N, Cap = 20, 10
+k = BZipf(1, 10)
+R = Uniform(1, 1)
+M = 1000
+sching_m = {
+  'a': 3, 'N': -1,
+  'learner': 'QLearner_wTargetNet_wExpReplay',
+  'exp_buffer_size': 100*M, 'exp_batch_size': M}
+mapping_m = {'type': 'spreading'}
+
+use_lessreal_sim = True
+log(INFO, "use_lessreal_sim= {}".format(use_lessreal_sim) )
+if use_lessreal_sim:
+  b, beta = 10, 3 # 2
+  L = Pareto(b, beta) # TPareto(10, 10**5, 2) # TPareto(10, 10**6, 4)
+  a, alpha = 1, 3 # 1, 4
+  Sl = Pareto(a, alpha) # Uniform(1, 1)
+  
+  sinfo_m = {
+    'njob': 2000*N, # 10*N,
+    'nworker': N, 'wcap': Cap, 'ar': None,
+    'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L,
+    'straggle_m': {'slowdown': lambda load: Sl.sample() } }
+else:
+  sinfo_m = {
+    'njob': 2000*N,
+    'nworker': 5, 'wcap': 10,
+    'totaldemand_rv': TPareto(10, 1000, 1.1),
+    'demandperslot_mean_rv': TPareto(0.1, 5, 1),
+    'k_rv': DUniform(1, 1),
+    'straggle_m': {
+      'slowdown': lambda load: random.uniform(0, 0.01) if random.uniform(0, 1) < 0.4 else 1,
+      'straggle_dur_rv': DUniform(10, 100),
+      'normal_dur_rv': DUniform(1, 1) } }
+  ar_ub = arrival_rate_upperbound(sinfo_m)
+  sinfo_m['ar'] = 2/5*ar_ub
+
+## Learned with experience_replay.py
+ro__learning_count_m = {
+  0.1: 1800,
+  0.2: 1725,
+  0.3: 1710,
+  0.4: 1655,
+  0.5: 725,
+  0.6: 1590,
+  0.7: 715,
+  0.8: 1325,
+  0.9: None}
+
+# from experience_replay import L, k
 # D_min, D_max = k.l_l*L.l_l, k.u_l*L.u_l
 # blog(D_min=D_min, D_max=D_max)
 # def normalize_jdemand(D):
@@ -147,7 +196,7 @@ def sample_sim(sinfo_m, scher, use_lessreal_sim=False):
     'StdSl': np.std(Sl_l),
     'Eload': np.mean([w.avg_load() for w in cl.w_l] ),
     'ET': np.mean(T_l),
-    'StdT': np.mean(T_l) }
+    'StdT': np.std(T_l) }
 
 def evaluate(sinfo_m, scher):
   alog("scher= {}".format(scher) )
@@ -179,6 +228,9 @@ class Learner(object):
     log(WARNING, "saved; ", save_path=save_path)
   
   def restore(self, step):
+    if self.save_path is None:
+      suffix = '' if self.save_suffix is None else '_' + self.save_suffix
+      self.save_path = '{}/{}{}'.format(self.save_dir, self, suffix)
     try:
       save_path = self.saver.restore(self.sess, self.save_path + '-{}'.format(step) )
       log(WARNING, "restored; ", save_path=save_path)
