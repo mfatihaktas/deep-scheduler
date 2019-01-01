@@ -13,6 +13,7 @@ class Scher(object):
     self.sching_m = sching_m
     self.mapper = Mapper(mapping_m)
     
+    self._id = 'Scher_a={}'.format(sching_m['a'] )
     self.s_len = 1
     
     if sching_m['type'] == 'plain':
@@ -75,6 +76,7 @@ class Scher_wMultiplicativeExpansion(object):
       self.schedule = self.plain
     elif sching_m['type'] == 'expand_if_totaldemand_leq':
       self.schedule = self.expand_if_totaldemand_leq
+      self._id = 'Scher_wMultiplicativeExpansion_threshold={}'.format(self.sching_m['threshold'] )
   
   def __repr__(self):
     return 'Scher_wMultiplicativeExpansion[sching_m={}, mapper= {}]'.format(self.sching_m, self.mapper)
@@ -97,6 +99,7 @@ class RLScher():
   def __init__(self, sinfo_m, mapping_m, sching_m, save_dir='save', save_suffix=None):
     self.sinfo_m = sinfo_m
     
+    self._id = 'RLScher_{}'.format(save_suffix)
     self.mapper = Mapper(mapping_m)
     
     self.s_len = STATE_LEN
@@ -118,8 +121,8 @@ class RLScher():
   def save(self, step):
     return self.learner.save(step)
   
-  def restore(self, step):
-    return self.learner.restore(step)
+  def restore(self, step, save_suffix=None):
+    return self.learner.restore(step, save_suffix)
   
   def summarize(self):
     print("////////////////////////////////////////////////////")

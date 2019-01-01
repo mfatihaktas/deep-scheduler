@@ -19,9 +19,9 @@ sching_m = {
   'exp_buffer_size': 100*M, 'exp_batch_size': M}
 mapping_m = {'type': 'spreading'}
 
-use_lessreal_sim = True
-log(INFO, "use_lessreal_sim= {}".format(use_lessreal_sim) )
-if use_lessreal_sim:
+lessreal_sim = True
+log(INFO, "lessreal_sim= {}".format(lessreal_sim) )
+if lessreal_sim:
   b, beta = 10, 3 # 2
   L = Pareto(b, beta) # TPareto(10, 10**5, 2) # TPareto(10, 10**6, 4)
   a, alpha = 1, 3 # 1, 4
@@ -56,7 +56,7 @@ ro__learning_count_m = {
   0.6: 1590,
   0.7: 715,
   0.8: 1325,
-  0.9: None}
+  0.9: 2165}
 
 # from experience_replay import L, k
 # D_min, D_max = k.l_l*L.l_l, k.u_l*L.u_l
@@ -125,7 +125,7 @@ def state_(jtotaldemand=None, jk=None, jlifetime=None, jwait_time=None, wload_l=
   elif STATE_LEN == 6:
     return [jtotaldemand, cluster_qlen, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
 
-def sample_traj(sinfo_m, scher, use_lessreal_sim=False):
+def sample_traj(sinfo_m, scher, lessreal_sim=False):
   def reward(slowdown):
     # return 1/slowdown
     # return 10 if slowdown < 1.5 else -10
@@ -142,7 +142,7 @@ def sample_traj(sinfo_m, scher, use_lessreal_sim=False):
     # return -slowdown**2
   
   env = simpy.Environment()
-  if use_lessreal_sim:
+  if lessreal_sim:
     cl = Cluster_LessReal(env, scher=scher, **sinfo_m)
     jg = JobGen_LessReal(env, out=cl, **sinfo_m)
   else:
@@ -173,9 +173,9 @@ def sample_traj(sinfo_m, scher, use_lessreal_sim=False):
          np.mean([w.avg_load() for w in cl.w_l] ), \
          0 # sum([1 for _, jinfo_m in cl.jid_info_m.items() if 'fate' in jinfo_m and jinfo_m['fate'] == 'dropped'] )/len(cl.jid_info_m)
 
-def sample_sim(sinfo_m, scher, use_lessreal_sim=False):
+def sample_sim(sinfo_m, scher, lessreal_sim=False):
   env = simpy.Environment()
-  if use_lessreal_sim:
+  if lessreal_sim:
     cl = Cluster_LessReal(env, scher=scher, **sinfo_m)
     jg = JobGen_LessReal(env, out=cl, **sinfo_m)
   else:
@@ -227,13 +227,16 @@ class Learner(object):
     save_path = self.saver.save(self.sess, self.save_path, global_step=step)
     log(WARNING, "saved; ", save_path=save_path)
   
-  def restore(self, step):
-    if self.save_path is None:
+  def restore(self, step, save_suffix=None):
+    if save_suffix is not None:
+      self.save_path = '{}/{}{}'.format(self.save_dir, self, save_suffix)
+    elif self.save_path is None:
       suffix = '' if self.save_suffix is None else '_' + self.save_suffix
       self.save_path = '{}/{}{}'.format(self.save_dir, self, suffix)
     try:
       save_path = self.saver.restore(self.sess, self.save_path + '-{}'.format(step) )
-      log(WARNING, "restored; ", save_path=save_path)
+      log(WARNING, "restored; ", save_path=self.save_path)
       return True
     except:
+      log(ERROR, "failed;", save_path=self.save_path)
       return False
