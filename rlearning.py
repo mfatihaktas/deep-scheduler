@@ -213,7 +213,7 @@ class Learner(object):
     self.save_dir = save_dir
     self.save_suffix = save_suffix
     
-    self.gamma = 0.99 # 0.9
+    self.gamma = 1 # 0.99 # 0.9
     
     self.save_path = None
     self.saver = None
@@ -229,7 +229,7 @@ class Learner(object):
   
   def restore(self, step, save_suffix=None):
     if save_suffix is not None:
-      self.save_path = '{}/{}{}'.format(self.save_dir, self, save_suffix)
+      self.save_path = '{}/{}_{}'.format(self.save_dir, self, save_suffix)
     elif self.save_path is None:
       suffix = '' if self.save_suffix is None else '_' + self.save_suffix
       self.save_path = '{}/{}{}'.format(self.save_dir, self, suffix)

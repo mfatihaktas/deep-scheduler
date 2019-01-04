@@ -151,10 +151,12 @@ def reward(slowdown):
   return -slowdown**2
 
 def plot_scher_learned_vs_plain(ro):
+  color_c = itertools.cycle((NICE_ORANGE, NICE_BLUE, NICE_RED, NICE_GREEN))
+  
   def plot_(sl_l, label):
     x_l = sorted(sl_l, reverse=True)
     y_l = np.arange(len(x_l) )/len(x_l)
-    plot.step(x_l, y_l, label=label, color=next(darkcolor_c), marker=next(marker_c), linestyle=':', mew=0)
+    plot.step(x_l, y_l, label=label, color=next(color_c), marker=next(marker_c), linestyle=':', mew=0, ms=8)
   
   scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist', save_suffix='ro{}'.format(ro) )
   scher.restore(ro__learning_count_m[ro] )
@@ -162,23 +164,24 @@ def plot_scher_learned_vs_plain(ro):
   scher.summarize()
   sl_l = eval_scher(scher)
   a = sching_m['a']
-  plot_(sl_l, label=r'Redundant-DRL, $a_\max= {}$'.format(a) )
+  plot_(sl_l, label='RL') # label=r'Redundant-RL, $a_\max= {}$'.format(a)
   
   for s_m in sching_m_l:
     sl_l = eval_scher(Scher(mapping_m, s_m) )
     plot_(sl_l, label=s_m['label'] )
   
   prettify(plot.gca() )
-  fontsize = 14
-  plot.legend(loc='best', framealpha=0.5, fontsize=12)
+  fontsize = 18
+  plot.legend(framealpha=0.5, loc='best')
   plot.xscale('log')
   plot.yscale('log')
-  plot.xlabel('x', fontsize=fontsize)
-  plot.ylabel('Pr{Slowdown > x}', fontsize=fontsize)
-  plot.title(r'$N= {}$, $Cap= {}$, $\rho_0= {}$'.format(N, Cap, ro) + '\n' \
-    + r'$k \sim${}, $L \sim${}, $Sl \sim${}'.format(k.to_latex(), L.to_latex(), Sl.to_latex() ) )
-  plot.gca().title.set_position([.5, 1.05] )
-  plot.gcf().set_size_inches(7, 5)
+  plot.xlabel(r'$x$', fontsize=fontsize)
+  plot.ylabel(r'$\Pr\{\mathrm{Slowdown} > x\}$', fontsize=fontsize)
+  # plot.title(r'$N= {}$, $C= {}$, $\rho= {}$'.format(N, Cap, ro) + '\n' \
+  #   + r'$k \sim${}, $L \sim${}, $Sl \sim${}'.format(k.to_latex(), L.to_latex(), Sl.to_latex() ) )
+  plot.title(r'$\rho= {}$'.format(ro), fontsize=fontsize)
+  # plot.gca().title.set_position([.5, 1.05] )
+  plot.gcf().set_size_inches(4, 4)
   plot.savefig('plot_scher_learned_vs_plain_ro{}.png'.format(ro), bbox_inches='tight')
   plot.gcf().clear()
 
@@ -193,15 +196,16 @@ def learn_w_experience_replay():
   log(INFO, "done.")
 
 if __name__ == '__main__':
-  ro = 0.9
+  ro = 0.8
   log(INFO, "ro= {}".format(ro) )
   sinfo_m['ar'] = ar_for_ro(ro, N, Cap, k, R, L, Sl)
+  # sinfo_m['njob'] = 1*N
   
   # {'type': 'expand_if_totaldemand_leq', 'threshold': 1000, 'a': 3, 'label': r'Redundant-$D \leq$1000, a=3'}
   a = sching_m['a']
   sching_m_l = [
-    {'type': 'plain', 'a': 0, 'label': 'Redundant-none'},
-    {'type': 'plain', 'a': a, 'label': r'Redundant-all, $a_\max= {}$'.format(a) } ]
+    {'type': 'plain', 'a': 0, 'label': 'None'}, # 'label': 'No-redundancy'
+    {'type': 'plain', 'a': a, 'label': 'All'} ] # 'label': r'Redundant-all, $a_\max= {}$'.format(a)
   
   # eval_sching_m_l()
   learn_w_experience_replay()
