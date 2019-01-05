@@ -277,7 +277,7 @@ def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
       u_w_max_eq = u
     u -= 0.001
   if u < l:
-    print("u < l; u_w_max_eq= {}, max_eq= {}".format(u_w_max_eq, max_eq) )
+    log(WARNING, "u < l; u_w_max_eq= {}, max_eq= {}".format(u_w_max_eq, max_eq) )
     found_it = False
     for u in np.linspace(u_w_max_eq-0.05, u_w_max_eq+0.05, 10):
       if eq(u) > -0.01:
