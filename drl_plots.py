@@ -55,7 +55,7 @@ def plot_learned_policy():
       [Line2D([0], [0], c=c_l[a], marker=m_l[a], ls=':', lw=1) for a in range(sching_m['a']+1) ], 
       ['+{}'.format(a) for a in range(sching_m['a']+1) ] )
     prettify(plot.gca() )
-    plot.legend(framealpha=0.5)
+    plot.legend(framealpha=0.5, numpoints=1)
     plot.xscale('log')
     fontsize = 14
     plot.xlabel('Job demand', fontsize=fontsize)
@@ -66,35 +66,41 @@ def plot_learned_policy():
     log(INFO, "done.")
 
 def plot_Demand_vs_Eload():
-  ro = 0.7 # 0.2 # 0.9 # 0.4
-  lc = ro__learning_count_m[ro]
-  if lc is None:
-    log(WARNING, "ro__learning_count_m[{}]= {}".format(ro, lc) )
-    return
-  scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist', save_suffix='ro{}'.format(ro) )
-  if not scher.restore(lc):
-    log(WARNING, "scher.restore({}) failed".format(lc) )
-    return
-  scher.summarize()
+  def plot_(ro):
+    lc = ro__learning_count_m[ro]
+    if lc is None:
+      log(WARNING, "ro__learning_count_m[{}]= {}".format(ro, lc) )
+      return
+    scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist', save_suffix='ro{}'.format(ro) )
+    if not scher.restore(lc):
+      log(WARNING, "scher.restore({}) failed".format(lc) )
+      return
+    scher.summarize()
+    
+    for Eload in np.linspace(0, 1, 20):
+      for D in D_l:
+        a_ = scher.learner.get_max_action(state_(jtotaldemand=D, wload_l=[Eload] ) )
+        plot.plot([D], [Eload], c=c_l[a_], marker=m_l[a_], ms=5)
+    
+    plot.gca().legend(
+      [Line2D([0], [0], c=c_l[a], marker=m_l[a], ls=':', lw=1) for a in range(sching_m['a']+1) ], 
+      ['+{}'.format(a) for a in range(sching_m['a']+1) ], numpoints=1, framealpha=0.7)
+    prettify(plot.gca() )
+    # plot.legend(framealpha=0.5, numpoints=1)
+    plot.xscale('log')
+    fontsize = 20
+    plot.xlabel('Job demand', fontsize=fontsize)
+    plot.ylabel('Average load', fontsize=fontsize)
+    plot.title(r'$\rho= {}$'.format(ro), fontsize=fontsize)
+    plot.gcf().set_size_inches(4, 4)
+    plot.savefig('plot_Demand_vs_Eload__ro{}.png'.format(ro), bbox_inches='tight')
+    plot.gcf().clear()
+  ro = 0.6
+  plot_(ro)
   
-  for Eload in np.linspace(0, 1, 20):
-    for D in D_l:
-      a_ = scher.learner.get_max_action(state_(jtotaldemand=D, wload_l=[Eload] ) )
-      plot.plot([D], [Eload], c=c_l[a_], marker=m_l[a_], ms=5)
+  # for ro in [0.1, 0.4, 0.6, 0.7]:
+  #   plot_(ro)
   
-  plot.gca().legend(
-    [Line2D([0], [0], c=c_l[a], marker=m_l[a], ls=':', lw=1) for a in range(sching_m['a']+1) ], 
-    ['+{}'.format(a) for a in range(sching_m['a']+1) ] )
-  prettify(plot.gca() )
-  plot.legend(framealpha=0.5)
-  plot.xscale('log')
-  fontsize = 16
-  plot.xlabel('Job demand', fontsize=fontsize)
-  plot.ylabel('Average load', fontsize=fontsize)
-  plot.title(r'$\rho= {}$'.format(ro), fontsize=fontsize)
-  plot.gcf().set_size_inches(4, 4)
-  plot.savefig('plot_Demand_vs_Eload__ro{}.png'.format(ro), bbox_inches='tight')
-  plot.gcf().clear()
   log(INFO, "done.")
 
 def plot_loss_over_time():
@@ -184,7 +190,7 @@ def plot_ESl_ET_vs_ro():
   
   fontsize = 18
   prettify(plot.gca() )
-  plot.legend(framealpha=0.5, loc='best')
+  plot.legend(framealpha=0.5, loc='best', numpoints=1)
   plot.xticks(rotation=70)
   # plot.yscale('log')
   plot.xlabel(r'Offered load $\rho$', fontsize=fontsize)
@@ -200,7 +206,7 @@ def plot_ESl_ET_vs_ro():
   plot.errorbar(ro_l, Schera3_ET_l, yerr=Schera3_ET_err_l, label='All', c=NICE_RED, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
   
   prettify(plot.gca() )
-  plot.legend(framealpha=0.5, loc='best')
+  plot.legend(framealpha=0.5, loc='best', numpoints=1)
   plot.xticks(rotation=70)
   plot.xlabel(r'Offered load $\rho$', fontsize=fontsize)
   plot.ylabel('Average job completion time', fontsize=fontsize)

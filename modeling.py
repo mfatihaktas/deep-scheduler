@@ -381,6 +381,39 @@ def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   log(INFO, "d= {}, ro= {}".format(d, ro) )
   return round(ET, 2), round(EW, 2), round(Prqing, 2)
 
+def optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
+  '''
+  ET_base = 1.1*ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+  if ET_base is None:
+    return 0
+  
+  L = Pareto(b, beta)
+  db, de = 0, 10**3*L.mean()
+  ET = 0
+  while de - db > 10: # ET < ET_base:
+    d = (de + db)/2
+    ET = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+    if ET is None:
+      return db
+    
+    if ET < ET_base:
+      db = d
+    else:
+      de = d
+  return db
+  '''
+  func = lambda d: ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+  
+  L = Pareto(b, beta)
+  l = 0 # 10
+  if ro0 == 0.6:
+    u = 100
+  else:
+    u = 10**3*L.mean() if max_d is None else max_d
+  r = scipy.optimize.minimize_scalar(func, bounds=(l, u), method='bounded')
+  log(INFO, "r= {}".format(r) )
+  return r.x
+
 def approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
   ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
