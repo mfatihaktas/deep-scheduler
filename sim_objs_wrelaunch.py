@@ -71,6 +71,8 @@ class Worker_wrelaunch():
     self.add_to_serv = False
     self.cancel = False
     self.cancel_jid = None
+    self.relaunch = False
+    self.relaunch_jid = None
     env.process(self.run() )
     
     self.sl = self.straggle_m['slowdown']
@@ -204,6 +206,8 @@ class Cluster_wrelaunch():
     self.wait_for_alljobs = env.process(self.run_c() )
     
     self.got_ajob_torelaunch = None
+    self.run_relaunch_interrupt_flag = False
+    self.run_relaunch_interrupt = None
     env.process(self.run_relaunch() )
     
     self.jid__t_l_m = {}
@@ -242,8 +246,9 @@ class Cluster_wrelaunch():
         'relaunch_time': self.env.now + a if a is not None else None} )
       if self.got_ajob_torelaunch is not None and a is not None:
         self.got_ajob_torelaunch.succeed()
-      self.run_relaunch_interrupt_flag = True
-      self.run_relaunch_interrupt.succeed()
+      if self.run_relaunch_interrupt is not None:
+        self.run_relaunch_interrupt_flag = True
+        self.run_relaunch_interrupt.succeed()
   
   def put(self, j):
     slog(DEBUG, self.env, self, "received", j)
@@ -254,7 +259,9 @@ class Cluster_wrelaunch():
     while True:
       dur_jid_l = []
       for jid in self.jid__t_l_m:
-        t = self.jid_info_m['relaunch_time']
+        if 'relaunched' in self.jid_info_m[jid]:
+          continue
+        t = self.jid_info_m[jid]['relaunch_time']
         if t is not None:
           dur_jid_l.append((t - self.env.now, jid) )
       
@@ -263,20 +270,24 @@ class Cluster_wrelaunch():
         yield (self.got_ajob_torelaunch)
         self.got_ajob_torelaunch = None
         slog(DEBUG, self.env, self, "got a job to relaunch!", None)
+        continue
       
       dur, jid = min(dur_jid_l)
+      slog(DEBUG, self.env, self, "will wait to send msg_relaunch;", dur)
       self.run_relaunch_interrupt = self.env.event()
       yield (self.run_relaunch_interrupt | self.env.timeout(dur) )
       if self.run_relaunch_interrupt_flag:
         self.run_relaunch_interrupt = None
         self.run_relaunch_interrupt_flag = False
       else:
-        t_l = self.jid__t_l_m[jid]
-        wrecvedfrom_id_l = [t.prev_hop_id for t in t_l]
-        wsentto_id_l = self.jid_info_m[jid]['wid_l']
-        for w in self.w_l:
-          if w._id in wsentto_id_l and w._id not in wrecvedfrom_id_l:
-            w.put_c({'message': 'relaunch', 'jid': jid} )
+        if jid in self.jid__t_l_m: # a job may finish right around when its relaunch timer expired
+          t_l = self.jid__t_l_m[jid]
+          wrecvedfrom_id_l = [t.prev_hop_id for t in t_l]
+          wsentto_id_l = self.jid_info_m[jid]['wid_l']
+          for w in self.w_l:
+            if w._id in wsentto_id_l and w._id not in wrecvedfrom_id_l:
+              w.put_c({'message': 'relaunch', 'jid': jid} )
+          self.jid_info_m[jid]['relaunched'] = 1
   
   def run_c(self):
     while True:

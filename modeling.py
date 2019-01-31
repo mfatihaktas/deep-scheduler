@@ -299,6 +299,7 @@ def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
 #   return ro*N*Cap/k.mean()/D.mean()/Sl.mean()
 
 def ar_for_ro(ro, N, Cap, k, R, L, Sl):
+  # log(INFO, "", ro=ro, N=N, Cap=Cap, k_mean=k.mean(), R_mean=R.mean(), L_mean=L.mean(), Sl_mean=Sl.mean() )
   return ro*N*Cap/k.mean()/R.mean()/L.mean()/Sl.mean()
 
 def ar_for_ro_pareto(ro, N, Cap, k, b, beta, a, alpha_gen):
