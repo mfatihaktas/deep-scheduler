@@ -46,8 +46,8 @@ srun --mpi=pmi2 python3 $PWD/$FILE.py
     # rm loglearning/*
     sbatch jscript.sh
 elif [ $1 = 's' ]; then
-  $PY sim_exp.py
-  # $PY scheduler.py
+  # $PY sim_exp.py
+  $PY sim_wrelaunch_exp.py
 elif [ $1 = 'e' ]; then
   # rm save_expreplay/*
   $PY experience_replay.py

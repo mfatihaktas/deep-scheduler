@@ -85,7 +85,7 @@ def eval_wmpi(rank):
           scher.sching_m['threshold'] = ro_dopt_m[ro]
         log(INFO, "rank= {} will sim".format(rank), scher=scher, ro=ro)
         sys.stdout.flush()
-        sim_m = sample_sim(sinfo_m, scher, lessreal_sim)
+        sim_m = sample_sim(sinfo_m, scher)
         log(INFO, "rank= {}".format(rank), sim_m=sim_m, scher=scher, ro=ro)
         
         l = np.array([sim_m['ESl'], sim_m['StdSl'], sim_m['ET'], sim_m['StdT'], sim_m['Eload'] ], dtype=np.float64)
@@ -100,7 +100,7 @@ if __name__ == "__main__":
   rank = comm.Get_rank()
   
   sim_learners = False # True
-  eval_redsmall_vs_drl = True
+  eval_redsmall_vs_drl = False # True
   ro_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
   
   sinfo_m['njob'] = 5000*N

@@ -5,6 +5,7 @@ import tensorflow as tf
 from log_utils import *
 from sim_objs import *
 from sim_objs_lessreal import *
+from sim_objs_wrelaunch import *
 
 LEARNING_RATE = 0.01 # 0.01 # 0.0001
 STATE_LEN = 2 # 3
@@ -20,6 +21,7 @@ sching_m = {
 mapping_m = {'type': 'spreading'}
 
 lessreal_sim = True
+wrelaunch_sim = True
 log(INFO, "lessreal_sim= {}".format(lessreal_sim) )
 if lessreal_sim:
   b, beta = 10, 3 # 2
@@ -125,7 +127,7 @@ def state_(jtotaldemand=None, jk=None, jlifetime=None, jwait_time=None, wload_l=
   elif STATE_LEN == 6:
     return [jtotaldemand, cluster_qlen, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
 
-def sample_traj(sinfo_m, scher, lessreal_sim=False):
+def sample_traj(sinfo_m, scher):
   def reward(slowdown):
     # return 1/slowdown
     # return 10 if slowdown < 1.5 else -10
@@ -143,8 +145,12 @@ def sample_traj(sinfo_m, scher, lessreal_sim=False):
   
   env = simpy.Environment()
   if lessreal_sim:
-    cl = Cluster_LessReal(env, scher=scher, **sinfo_m)
-    jg = JobGen_LessReal(env, out=cl, **sinfo_m)
+    if wrelaunch_sim:
+      cl = Cluster_wrelaunch(env, scher=scher, **sinfo_m)
+      jg = JobGen_wrelaunch(env, out=cl, **sinfo_m)
+    else:
+      cl = Cluster_LessReal(env, scher=scher, **sinfo_m)
+      jg = JobGen_LessReal(env, out=cl, **sinfo_m)
   else:
     cl = Cluster(env, scher=scher, **sinfo_m)
     jg = JobGen(env, out=cl, **sinfo_m)
@@ -176,8 +182,12 @@ def sample_traj(sinfo_m, scher, lessreal_sim=False):
 def sample_sim(sinfo_m, scher, lessreal_sim=False):
   env = simpy.Environment()
   if lessreal_sim:
-    cl = Cluster_LessReal(env, scher=scher, **sinfo_m)
-    jg = JobGen_LessReal(env, out=cl, **sinfo_m)
+    if wrelaunch_sim:
+      cl = Cluster_wrelaunch(env, scher=scher, **sinfo_m)
+      jg = JobGen_wrelaunch(env, out=cl, **sinfo_m)
+    else:
+      cl = Cluster_LessReal(env, scher=scher, **sinfo_m)
+      jg = JobGen_LessReal(env, out=cl, **sinfo_m)
   else:
     cl = Cluster(env, scher=scher, **sinfo_m)
     jg = JobGen(env, out=cl, **sinfo_m)

@@ -17,7 +17,7 @@ class Mapper(object):
     w_l_ = []
     for w in w_l:
       if job.reqed <= w.nonsched_cap():
-        w_l_.append((w, w.sched_load() ) )
+        w_l_.append(w)
     return w_l_
   
   def worker_l_w_spreading(self, job, w_l):

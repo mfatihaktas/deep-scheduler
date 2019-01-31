@@ -70,10 +70,65 @@ def plot_ET_wrt_d():
   
   log(INFO, "done;", ro_l=ro_l, dopt_l=dopt_l)
 
-def plot_opt_redsmall_vs_drl():
-  get_data_redsmall_vs_drl(alpha, k_max)
-  d_l, ro_scherid_X_l_m = get_d_l__ro_scherid_X_l_m(alpha, k.u_l)
-
+def plot_ESl_ET_vs_ro__redsmall_vs_drl():
+  ro_scherid_X_l_m = get_data_redsmall_vs_drl(alpha, k.u_l)
+  
+  def profile(ro, scherid, X, ulim=float('Inf') ):
+    l = ro_scherid_X_l_m[ro][scherid][X]
+    m, s = np.mean(l), np.std(l)
+    if m > ulim:
+      m, s = float('NaN'), float('NaN')
+    return m, s
+  
+  RLScher_ESl_l, Redsmall_ESl_l = [], []
+  RLScher_ESl_err_l, Redsmall_ESl_err_l = [], []
+  RLScher_ET_l, Redsmall_ET_l = [], []
+  RLScher_ET_err_l, Redsmall_ET_err_l = [], []
+  for ro in ro_l:
+    mean, stdev = profile(ro, 'RLScher', 'ESl_l')
+    RLScher_ESl_l.append(mean)
+    RLScher_ESl_err_l.append(stdev)
+    mean, stdev = profile(ro, 'Redsmall', 'ESl_l')
+    Redsmall_ESl_l.append(mean)
+    Redsmall_ESl_err_l.append(stdev)
+    
+    mean, stdev = profile(ro, 'RLScher', 'ET_l')
+    RLScher_ET_l.append(mean)
+    RLScher_ET_err_l.append(stdev)
+    mean, stdev = profile(ro, 'Redsmall', 'ET_l')
+    Redsmall_ET_l.append(mean)
+    Redsmall_ET_err_l.append(stdev)
+  
+  ## ESl
+  plot.errorbar(ro_l, RLScher_ESl_l, yerr=RLScher_ESl_err_l, label='RL', c=NICE_ORANGE, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  plot.errorbar(ro_l, Redsmall_ESl_l, yerr=Redsmall_ESl_err_l, label='Red-small', c=NICE_BLUE, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  
+  fontsize = 18
+  prettify(plot.gca() )
+  plot.legend(framealpha=0.5, loc='best', numpoints=1)
+  plot.xticks(rotation=70)
+  # plot.yscale('log')
+  plot.xlabel(r'Offered load $\rho$', fontsize=fontsize)
+  plot.ylabel('Average job slowdown', fontsize=fontsize)
+  # plot.title(r'$\rho= {}$'.format(ro), fontsize=fontsize)
+  plot.gcf().set_size_inches(4, 4)
+  plot.savefig('plot_ESl_vs_ro__redsmall_vs_drl.png', bbox_inches='tight')
+  plot.gcf().clear()
+  
+  ## ET
+  plot.errorbar(ro_l, RLScher_ET_l, yerr=RLScher_ET_err_l, label='RL', c=NICE_ORANGE, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  plot.errorbar(ro_l, Redsmall_ET_l, yerr=Redsmall_ET_err_l, label='Red-small', c=NICE_BLUE, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  
+  prettify(plot.gca() )
+  plot.legend(framealpha=0.5, loc='best', numpoints=1)
+  plot.xticks(rotation=70)
+  plot.xlabel(r'Offered load $\rho$', fontsize=fontsize)
+  plot.ylabel('Average job completion time', fontsize=fontsize)
+  plot.gcf().set_size_inches(4, 4)
+  plot.savefig('plot_ET_vs_ro__redsmall_vs_drl.png', bbox_inches='tight')
+  plot.gcf().clear()
+  
+  log(INFO, "done.")
 
 if __name__ == "__main__":
   N, Cap = 20, 10
@@ -96,3 +151,4 @@ if __name__ == "__main__":
   # for d in [0, *np.logspace(math.log10(l), math.log10(u), 20) ]:
   
   plot_ET_wrt_d()
+  # plot_ESl_ET_vs_ro__redsmall_vs_drl()
