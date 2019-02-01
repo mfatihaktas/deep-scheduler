@@ -14,14 +14,22 @@ def sim(sinfo_m, mapping_m, sching_m):
   
   njobs, njobs_relaunched = 0, 0
   sl_l, serv_sl_l = [], []
-  for jid, info in cl.jid_info_m.items():
-    if 'fate' in info:
-      fate = info['fate']
-      if fate == 'finished':
-        serv_sl_l.append(info['run_time']/info['expected_run_time'] )
-        sl_l.append(
-          (info['wait_time'] + info['run_time'] )/info['expected_run_time'] )
-    if 'relaunched' in info:
+  # for jid, info in cl.jid_info_m.items():
+  #   if 'fate' in info:
+  #     fate = info['fate']
+  #     if fate == 'finished':
+  #       serv_sl_l.append(info['run_time']/info['expected_run_time'] )
+  #       sl_l.append(
+  #         (info['wait_time'] + info['run_time'] )/info['expected_run_time'] )
+  #   if 'relaunched' in info:
+  #     njobs_relaunched += 1
+  for jid in range(1, sinfo_m['njob']+1):
+    info = cl.jid_info_m[jid]
+    serv_sl_l.append(info['run_time']/info['expected_run_time'] )
+    sl_l.append(
+      (info['wait_time'] + info['run_time'] )/info['expected_run_time'] )
+    if 'nrelaunched' in info:
+      # print("k= {}, nrelaunched= {}".format(len(info['wid_l'] ), info['nrelaunched'] ) )
       njobs_relaunched += 1
     njobs += 1
   log(INFO, "", njobs=njobs, njobs_relaunched=njobs_relaunched)
@@ -38,9 +46,18 @@ def simple_relaunch_time(j):
 def opt_relaunch_time(j):
   ESl = ET_k_n_pareto(j.k, j.k, Sl.loc, Sl.a)
   if ESl > 4:
-    return math.sqrt(j.lifetime*ESl)
+    return math.sqrt(ESl)*j.lifetime
   else:
     return None
+
+def exp():
+  sching_m = {'relaunch_time': lambda j: None}
+  sim_m = sim(sinfo_m, mapping_m, sching_m)
+  log(INFO, "", sching_m=sching_m, sim_m=sim_m)
+  
+  sching_m = {'relaunch_time': opt_relaunch_time} # simple_relaunch_time
+  sim_m = sim(sinfo_m, mapping_m, sching_m)
+  log(INFO, "", sching_m=sching_m, sim_m=sim_m)
 
 if __name__ == '__main__':
   N, Cap = 20, 10
@@ -48,18 +65,17 @@ if __name__ == '__main__':
   R = Uniform(1, 1)
   b, beta = 10, 3
   L = Pareto(b, beta)
-  a, alpha = 1, 3
+  a, alpha = 1, 1.5 # 3
   Sl = Pareto(a, alpha)
   ro = 0.3
-  sching_m = {'relaunch_time': simple_relaunch_time} # opt_relaunch_time
+  log(INFO, "ro= {}".format(ro) )
   mapping_m = {'type': 'spreading'}
   sinfo_m = {
-    'njob': 2, # 10*N, # 2000*N,
+    'njob': 2000*N, # 10*N
     'ar': ar_for_ro(ro, N, Cap, k, R, L, Sl),
     'nworker': N, 'wcap': Cap,
     'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L,
     'straggle_m': {'slowdown': lambda load: Sl.sample() } }
-  log(INFO, "", sinfo_m=sinfo_m, mapping_m=mapping_m, sching_m=sching_m)
+  log(INFO, "", sinfo_m=sinfo_m, mapping_m=mapping_m)
   
-  sim_m = sim(sinfo_m, mapping_m, sching_m)
-  log(INFO, "", sim_m=sim_m)
+  exp()
