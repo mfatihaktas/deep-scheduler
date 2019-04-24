@@ -8,7 +8,7 @@ if [ $1 = 'i' ]; then
   # source ~/tensorflow/bin/activate
 elif [ $1 = 'r' ]; then
   FILE='eval_wmpi' # 'learn_wmpi'
-  NTASKS=31
+  NTASKS=11
   echo "#!/bin/bash
 #SBATCH --partition=main             # Partition (job queue)
 #SBATCH --job-name=$FILE
@@ -24,7 +24,7 @@ export MV2_ENABLE_AFFINITY=0
 srun --mpi=pmi2 python3 $PWD/$FILE.py
   " > jscript.sh
   
-  # rm log/*
+  rm log/*
   sbatch jscript.sh
 elif [ $1 = 'l' ]; then
   squeue -u mfa51

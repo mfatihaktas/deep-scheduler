@@ -2,6 +2,7 @@ import sys, time
 import numpy as np
 from mpi4py import MPI
 
+from rlearning import *
 from scheduler import *
 from modeling import *
 
@@ -14,11 +15,8 @@ def eval_wmpi(rank):
     for ro in ro_l:
       scherid_X_l_m = {}
       for scher in scher_l:
-        try:
-          if eval_redsmall_vs_drl and scher.sching_m['type'] == 'expand_if_totaldemand_leq':
-            scher._id = 'd={}'.format(ro_dopt_m[ro] )
-        except:
-          pass
+        if scher._type == 'Scher_wMultiplicativeExpansion' and scher.sching_m['type'] == 'expand_if_totaldemand_leq':
+          scher._id = 'd={}'.format(optimal_d_pareto(ro, N, Cap, k, r, b, sinfo_m['lifetime_rv'].a, a, alpha_gen, red) )
         scherid_X_l_m[scher._id] = {'ESl_l': None, 'StdSl_l': None, 'ET_l': None, 'StdT_l': None, 'Eload_l': None}
       ro_scherid_X_l_m[ro] = scherid_X_l_m
   
@@ -54,8 +52,9 @@ def eval_wmpi(rank):
           ESl_l=ESl_l, StdSl_l=StdSl_l, ET_l=ET_l, StdT_l=StdT_l, Eload_l=Eload_l)
         sys.stdout.flush()
         
-        if eval_redsmall_vs_drl and i > 0:
-          scher._id = 'd={}'.format(ro_dopt_m[ro] )
+        if scher._type == 'Scher_wMultiplicativeExpansion' and scher.sching_m['type'] == 'expand_if_totaldemand_leq':
+          scher._id = 'd={}'.format(optimal_d_pareto(ro, N, Cap, k, r, b, sinfo_m['lifetime_rv'].a, a, alpha_gen, red) )
+        # log(INFO, "Master;", ro_scherid_X_l_m=ro_scherid_X_l_m)
         
         ro_scherid_X_l_m[ro][scher._id].update({
           'ESl_l': ESl_l, 'StdSl_l': StdSl_l, 'ET_l': ET_l, 'StdT_l': StdT_l, 'Eload_l': Eload_l})
@@ -76,16 +75,19 @@ def eval_wmpi(rank):
         if scher_i == -1:
           break
         
+        wrelaunch_sim = False
         scher = scher_l[scher_i]
-        if scher_i == 0 and (sim_learners or eval_redsmall_vs_drl):
+        if scher._type == 'RLScher':
           if not scher.restore(ro__learning_count_m[ro], save_suffix='ro{}'.format(ro) ):
-            log(ERROR, "scher.restore(ro__learning_count_m[{}] ) failed!".format(ro), schersche=scher, ro__learning_count_m=ro__learning_count_m)
+            log(ERROR, "scher.restore(ro__learning_count_m[{}] ) failed!".format(ro), scher=scher, ro__learning_count_m=ro__learning_count_m)
             return
-        elif eval_redsmall_vs_drl:
-          scher.sching_m['threshold'] = ro_dopt_m[ro]
+        elif scher._type == 'Scher_wMultiplicativeExpansion' and scher.sching_m['type'] == 'expand_if_totaldemand_leq':
+          scher.sching_m['threshold'] = optimal_d_pareto(ro, N, Cap, k, r, b, sinfo_m['lifetime_rv'].a, a, alpha_gen, red)
+        elif scher._type == 'Scher_wrelaunch':
+          wrelaunch_sim = True
         log(INFO, "rank= {} will sim".format(rank), scher=scher, ro=ro)
         sys.stdout.flush()
-        sim_m = sample_sim(sinfo_m, scher)
+        sim_m = sample_sim(sinfo_m, scher, wrelaunch_sim)
         log(INFO, "rank= {}".format(rank), sim_m=sim_m, scher=scher, ro=ro)
         
         l = np.array([sim_m['ESl'], sim_m['StdSl'], sim_m['ET'], sim_m['StdT'], sim_m['Eload'] ], dtype=np.float64)
@@ -101,33 +103,25 @@ if __name__ == "__main__":
   
   sim_learners = False # True
   eval_redsmall_vs_drl = False # True
+  eval_redsmall_vs_wrelaunch = True
   ro_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
   
   sinfo_m['njob'] = 5000*N
-  r = 2
+  red, r = 'Coding', 2
   if sim_learners:
     scher_l = [
       RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist'),
       Scher(mapping_m, {'type': 'plain', 'a': 0} ),
       Scher(mapping_m, {'type': 'plain', 'a': sching_m['a'] } ) ]
   elif eval_redsmall_vs_drl:
-    ro__scher_l_m = {}
     # log(INFO, "alpha= {}, k.u_l= {}".format(alpha, k.u_l) )
-    
-    if Sl.a == 3 and k.u_l == 10:
-      ro_dopt_m = {
-        0.1: 1582.5555680143141,
-        0.2: 1582.5555680143141,
-        0.3: 1582.5555680143141,
-        0.4: 2560.6285644062164,
-        0.5: 2560.6285644062164,
-        0.6: 99.527585747702915,
-        0.7: 69.89545504046508,
-        0.8: 49.692239545260833,
-        0.9: 19.800745579180326}
-      scher_l = [
-        RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist'),
-        Scher_wMultiplicativeExpansion(mapping_m, {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold':-1} ) ]
+    scher_l = [
+      RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist'),
+      Scher_wMultiplicativeExpansion(mapping_m, {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold':-1} ) ]
+  elif eval_redsmall_vs_wrelaunch:
+    scher_l = [
+      Scher_wMultiplicativeExpansion(mapping_m, {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold':-1} ),
+      Scher_wrelaunch(mapping_m, {'relaunch_time': lambda j: 4*j.lifetime} ) ]
   else: # Model checking
     # k = BZipf(1, 5)
     # b, beta = 10, 4

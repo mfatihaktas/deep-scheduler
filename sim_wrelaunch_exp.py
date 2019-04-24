@@ -40,8 +40,8 @@ def sim(sinfo_m, mapping_m, sching_m):
     'serv_sl_mean': np.mean(serv_sl_l),
     'load_mean': np.mean(avg_schedload_l) }
 
-def simple_relaunch_time(j):
-  return 2*j.lifetime
+def subopt_relaunch_time(j):
+  return 4*j.lifetime
 
 def opt_relaunch_time(j):
   ESl = ET_k_n_pareto(j.k, j.k, Sl.loc, Sl.a)
@@ -49,13 +49,35 @@ def opt_relaunch_time(j):
     return math.sqrt(ESl)*j.lifetime
   else:
     return None
+  # return math.sqrt(ESl)*j.lifetime
+
+def print_optimal_d():
+  def alpha_gen(ro):
+    return alpha
+  r = 2
+  # print("ESl2= {}".format(Sl.moment(2) ) )
+  # print("ESl2_pareto= {}".format(ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=0, red='Coding') ) )
+  
+  for ro0 in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+    d_opt = optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red='Coding')
+    print("ro0= {}, d_opt= {}".format(ro0, d_opt) )
+    
+    # ET = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d=0, red='Coding')[0]
+    # print("ro0= {}, ET= {}".format(ro0, ET) )
 
 def exp():
-  sching_m = {'relaunch_time': lambda j: None}
+  print(">> OPT:")
+  sching_m = {'relaunch_time': opt_relaunch_time}
   sim_m = sim(sinfo_m, mapping_m, sching_m)
   log(INFO, "", sching_m=sching_m, sim_m=sim_m)
   
-  sching_m = {'relaunch_time': opt_relaunch_time} # simple_relaunch_time
+  print(">> SUB-OPT:")
+  sching_m = {'relaunch_time': subopt_relaunch_time}
+  sim_m = sim(sinfo_m, mapping_m, sching_m)
+  log(INFO, "", sching_m=sching_m, sim_m=sim_m)
+  
+  print(">> NONE:")
+  sching_m = {'relaunch_time': lambda j: None}
   sim_m = sim(sinfo_m, mapping_m, sching_m)
   log(INFO, "", sching_m=sching_m, sim_m=sim_m)
 
@@ -65,7 +87,7 @@ if __name__ == '__main__':
   R = Uniform(1, 1)
   b, beta = 10, 3
   L = Pareto(b, beta)
-  a, alpha = 1, 1.5 # 3
+  a, alpha = 1, 2.05 # 3
   Sl = Pareto(a, alpha)
   ro = 0.3
   log(INFO, "ro= {}".format(ro) )
@@ -79,3 +101,4 @@ if __name__ == '__main__':
   log(INFO, "", sinfo_m=sinfo_m, mapping_m=mapping_m)
   
   exp()
+  

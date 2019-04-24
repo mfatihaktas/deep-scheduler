@@ -333,7 +333,8 @@ class Scher_wrelaunch(object):
     self.sching_m = sching_m
     self.mapper = Mapper(mapping_m)
     
-    # self._id = 'Scher_wrelaunch'
+    self._type = 'Scher_wrelaunch'
+    self._id = 'Scher_wrelaunch'
   
   def __repr__(self):
     return 'Scher[sching_m={}, mapper= {}]'.format(self.sching_m, self.mapper)

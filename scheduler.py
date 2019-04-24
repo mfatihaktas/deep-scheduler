@@ -13,6 +13,7 @@ class Scher(object):
     self.sching_m = sching_m
     self.mapper = Mapper(mapping_m)
     
+    self._type = 'Scher'
     self._id = 'Scher_a={}'.format(sching_m['a'] )
     self.s_len = 1
     
@@ -72,6 +73,7 @@ class Scher_wMultiplicativeExpansion(object):
     self.sching_m = sching_m
     self.mapper = Mapper(mapping_m)
     
+    self._type = 'Scher_wMultiplicativeExpansion'
     if sching_m['type'] == 'plain':
       self.schedule = self.plain
     elif sching_m['type'] == 'expand_if_totaldemand_leq':
@@ -79,7 +81,7 @@ class Scher_wMultiplicativeExpansion(object):
       self._id = 'Scher_wMultiplicativeExpansion_threshold={}'.format(self.sching_m['threshold'] )
   
   def __repr__(self):
-    return 'Scher_wMultiplicativeExpansion[sching_m={}, mapper= {}]'.format(self.sching_m, self.mapper)
+    return 'Scher_wMultiplicativeExpansion[sching_m={}, mapper= {}, _id= {}]'.format(self.sching_m, self.mapper, self._id)
   
   def plain(self, j, w_l, cluster, expand=True):
     r = self.sching_m['r'] if expand else 1
@@ -99,6 +101,7 @@ class RLScher():
   def __init__(self, sinfo_m, mapping_m, sching_m, save_dir='save', save_suffix=None):
     self.sinfo_m = sinfo_m
     
+    self._type = 'RLScher'
     self._id = 'RLScher_{}'.format(save_suffix)
     self.mapper = Mapper(mapping_m)
     

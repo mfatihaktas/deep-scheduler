@@ -1,2 +1,0 @@
-model_checkpoint_path: "QLearner_wTargetNet_wExpReplay(s_len= 6, a_len= 4, exp_q= ExpQueue(buffer_size= 100000, batch_size= 1000), explorer= UCBExplorer)-10"
-all_model_checkpoint_paths: "QLearner_wTargetNet_wExpReplay(s_len= 6, a_len= 4, exp_q= ExpQueue(buffer_size= 100000, batch_size= 1000), explorer= UCBExplorer)-10"

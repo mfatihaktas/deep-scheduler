@@ -304,13 +304,15 @@ def ar_for_ro(ro, N, Cap, k, R, L, Sl):
 
 def ar_for_ro_pareto(ro, N, Cap, k, b, beta, a, alpha_gen):
   D = Pareto(b, beta)
-  Sl = Pareto(a, alpha_gen(ro) )
+  alpha = alpha_gen(ro)
+  Sl = Pareto(a, alpha)
+  # log(INFO, "", alpha=alpha, alpha_gen=alpha_gen, D=D, Sl=Sl)
   return ro*N*Cap/k.mean()/D.mean()/Sl.mean()
 
 def ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   alpha = alpha_gen(ro)
   if d is None:
-    return sum([ET_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+    return sum([ET_n_k_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
   
   Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
   # log(INFO, "", d=d, Pr_kD_leq_d=Pr_kD_leq_d)
@@ -321,9 +323,9 @@ def ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   # return ES_given_kD_leq_d*Pr_kD_leq_d + \
   #       ES_given_kD_g_d*(1 - Pr_kD_leq_d)
   
-  ES_given_kD_g_d = sum([ET_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+  ES_given_kD_g_d = sum([ET_n_k_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
   if red == 'Coding':
-    ES_given_kD_leq_d = sum([ET_k_n_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
+    ES_given_kD_leq_d = sum([ET_n_k_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
   elif red == 'Rep':
     ES_given_kD_leq_d = sum([ET_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
   return ES_given_kD_leq_d*Pr_kD_leq_d + \
@@ -332,7 +334,7 @@ def ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
 def ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   alpha = alpha_gen(ro)
   if d is None:
-    return sum([ET_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+    return sum([ET_n_k_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
   
   Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
   
@@ -405,15 +407,29 @@ def optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
   '''
   func = lambda d: ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
   
-  L = Pareto(b, beta)
-  l = 0 # 10
-  if ro0 == 0.6:
-    u = 100
-  else:
-    u = 10**3*L.mean() if max_d is None else max_d
-  r = scipy.optimize.minimize_scalar(func, bounds=(l, u), method='bounded')
+  if max_d is None:
+    d = 0
+    ET_d0 = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+    print(">> ET_d0= {}".format(ET_d0) )
+    
+    L = Pareto(b, beta)
+    EL = L.mean()
+    # print("EL= {}".format(EL) )
+    l = 0 # 10
+    u = 10**3*EL
+    while u - l > 10:
+      d = (l + u)/2
+      ET = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+      if ET is None or ET > 1.5*ET_d0:
+        u = d
+      else:
+        l = d
+    max_d = (l + u)/2
+  log(INFO, "max_d= {}".format(max_d) )
+  
+  r = scipy.optimize.minimize_scalar(func, bounds=(0, max_d), method='bounded')
   log(INFO, "r= {}".format(r) )
-  return r.x
+  return round(r.x, 1)
 
 def approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
@@ -588,3 +604,4 @@ if __name__ == "__main__":
   # plot_slowdown()
   compare_EC_exact_approx()
   # plot_ro_Esl()
+  

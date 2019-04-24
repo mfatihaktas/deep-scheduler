@@ -66,7 +66,7 @@ def EC2_k_c_pareto(k, c, loc, a):
 
   return (c+1)**2 * EC2
 
-def ET_k_n_pareto(k, n, loc, a):
+def ET_n_k_pareto(n, k, loc, a):
   if k == 0:
     return 0
   elif n == k and n > 170:

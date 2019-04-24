@@ -1,4 +1,4 @@
-import random
+import random, sys, getopt
 
 from sim_objs import *
 from scheduler import *
@@ -196,7 +196,15 @@ def learn_w_experience_replay():
   log(INFO, "done.")
 
 if __name__ == '__main__':
-  ro = 0.8
+  ro = None # 0.8
+  opts, args = getopt.getopt(sys.argv[1:], '', ['ro='] )
+  for opt, arg in opts:
+    if opt in ('--ro',):
+      ro = round(float(arg), 1)
+  if ro is None:
+    log(ERROR, "ro is None!")
+    sys.exit(2)
+  
   log(INFO, "ro= {}".format(ro) )
   sinfo_m['ar'] = ar_for_ro(ro, N, Cap, k, R, L, Sl)
   # sinfo_m['njob'] = 1*N

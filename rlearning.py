@@ -15,25 +15,24 @@ k = BZipf(1, 10)
 R = Uniform(1, 1)
 M = 1000
 sching_m = {
-  'a': 3, 'N': -1,
+  'a': 5, 'N': -1,
   'learner': 'QLearner_wTargetNet_wExpReplay',
   'exp_buffer_size': 100*M, 'exp_batch_size': M}
 mapping_m = {'type': 'spreading'}
 
 lessreal_sim = True
-wrelaunch_sim = True
 log(INFO, "lessreal_sim= {}".format(lessreal_sim) )
 if lessreal_sim:
   b, beta = 10, 3 # 2
   L = Pareto(b, beta) # TPareto(10, 10**5, 2) # TPareto(10, 10**6, 4)
-  a, alpha = 1, 3 # 1, 4
+  a, alpha = 1, 2.1 # 1, 3 # 1, 4
   Sl = Pareto(a, alpha) # Uniform(1, 1)
-  
   sinfo_m = {
     'njob': 2000*N, # 10*N,
     'nworker': N, 'wcap': Cap, 'ar': None,
-    'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L,
+    'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L, 'Sl': Sl,
     'straggle_m': {'slowdown': lambda load: Sl.sample() } }
+  alpha_gen = lambda load: alpha
 else:
   sinfo_m = {
     'njob': 2000*N,
@@ -59,6 +58,18 @@ ro__learning_count_m = {
   0.7: 715,
   0.8: 1325,
   0.9: 2165}
+
+# if Sl.a == 3 and k.u_l == 10:
+#   ro_dopt_m = {
+#     0.1: 2560.6285644062164,
+#     0.2: 2560.6285644062164,
+#     0.3: 2560.6285644062164,
+#     0.4: 2560.6285644062164,
+#     0.5: 2560.6285644062164,
+#     0.6: 99.527585747702915,
+#     0.7: 69.89545504046508,
+#     0.8: 49.692239545260833,
+#     0.9: 19.800745579180326}
 
 # from experience_replay import L, k
 # D_min, D_max = k.l_l*L.l_l, k.u_l*L.u_l
@@ -127,7 +138,7 @@ def state_(jtotaldemand=None, jk=None, jlifetime=None, jwait_time=None, wload_l=
   elif STATE_LEN == 6:
     return [jtotaldemand, cluster_qlen, min(wload_l), max(wload_l), np.mean(wload_l), np.std(wload_l) ]
 
-def sample_traj(sinfo_m, scher):
+def sample_traj(sinfo_m, scher, wrelaunch_sim=False):
   def reward(slowdown):
     # return 1/slowdown
     # return 10 if slowdown < 1.5 else -10
@@ -179,7 +190,7 @@ def sample_traj(sinfo_m, scher):
          np.mean([w.avg_load() for w in cl.w_l] ), \
          0 # sum([1 for _, jinfo_m in cl.jid_info_m.items() if 'fate' in jinfo_m and jinfo_m['fate'] == 'dropped'] )/len(cl.jid_info_m)
 
-def sample_sim(sinfo_m, scher, lessreal_sim=False):
+def sample_sim(sinfo_m, scher, wrelaunch_sim=False):
   env = simpy.Environment()
   if lessreal_sim:
     if wrelaunch_sim:
