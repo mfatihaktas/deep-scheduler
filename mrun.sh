@@ -8,23 +8,23 @@ if [ $1 = 'i' ]; then
   # source ~/tensorflow/bin/activate
 elif [ $1 = 'r' ]; then
   FILE='eval_wmpi' # 'learn_wmpi'
-  NTASKS=11
+  NTASKS=31
   echo "#!/bin/bash
 #SBATCH --partition=main             # Partition (job queue)
 #SBATCH --job-name=$FILE
 #SBATCH --nodes=$NTASKS              # Number of nodes you require
 #SBATCH --ntasks=$NTASKS             # Total # of tasks across all nodes
 #SBATCH --cpus-per-task=1            # Cores per task (>1 if multithread tasks)
-#SBATCH --mem=4000                   # Real memory (RAM) required (MB)
+#SBATCH --mem=6000                   # Real memory (RAM) required (MB)
 #SBATCH --time=48:00:00              # Total run time limit (HH:MM:SS)
 #SBATCH --export=ALL                 # Export your current env to the job env
-#SBATCH --output=log/slurm.%N.%j.out
+#SBATCH --output=log/$FILE.%N.%j.out
 
 export MV2_ENABLE_AFFINITY=0
 srun --mpi=pmi2 python3 $PWD/$FILE.py
   " > jscript.sh
   
-  rm log/*
+  # rm log/*
   sbatch jscript.sh
 elif [ $1 = 'l' ]; then
   squeue -u mfa51

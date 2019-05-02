@@ -37,7 +37,8 @@ elif [ $1 = 'me' ]; then
 #SBATCH --mem=8000                   # Real memory (RAM) required (MB)
 #SBATCH --time=24:00:00              # Total run time limit (HH:MM:SS)
 #SBATCH --export=ALL                 # Export your current env to the job env
-#SBATCH --output=loglearning/$FILE.ro$2.node%N.jid%j.out
+# #SBATCH --output=loglearning/$FILE.ro$2.slen3.node%N.jid%j.out
+#SBATCH --output=loglearning/$FILE.ro$2.slen2.out
 
 export MV2_ENABLE_AFFINITY=0
 srun --mpi=pmi2 python3 $PWD/$FILE.py --ro $2
@@ -47,7 +48,7 @@ srun --mpi=pmi2 python3 $PWD/$FILE.py --ro $2
 # elif [ $1 = 'den' ]; then
 #   echo "den $2"
 elif [ $1 = 'ame' ]; then
-  rm loglearning/* save_expreplay/*
+  # rm loglearning/* save_expreplay/*
   for ro in $(seq 0.1 0.1 0.9)
   do
     echo "Launching MPI experience_replay for ro=$ro"
@@ -67,8 +68,10 @@ elif [ $1 = 'r' ]; then
   # $PY rlearning.py
   $PY redsmall_plots.py
 elif [ $1 = 'm' ]; then
-  # $PY modeling.py
-  $PY model_checking.py
+  $PY modeling.py
+  # $PY model_checking.py
+elif [ $1 = 'n' ]; then
+  $PY numeric_comparison.py
 else
   echo "Arg did not match!"
 fi

@@ -9,7 +9,7 @@ from sim_objs_wrelaunch import *
 
 LEARNING_RATE = 0.01 # 0.01 # 0.0001
 STATE_LEN = 2 # 3
-
+ 
 N, Cap = 20, 10
 k = BZipf(1, 10)
 R = Uniform(1, 1)
@@ -19,13 +19,14 @@ sching_m = {
   'learner': 'QLearner_wTargetNet_wExpReplay',
   'exp_buffer_size': 100*M, 'exp_batch_size': M}
 mapping_m = {'type': 'spreading'}
+log(INFO, "Global variables:", STATE_LEN=STATE_LEN, sching_m=sching_m, mapping_m=mapping_m)
 
 lessreal_sim = True
 log(INFO, "lessreal_sim= {}".format(lessreal_sim) )
 if lessreal_sim:
   b, beta = 10, 3 # 2
   L = Pareto(b, beta) # TPareto(10, 10**5, 2) # TPareto(10, 10**6, 4)
-  a, alpha = 1, 2.1 # 1, 3 # 1, 4
+  a, alpha = 1, 3 # 2.1
   Sl = Pareto(a, alpha) # Uniform(1, 1)
   sinfo_m = {
     'njob': 2000*N, # 10*N,
@@ -48,16 +49,29 @@ else:
   sinfo_m['ar'] = 2/5*ar_ub
 
 ## Learned with experience_replay.py
-ro__learning_count_m = {
-  0.1: 1800,
-  0.2: 1725,
-  0.3: 1710,
-  0.4: 1655,
-  0.5: 725,
-  0.6: 1590,
-  0.7: 715,
-  0.8: 1325,
-  0.9: 2165}
+## alpha = 2.1
+slen__ro_learning_count_m = {
+  2: {
+    0.1: 1885,
+    0.2: 1890,
+    0.3: 1965,
+    0.4: 1910,
+    0.5: 1890,
+    0.6: 1715,
+    0.7: 1755,
+    0.8: 1695,
+    0.9: 1570},
+  3: {
+    0.1: 2040,
+    0.2: 1975,
+    0.3: 440,
+    0.4: 1645,
+    0.5: 1655,
+    0.6: 1975,
+    0.7: 890,
+    0.8: 850,
+    0.9: 830}
+}
 
 # if Sl.a == 3 and k.u_l == 10:
 #   ro_dopt_m = {

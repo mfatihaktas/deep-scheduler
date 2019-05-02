@@ -1,14 +1,11 @@
 from modeling import *
 from plot_data import *
 
-# k = BZipf(1, 5)
-# alpha = 4
-k = BZipf(1, 10)
-alpha = 3
+alpha = 2.1 # 3
 
 ro_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
-d_l, ro_scherid_X_l_m = get_d_l__ro_scherid_X_l_m(alpha, k.u_l)
+d_l, ro_scherid_X_l_m = get_d_l__ro_scherid_X_l_m(alpha)
 
 def plot_ET_wrt_d():
   r, red = 2, 'Coding'
@@ -26,6 +23,8 @@ def plot_ET_wrt_d():
       ET_wMGc, EW_wMGc, Prqing_wMGc = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
       if ET_wMGc is None: # sys is unstable
         break
+      elif ET_wMGc > 200:
+        ET_wMGc = None
       ET_wMGc_l.append(ET_wMGc)
       
       d_l_.append(d)
@@ -34,18 +33,20 @@ def plot_ET_wrt_d():
       sim_StdT_l.append(np.std(X_l_m['ET_l'] ) )
       
       approx_ET_wMGc, approx_EW_wMGc, approx_Prqing_wMGc = approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+      if approx_ET_wMGc > 200:
+        approx_ET_wMGc = None
       approx_ET_wMGc_l.append(approx_ET_wMGc)
     plot.errorbar(d_l_, sim_ET_l, yerr=sim_StdT_l, label='Simulation', c=NICE_RED, marker='d', ls=':', mew=0.5, ms=8)
     plot.plot(d_l_, ET_wMGc_l, label='M/G/c', c=NICE_BLUE, marker='o', ls=':')
     plot.plot(d_l_, approx_ET_wMGc_l, label='Asymptotic', c=NICE_GREEN, marker='p', ls=':', mew=0.5, ms=8)
     
-    d_opt = optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=max(d_l_) )
-    dopt_l.append(d_opt)
-    # d_opt = min(d_opt, max(d_l_) )
-    # if d_opt <= max(d_l_):
-    ET_wMGc, EW_wMGc, Prqing_wMGc = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d_opt, red)
-    log(INFO, "*** ro0= {}, d_opt= {}, ET_wMGc= {}".format(ro0, d_opt, ET_wMGc) )
-    plot.plot([d_opt], [ET_wMGc], label=r'$\sim$optimal', c='orangered', marker='x', ls=':', mew=3, ms=10)
+    # d_opt = optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=max(d_l_) )
+    # dopt_l.append(d_opt)
+    # # d_opt = min(d_opt, max(d_l_) )
+    # # if d_opt <= max(d_l_):
+    # ET_wMGc, EW_wMGc, Prqing_wMGc = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d_opt, red)
+    # log(INFO, "*** ro0= {}, d_opt= {}, ET_wMGc= {}".format(ro0, d_opt, ET_wMGc) )
+    # plot.plot([d_opt], [ET_wMGc], label=r'$\sim$optimal', c='orangered', marker='x', ls=':', mew=3, ms=10)
     
     plot.xscale('log')
     plot.xlim(right=max(d_l_)*2)
@@ -71,7 +72,7 @@ def plot_ET_wrt_d():
   log(INFO, "done;", ro_l=ro_l, dopt_l=dopt_l)
 
 def plot_ESl_ET_vs_ro__redsmall_vs_drl():
-  ro_scherid_X_l_m = get_data_redsmall_vs_drl(alpha, k.u_l)
+  ro_scherid_X_l_m = get_data_redsmall_vs_drl(alpha)
   
   def profile(ro, scherid, X, ulim=float('Inf') ):
     l = ro_scherid_X_l_m[ro][scherid][X]
@@ -100,15 +101,15 @@ def plot_ESl_ET_vs_ro__redsmall_vs_drl():
     Redsmall_ET_err_l.append(stdev)
   
   ## ESl
-  plot.errorbar(ro_l, RLScher_ESl_l, yerr=RLScher_ESl_err_l, label='RL', c=NICE_ORANGE, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
-  plot.errorbar(ro_l, Redsmall_ESl_l, yerr=Redsmall_ESl_err_l, label='Red-small', c=NICE_BLUE, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  plot.errorbar(ro_l, RLScher_ESl_l, yerr=RLScher_ESl_err_l, label='Redundant-RL', c=NICE_RED, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  plot.errorbar(ro_l, Redsmall_ESl_l, yerr=Redsmall_ESl_err_l, label='Redundant-small', c=NICE_GREEN, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
   
   fontsize = 18
   prettify(plot.gca() )
   plot.legend(framealpha=0.5, loc='best', numpoints=1)
   plot.xticks(rotation=70)
   # plot.yscale('log')
-  plot.xlabel(r'Offered load $\rho$', fontsize=fontsize)
+  plot.xlabel(r'Baseline offered load $\rho_0$', fontsize=fontsize)
   plot.ylabel('Average job slowdown', fontsize=fontsize)
   # plot.title(r'$\rho= {}$'.format(ro), fontsize=fontsize)
   plot.gcf().set_size_inches(4, 4)
@@ -116,13 +117,13 @@ def plot_ESl_ET_vs_ro__redsmall_vs_drl():
   plot.gcf().clear()
   
   ## ET
-  plot.errorbar(ro_l, RLScher_ET_l, yerr=RLScher_ET_err_l, label='RL', c=NICE_ORANGE, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
-  plot.errorbar(ro_l, Redsmall_ET_l, yerr=Redsmall_ET_err_l, label='Red-small', c=NICE_BLUE, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  plot.errorbar(ro_l, RLScher_ET_l, yerr=RLScher_ET_err_l, label='Redundant-RL', c=NICE_RED, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  plot.errorbar(ro_l, Redsmall_ET_l, yerr=Redsmall_ET_err_l, label='Redundant-small', c=NICE_GREEN, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
   
   prettify(plot.gca() )
   plot.legend(framealpha=0.5, loc='best', numpoints=1)
   plot.xticks(rotation=70)
-  plot.xlabel(r'Offered load $\rho$', fontsize=fontsize)
+  plot.xlabel(r'Baseline offered load $\rho_0$', fontsize=fontsize)
   plot.ylabel('Average job completion time', fontsize=fontsize)
   plot.gcf().set_size_inches(4, 4)
   plot.savefig('plot_ET_vs_ro__redsmall_vs_drl.png', bbox_inches='tight')

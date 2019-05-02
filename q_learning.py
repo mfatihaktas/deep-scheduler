@@ -135,7 +135,7 @@ class QLearner(Learner):
     self.init()
     # self.explorer = EpsGreedyExplorer(a_len)
     self.explorer = UCBExplorer(a_len)
-    self.saver = tf.train.Saver(max_to_keep=2)
+    self.saver = tf.train.Saver(max_to_keep=1)
     
   def __repr__(self):
     return 'QLearner(s_len= {}, a_len= {}, explorer= {})'.format(self.s_len, self.a_len, self.explorer)
@@ -309,7 +309,7 @@ class QLearner_wTargetNet(Learner):
     
     self.sess = tf.Session()
     self.sess.run(tf.global_variables_initializer() )
-    self.saver = tf.train.Saver(max_to_keep=2)
+    self.saver = tf.train.Saver(max_to_keep=1)
   
   def __repr__(self):
     return 'QLearner_wTargetNet(s_len= {}, a_len= {}, explorer= {})'.format(self.s_len, self.a_len, self.explorer)

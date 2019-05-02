@@ -78,7 +78,7 @@ class Scher_wMultiplicativeExpansion(object):
       self.schedule = self.plain
     elif sching_m['type'] == 'expand_if_totaldemand_leq':
       self.schedule = self.expand_if_totaldemand_leq
-      self._id = 'Scher_wMultiplicativeExpansion_threshold={}'.format(self.sching_m['threshold'] )
+      self._id = 'd={}'.format(self.sching_m['threshold'] )
   
   def __repr__(self):
     return 'Scher_wMultiplicativeExpansion[sching_m={}, mapper= {}, _id= {}]'.format(self.sching_m, self.mapper, self._id)

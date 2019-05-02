@@ -159,7 +159,7 @@ def plot_scher_learned_vs_plain(ro):
     plot.step(x_l, y_l, label=label, color=next(color_c), marker=next(marker_c), linestyle=':', mew=0, ms=8)
   
   scher = RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist', save_suffix='ro{}'.format(ro) )
-  scher.restore(ro__learning_count_m[ro] )
+  scher.restore(slen__ro_learning_count_m[STATE_LEN][ro] )
   
   scher.summarize()
   sl_l = eval_scher(scher)

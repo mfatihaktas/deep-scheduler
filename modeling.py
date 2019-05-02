@@ -2,7 +2,7 @@ from math_utils import *
 from plot_utils import *
 from sim_objs_lessreal import *
 
-# #########################################  Modeling  ########################################### #
+# #####################################  Redundant-small  ######################################## #
 '''
 Kubernetes architecture; master dispatches arriving jobs to distributed workers.
 Average cluster load = E[ro] = ar/N/Cap * E[D x S]
@@ -17,6 +17,18 @@ S: Slowdown experienced by each task
 S is assumed to depend only on ro.
 Redundancy is introduced for jobs with D < d.
 '''
+
+def ar_for_ro0(ro, N, Cap, k, R, L, Sl):
+  # log(INFO, "", ro=ro, N=N, Cap=Cap, k_mean=k.mean(), R_mean=R.mean(), L_mean=L.mean(), Sl_mean=Sl.mean() )
+  return ro*N*Cap/k.mean()/R.mean()/L.mean()/Sl.mean()
+
+def ar_for_ro0_pareto(ro, N, Cap, k, b, beta, a, alpha_gen):
+  D = Pareto(b, beta)
+  alpha = alpha_gen(ro)
+  Sl = Pareto(a, alpha)
+  # log(INFO, "", alpha=alpha, alpha_gen=alpha_gen, D=D, Sl=Sl)
+  return ro*N*Cap/k.mean()/D.mean()/Sl.mean()
+
 def Pr_kD_leq_d_pareto(k, b, beta, d):
   D = Pareto(b, beta)
   return sum([D.cdf(d/i)*k.pdf(i) for i in k.v_l] )
@@ -62,7 +74,7 @@ def sim_red(k, r, L, Sl, d, red, nrun=10000):
     'EC': np.mean(C_l),
     'EC2': np.mean(C2_l) }
 
-def EC_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
+def redsmall_EC_exact(k, r, b, beta, a, alpha, d=None, red=None):
   D = Pareto(b, beta)
   Sl = Pareto(a, alpha)
   if d is None:
@@ -118,7 +130,7 @@ def EC_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   return EC_given_kD_leq_d*Pr_kD_leq_d + \
          EC_given_kD_g_d*(1 - Pr_kD_leq_d)
 
-def EC2_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
+def redsmall_EC2_exact(k, r, b, beta, a, alpha, d=None, red=None):
   D = Pareto(b, beta)
   Sl = Pareto(a, alpha)
   if d is None:
@@ -139,7 +151,7 @@ def EC2_exact_pareto(k, r, b, beta, a, alpha, d=None, red=None):
          EC_given_kD_g_d*(1 - Pr_kD_leq_d)
 
 # D ~ Pareto(b, beta), Sl ~ Pareto(a, alpha)
-def EC_model_pareto(k, r, b, beta, a, alpha, d=None, red=None):
+def redsmall_EC_model(k, r, b, beta, a, alpha, d=None, red=None):
   Ek = k.mean()
   ED = b/(1 - 1/beta)
   ESl = a/(1 - 1/alpha)
@@ -174,7 +186,7 @@ def EC_model_pareto(k, r, b, beta, a, alpha, d=None, red=None):
   return EC_given_kD_leq_d*Pr_kD_leq_d + \
          EC_given_kD_g_d*(1 - Pr_kD_leq_d)
 
-def EC_approx_pareto(k, r, b, beta, a, alpha, d=None, red=None):
+def redsmall_EC_approx(k, r, b, beta, a, alpha, d=None, red=None):
   D = Pareto(b, beta)
   ED = b/(1 - 1/beta)
   ESl = a/(1 - 1/alpha)
@@ -234,7 +246,7 @@ def EC_approx_pareto(k, r, b, beta, a, alpha, d=None, red=None):
          EC_given_kD_g_d*(1 - Pr_kD_leq_d)
   '''
 
-def compare_EC_exact_approx():
+def compare_redsmall_EC_exact_approx():
   # N, Cap = 10, 100
   red = 'Rep' # 'Coding'
   k = BZipf(1, 10)
@@ -252,17 +264,17 @@ def compare_EC_exact_approx():
     
     sim_m = sim_red(k, r, L, Sl, d, red, nrun=2*10**4)
     
-    blog(EC_exact=EC_exact_pareto(k, r, b, beta, a, alpha, d, red),
-         EC_model=EC_model_pareto(k, r, b, beta, a, alpha, d, red),
-         EC_approx=EC_approx_pareto(k, r, b, beta, a, alpha, d, red),
-         EC2_exact=EC2_exact_pareto(k, r, b, beta, a, alpha, d, red),
+    blog(EC_exact=redsmall_EC_exact(k, r, b, beta, a, alpha, d, red),
+         EC_model=redsmall_EC_model(k, r, b, beta, a, alpha, d, red),
+         EC_approx=redsmall_EC_approx(k, r, b, beta, a, alpha, d, red),
+         EC2_exact=redsmall_EC2_exact(k, r, b, beta, a, alpha, d, red),
          sim_EC = sim_m['EC'] )
 
-def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
+def redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   def func_ro(ro):
-    # return ar/N/Cap * EC_exact_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
-    return ar/N/Cap * EC_model_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
-    # return ar/N/Cap * EC_approx_pareto(k, r, b, beta, a, alpha_gen(ro), d, red)
+    # return ar/N/Cap * redsmall_EC_exact(k, r, b, beta, a, alpha_gen(ro), d, red)
+    return ar/N/Cap * redsmall_EC_model(k, r, b, beta, a, alpha_gen(ro), d, red)
+    # return ar/N/Cap * redsmall_EC_approx(k, r, b, beta, a, alpha_gen(ro), d, red)
   
   eq = lambda ro: ro - func_ro(ro)
   l, u = 0.0001, 1
@@ -295,21 +307,7 @@ def ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   # ro = scipy.optimize.fixed_point(ro_, [0.01, 0.99] )
   return ro
 
-# def ar_for_ro(ro, N, Cap, k, D, Sl):
-#   return ro*N*Cap/k.mean()/D.mean()/Sl.mean()
-
-def ar_for_ro(ro, N, Cap, k, R, L, Sl):
-  # log(INFO, "", ro=ro, N=N, Cap=Cap, k_mean=k.mean(), R_mean=R.mean(), L_mean=L.mean(), Sl_mean=Sl.mean() )
-  return ro*N*Cap/k.mean()/R.mean()/L.mean()/Sl.mean()
-
-def ar_for_ro_pareto(ro, N, Cap, k, b, beta, a, alpha_gen):
-  D = Pareto(b, beta)
-  alpha = alpha_gen(ro)
-  Sl = Pareto(a, alpha)
-  # log(INFO, "", alpha=alpha, alpha_gen=alpha_gen, D=D, Sl=Sl)
-  return ro*N*Cap/k.mean()/D.mean()/Sl.mean()
-
-def ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
+def redsmall_ESl(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   alpha = alpha_gen(ro)
   if d is None:
     return sum([ET_n_k_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
@@ -331,7 +329,7 @@ def ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   return ES_given_kD_leq_d*Pr_kD_leq_d + \
          ES_given_kD_g_d*(1 - Pr_kD_leq_d)
 
-def ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
+def redsmall_ESl2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   alpha = alpha_gen(ro)
   if d is None:
     return sum([ET_n_k_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
@@ -346,12 +344,12 @@ def ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   return ESl2_given_kD_leq_d*Pr_kD_leq_d + \
          ESl2_given_kD_g_d*(1 - Pr_kD_leq_d)
 
-def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
+def redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   '''Using the result for M/M/c to approximate E[T] in M/G/c.
      [https://en.wikipedia.org/wiki/M/G/k_queue]
   '''
-  ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
-  ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ar = ar_for_ro0_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
+  ro = redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   if ro is None:
     return None, None, None
   alpha = alpha_gen(ro)
@@ -373,9 +371,9 @@ def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
     MMc_EW, MMc_Prqing = MMc_EW_Prqing(ar, EX, c)
     return (1 + (EX2 - EX**2)/EX**2)/2 * MMc_EW, MMc_Prqing
   L = Pareto(b, beta)
-  ES = L.mean()*ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-  ES2 = L.moment(2)*ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-  EC = EC_exact_pareto(k, r, b, beta, a, alpha, d, red)
+  ES = L.mean()*redsmall_ESl(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES2 = L.moment(2)*redsmall_ESl2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  EC = redsmall_EC_exact(k, r, b, beta, a, alpha, d, red)
   
   # log(INFO, "ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
   EW, Prqing = MGc_EW_Prqing(ar, N*Cap*ES/EC, ES, ES2)
@@ -384,9 +382,9 @@ def ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   log(INFO, "d= {}, ro= {}".format(d, ro) )
   return round(ET, 2), round(EW, 2), round(Prqing, 2)
 
-def optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
+def redsmall_optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
   '''
-  ET_base = 1.1*ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+  ET_base = 1.1*redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
   if ET_base is None:
     return 0
   
@@ -395,7 +393,7 @@ def optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
   ET = 0
   while de - db > 10: # ET < ET_base:
     d = (de + db)/2
-    ET = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+    ET = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
     if ET is None:
       return db
     
@@ -405,11 +403,11 @@ def optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
       de = d
   return db
   '''
-  func = lambda d: ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+  func = lambda d: redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
   
   if max_d is None:
     d = 0
-    ET_d0 = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+    ET_d0 = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
     print(">> ET_d0= {}".format(ET_d0) )
     
     L = Pareto(b, beta)
@@ -419,7 +417,7 @@ def optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
     u = 10**3*EL
     while u - l > 10:
       d = (l + u)/2
-      ET = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+      ET = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
       if ET is None or ET > 1.5*ET_d0:
         u = d
       else:
@@ -431,15 +429,15 @@ def optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
   log(INFO, "r= {}".format(r) )
   return round(r.x, 1)
 
-def approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
-  ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
-  ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+def redsmall_approx_redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
+  ar = ar_for_ro0_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
+  ro = redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   if ro is None:
     return None, None, None
   alpha = alpha_gen(ro)
   
   L = Pareto(b, beta)
-  ES = L.mean()*ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES = L.mean()*redsmall_ESl(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   EW = 1/ar * ro**2/(1 - ro)
   
   ET = ES + EW
@@ -447,26 +445,26 @@ def approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d,
   log(INFO, "d= {}, ro= {}".format(d, ro) )
   return round(ET, 2), round(EW, 2), round(ro, 2)
 
-def ET_EW_pareto(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None):
+def redsmall_ET_EW(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None):
   '''Using (1) to approximate E[T] in M/G/c with heavy tailed job sizes.
      [Konstantinos Psounis, "Systems with Multiple Servers under Heavy-tailed Workloads"
       http://www-bcf.usc.edu/~kpsounis/EE650/Readlist07/Papers07/multiserver.pdf] '''
   if K is None:
     alpha0 = alpha_gen(ro0)
-    K = EW0/(ro0/(1-ro0)*EC2_exact_pareto(k, r, b, beta, a, alpha0)/EC_exact_pareto(k, r, b, beta, a, alpha0) )
+    K = EW0/(ro0/(1-ro0)*redsmall_EC2_exact(k, r, b, beta, a, alpha0)/redsmall_EC_exact(k, r, b, beta, a, alpha0) )
   
-  ar = ar_for_ro_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
-  ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ar = ar_for_ro0_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
+  ro = redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   if ro is None:
     return None, None
   alpha = alpha_gen(ro)
   
   L = Pareto(b, beta) # Take D as the lifetime; D = LR, R = 1
-  ES = L.mean()*ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-  ES2 = L.moment(2)*ESl2_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES = L.mean()*redsmall_ESl(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES2 = L.moment(2)*redsmall_ESl2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   print("ES= {}, ES2= {}".format(ES, ES2) )
-  EC = EC_exact_pareto(k, r, b, beta, a, alpha, d, red)
-  EC2 = EC2_exact_pareto(k, r, b, beta, a, alpha, d, red)
+  EC = redsmall_EC_exact(k, r, b, beta, a, alpha, d, red)
+  EC2 = redsmall_EC2_exact(k, r, b, beta, a, alpha, d, red)
   print("EC= {}, EC2= {}".format(EC, EC2) )
   def Pr_blocking(ar, ro):
     Pr_shortjob = L.cdf(5*L.mean() ) # 0.9 # 1/2
@@ -504,7 +502,7 @@ def plot_ET():
     l = a*b # D.mean()*S.mean()
     for d in np.logspace(math.log10(l), math.log10(100*l), 20):
       print(">> d= {}".format(d) )
-      ET, EW = ET_EW_pareto(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+      ET, EW = redsmall_ET_EW(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
       print("ET= {}".format(ET) )
       d_l.append(d)
       ET_l.append(ET)
@@ -527,6 +525,40 @@ def plot_ET():
   plot.gcf().clear()
   log(INFO, "done.")
 
+def redsmall_r_max_wo_exceeding_EC0(N, Cap, k, b, beta, a, alpha_gen, red):
+  EL = Pareto(b, beta).mean()
+  d = 10**3*EL
+  EC_func = lambda r: redsmall_EC_exact(k, r, b, beta, a, alpha, d, red)
+  
+  EC0 = EC_func(r=1)
+  l, u = 1, 10
+  while u - l > 0.001:
+    r = (l + u)/2
+    EC = EC_func(r)
+    if EC is None or EC > EC0:
+      u = r
+    else:
+      l = r
+    print("l= {}, u= {}".format(l, u) )
+  r = (l + u)/2  
+  log(INFO, "r= {}".format(r) )
+  return r
+
+# #######################################  Relaunch-Delta  ####################################### #
+def E_T_pareto_k_n_wrelaunch(loc, a, alpha, d, k, n):
+  if d == 0:
+    return E_X_n_k_pareto(loc, a, n, k)
+  q = (d > loc)*(1 - (loc/d)**a)
+  
+  if d <= loc:
+    return d + E_X_n_k_pareto(loc, a, n, k)
+  elif n == k:
+    def g(k, a):
+      if k > 170:
+        return loc*(k+1)**(1/a) * G(1-1/a)
+      return loc*G(1-1/a)*G(k+1)/G(k+1-1/a)
+    return d*(1-q**k) + g(k, a)*(1 + (loc/d-1)*I(1-q,1-1/a,k) )
+
 def plot_ro_Esl():
   N, Cap = 10, 100
   b, beta = 1, 1.1
@@ -540,13 +572,13 @@ def plot_ro_Esl():
     return alpha/ro
     # return alpha - ro
   
-  ar = ar_for_ro_pareto(1/2, N, Cap, k, b, beta, a, alpha_gen)
+  ar = ar_for_ro0_pareto(1/2, N, Cap, k, b, beta, a, alpha_gen)
   print("ar= {}".format(ar) )
   
   d = None
-  ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d)
+  ro = redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d)
   print("ro= {}".format(ro) )
-  Esl = ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d)
+  Esl = redsmall_ESl(ro, N, Cap, k, r, b, beta, a, alpha_gen, d)
   print("\n>> d= {}".format(d) )
   blog(ro=ro, Esl=Esl)
   
@@ -559,15 +591,15 @@ def plot_ro_Esl():
     d_l.append(d)
     
     red = 'Rep'
-    ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-    Esl = ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red) if ro is not None else None
+    ro = redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+    Esl = redsmall_ESl(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red) if ro is not None else None
     blog(ro=ro, Esl=Esl)
     ro_wrep_l.append(ro)
     Esl_wrep_l.append(Esl)
     
     red = 'Coding'
-    ro = ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-    Esl = ESl_pareto(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red) if ro is not None else None
+    ro = redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+    Esl = redsmall_ESl(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red) if ro is not None else None
     blog(ro=ro, Esl=Esl)
     ro_wcoding_l.append(ro)
     Esl_wcoding_l.append(Esl)
@@ -602,6 +634,20 @@ def plot_ro_Esl():
 
 if __name__ == "__main__":
   # plot_slowdown()
-  compare_EC_exact_approx()
+  # compare_redsmall_EC_exact_approx()
   # plot_ro_Esl()
+  
+  N, Cap = 20, 10
+  k = BZipf(1, 10) # BZipf(1, 5)
+  R = Uniform(1, 1)
+  b, beta = 10, 3 # 4
+  L = Pareto(b, beta)
+  a, alpha = 1, 3
+  Sl = Pareto(a, alpha)
+  def alpha_gen(ro):
+    return alpha
+  
+  red = 'Coding'
+  r = redsmall_r_max_wo_exceeding_EC0(N, Cap, k, b, beta, a, alpha_gen, red)
+  print("r= {}".format(r) )
   
