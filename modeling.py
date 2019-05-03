@@ -310,37 +310,37 @@ def redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None
 def redsmall_ESl(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   alpha = alpha_gen(ro)
   if d is None:
-    return sum([ET_n_k_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+    return sum([ES_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
   
   Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
   # log(INFO, "", d=d, Pr_kD_leq_d=Pr_kD_leq_d)
   
   # S = Pareto(a, alpha_gen(ro) )
-  # ES_given_kD_g_d = sum([X_n_k(S, i, i).mean()*k.pdf(i) for i in k.v_l] )
-  # ES_given_kD_leq_d = sum([X_n_k(S, int(i*r), i).mean()*k.pdf(i) for i in k.v_l] )
-  # return ES_given_kD_leq_d*Pr_kD_leq_d + \
-  #       ES_given_kD_g_d*(1 - Pr_kD_leq_d)
+  # ESl_given_kD_g_d = sum([X_n_k(S, i, i).mean()*k.pdf(i) for i in k.v_l] )
+  # ESl_given_kD_leq_d = sum([X_n_k(S, int(i*r), i).mean()*k.pdf(i) for i in k.v_l] )
+  # return ESl_given_kD_leq_d*Pr_kD_leq_d + \
+  #       ESl_given_kD_g_d*(1 - Pr_kD_leq_d)
   
-  ES_given_kD_g_d = sum([ET_n_k_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+  ESl_given_kD_g_d = sum([ES_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
   if red == 'Coding':
-    ES_given_kD_leq_d = sum([ET_n_k_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
+    ESl_given_kD_leq_d = sum([ES_k_n_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
   elif red == 'Rep':
-    ES_given_kD_leq_d = sum([ET_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
-  return ES_given_kD_leq_d*Pr_kD_leq_d + \
-         ES_given_kD_g_d*(1 - Pr_kD_leq_d)
+    ESl_given_kD_leq_d = sum([ES_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
+  return ESl_given_kD_leq_d*Pr_kD_leq_d + \
+         ESl_given_kD_g_d*(1 - Pr_kD_leq_d)
 
 def redsmall_ESl2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   alpha = alpha_gen(ro)
   if d is None:
-    return sum([ET_n_k_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+    return sum([ES_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
   
   Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
   
-  ESl2_given_kD_g_d = sum([ET2_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+  ESl2_given_kD_g_d = sum([ES2_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
   if red == 'Coding':
-    ESl2_given_kD_leq_d = sum([ET2_k_n_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
+    ESl2_given_kD_leq_d = sum([ES2_k_n_pareto(i, i*r, a, alpha)*k.pdf(i) for i in k.v_l] )
   elif red == 'Rep':
-    ESl2_given_kD_leq_d = sum([ET2_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
+    ESl2_given_kD_leq_d = sum([ES2_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
   return ESl2_given_kD_leq_d*Pr_kD_leq_d + \
          ESl2_given_kD_g_d*(1 - Pr_kD_leq_d)
 
@@ -376,13 +376,13 @@ def redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   EC = redsmall_EC_exact(k, r, b, beta, a, alpha, d, red)
   
   # log(INFO, "ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
-  EW, Prqing = MGc_EW_Prqing(ar, N*Cap*ES/EC, ES, ES2)
+  EW, Prqing = MGc_E W_Prqing(ar, N*Cap*ES/EC, ES, ES2)
   ET = ES + EW
   # log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
   log(INFO, "d= {}, ro= {}".format(d, ro) )
   return round(ET, 2), round(EW, 2), round(Prqing, 2)
 
-def redsmall_optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
+def redsmall_optimal_d(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
   '''
   ET_base = 1.1*redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
   if ET_base is None:
@@ -545,19 +545,46 @@ def redsmall_r_max_wo_exceeding_EC0(N, Cap, k, b, beta, a, alpha_gen, red):
   return r
 
 # #######################################  Relaunch-Delta  ####################################### #
-def E_T_pareto_k_n_wrelaunch(loc, a, alpha, d, k, n):
-  if d == 0:
-    return E_X_n_k_pareto(loc, a, n, k)
-  q = (d > loc)*(1 - (loc/d)**a)
+## d: relaunch time
+def relaunch_ES_pareto(k, a, alpha, w):
+  d = a*w
+  if d <= a:
+    return d + ES_k_n_pareto(k, k, a, alpha)
   
-  if d <= loc:
-    return d + E_X_n_k_pareto(loc, a, n, k)
-  elif n == k:
-    def g(k, a):
-      if k > 170:
-        return loc*(k+1)**(1/a) * G(1-1/a)
-      return loc*G(1-1/a)*G(k+1)/G(k+1-1/a)
-    return d*(1-q**k) + g(k, a)*(1 + (loc/d-1)*I(1-q,1-1/a,k) )
+  q = (d > a)*(1 - (a/d)**alpha)
+  L = a*G(1-1/alpha)*G(k+1)/G(k+1-1/alpha) if k < 170 else a*(k+1)**(1/alpha) * G(1-1/alpha)
+  return d*(1-q**k) + L*(1 + (a/d-1)*I(1-q,1-1/alpha,k) )
+
+def relaunch_ES2_pareto(k, a, alpha, w):
+  d = a*w
+  if d <= a:
+    return d**2 + 2*d*ES_k_n_pareto(k, k, a, alpha) + ES2_k_n_pareto(k, k, a, alpha)
+  
+  q = (d > a)*(1 - (a/d)**alpha)
+  E_ = lambda r: d**2 + 2*d*ES_k_n_pareto(k, k, a, alpha) + \
+                 ES2_k_n_pareto(k-r, k-r, a, alpha) - ES2_k_n_pareto(k-r, k-r, d, alpha)
+  return ES2_k_n_pareto(k, k, a, alpha) + \
+         sum([E_(r) * binom(k, r) * q**r * (1-q)**(k-r) for r in range(k) ] )
+
+
+
+def relaunch_EC_pareto(k, a, alpha, w):
+  d = a*w
+  if d == 0:
+    return k*a/(alpha-1) * (alpha - G(k)*G(1-1/a)/G(k+1-1/a) )
+  
+  q = (d > a)*(1 - (a/d)**alpha)
+  if d <= a:
+    return k*d + relaunch_EC_pareto(k, a, alpha, 0)
+  else:
+    return alpha/(alpha-1)*(k*(1-q)*(a-d) + k*a)
+
+def relaunch_ES(k, b, beta, a, alpha, d):
+  # return sum([ES_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+  
+  L = Pareto(b, beta) # Take D as the lifetime; D = LR, R = 1
+  ES = L.mean()*relaunch_ES_pareto(k, a, alpha, w)
+  ES2 = L.moment(2)*redsmall_ESl2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
 
 def plot_ro_Esl():
   N, Cap = 10, 100

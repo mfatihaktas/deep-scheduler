@@ -3,6 +3,9 @@ import mpmath, scipy
 from rvs import *
 
 # ##########################################  Basics  ############################################ #
+def binom(n, k):
+  return scipy.special.binom(n, k)
+
 def G(z, x=None, type_=None):
   if x is None:
     return scipy.special.gamma(z)
@@ -40,13 +43,13 @@ def E_X_i_j_pareto(n, i, j, loc, a):
   return loc**2*G(n+1)/G(n+1-2/a) * G(n-i+1-2/a)/G(n-i+1-1/a) * G(n-j+1-1/a)/G(n-j+1)
 
 # ###############  Latency and Cost of zero-delay replicated or coded redundancy  ################ #
-def ET_k_c_pareto(k, c, loc, a):
+def ES_k_c_pareto(k, c, loc, a):
   return loc*G(k+1)*G(1-1/(c+1)/a)/G(k+1-1/(c+1)/a)
 
 def EC_k_c_pareto(k, c, loc, a):
   return k*(c+1) * a*(c+1)*loc/(a*(c+1)-1)
 
-def ET2_k_c_pareto(k, c, loc, a):
+def ES2_k_c_pareto(k, c, loc, a):
   a_ = (c+1)*a
   if a_ > 1:
     return E_X_i_j_pareto(k, k, k, loc, a_)
@@ -66,7 +69,7 @@ def EC2_k_c_pareto(k, c, loc, a):
 
   return (c+1)**2 * EC2
 
-def ET_n_k_pareto(n, k, loc, a):
+def ES_k_n_pareto(n, k, loc, a):
   if k == 0:
     return 0
   elif n == k and n > 170:
@@ -80,7 +83,7 @@ def EC_k_n_pareto(k, n, loc, a):
     return loc/(a-1) * (a*n - (n-k)*((n+1)/(n-k+1))**(1/a) )
   return loc*n/(a-1) * (a - G(n)/G(n-k)*G(n-k+1-1/a)/G(n+1-1/a) )
 
-def ET2_k_n_pareto(k, n, loc, a):
+def ES2_k_n_pareto(k, n, loc, a):
   return E_X_i_j_pareto(n, k, k, loc, a)
 
 def EC2_k_n_pareto(k, n, loc, a):

@@ -84,7 +84,7 @@ def eval_wmpi(rank):
             log(ERROR, "scher.restore({}) failed!".format(learning_count), scher=scher, ro=ro, slen__ro_learning_count_m=slen__ro_learning_count_m)
             return
         elif scher._type == 'Scher_wMultiplicativeExpansion' and scher.sching_m['type'] == 'expand_if_totaldemand_leq' and scher.sching_m['threshold'] == -1:
-          scher.sching_m['threshold'] = redsmall_optimal_d_pareto(ro, N, Cap, k, r, b, sinfo_m['lifetime_rv'].a, a, alpha_gen, red)
+          scher.sching_m['threshold'] = redsmall_optimal_d(ro, N, Cap, k, r, b, sinfo_m['lifetime_rv'].a, a, alpha_gen, red)
         elif scher._type == 'Scher_wrelaunch':
           wrelaunch_sim = True
         log(INFO, "rank= {} will sim".format(rank), scher=scher, ro=ro)
