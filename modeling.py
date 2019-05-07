@@ -354,29 +354,13 @@ def redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
     return None, None, None
   alpha = alpha_gen(ro)
   
-  def MGc_EW_Prqing(ar, c, EX, EX2):
-    def MMc_EW_Prqing(ar, EX, c):
-      ro = ar*EX/c
-      ro_ = c*ro
-      # Prqing = 1/(1 + (1-ro)*G(c+1)/ro_**c * sum([ro_**i/G(i+1) for i in range(c) ] ) )
-      c_times_ro__power_c = math.exp(c*math.log(c*ro) )
-      # Prqing = 1/(1 + (1-ro) * math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
-      Prqing = 1/(1 + (1-ro) * c*math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
-      
-      # EN = ro/(1-ro)*Prqing + c*ro
-      # log(INFO, "ro= {}, Prqing= {}".format(ro, Prqing) )
-      return Prqing/(c/EX - ar), Prqing
-    # CoeffVar = math.sqrt(EX2 - EX**2)/EX
-    # return (1 + CoeffVar**2)/2 * MMc_EW_Prqing(ar, EX, c)
-    MMc_EW, MMc_Prqing = MMc_EW_Prqing(ar, EX, c)
-    return (1 + (EX2 - EX**2)/EX**2)/2 * MMc_EW, MMc_Prqing
   L = Pareto(b, beta)
   ES = L.mean()*redsmall_ESl(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   ES2 = L.moment(2)*redsmall_ESl2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   EC = redsmall_EC_exact(k, r, b, beta, a, alpha, d, red)
   
   # log(INFO, "ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
-  EW, Prqing = MGc_E W_Prqing(ar, N*Cap*ES/EC, ES, ES2)
+  EW, Prqing = MGc_EW_Prqing(ar, N*Cap*ES/EC, ES, ES2)
   ET = ES + EW
   # log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
   log(INFO, "d= {}, ro= {}".format(d, ro) )
@@ -429,7 +413,7 @@ def redsmall_optimal_d(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None
   log(INFO, "r= {}".format(r) )
   return round(r.x, 1)
 
-def redsmall_approx_redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
+def redsmall_approx_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   ar = ar_for_ro0_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
   ro = redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   if ro is None:
@@ -556,17 +540,37 @@ def relaunch_ES_pareto(k, a, alpha, w):
   return d*(1-q**k) + L*(1 + (a/d-1)*I(1-q,1-1/alpha,k) )
 
 def relaunch_ES2_pareto(k, a, alpha, w):
+  log(INFO, "", k=k, a=a, alpha=alpha, w=w)
   d = a*w
   if d <= a:
     return d**2 + 2*d*ES_k_n_pareto(k, k, a, alpha) + ES2_k_n_pareto(k, k, a, alpha)
   
   q = (d > a)*(1 - (a/d)**alpha)
-  E_ = lambda r: d**2 + 2*d*ES_k_n_pareto(k, k, a, alpha) + \
+  E_ = lambda r: d**2 + 2*d*ES_k_n_pareto(k-r, k-r, a, alpha) + \
                  ES2_k_n_pareto(k-r, k-r, a, alpha) - ES2_k_n_pareto(k-r, k-r, d, alpha)
   return ES2_k_n_pareto(k, k, a, alpha) + \
-         sum([E_(r) * binom(k, r) * q**r * (1-q)**(k-r) for r in range(k) ] )
+         sum([E_(r) * binom_(k, r) * q**r * (1-q)**(k-r) for r in range(k) ] )
 
+def relaunch_derived_ES2_pareto(k, a, alpha, w):
+  d = a*w
+  if d <= a:
+    return d**2 + 2*d*ES_k_n_pareto(k, k, a, alpha) + ES2_k_n_pareto(k, k, a, alpha)
+  
+  q = (d > a)*(1 - (a/d)**alpha)
+  E_ = lambda r: ES_k_n_pareto(k-r, k-r, a, alpha)
+  return ES2_k_n_pareto(k, k, a, alpha) + \
+         d**2*(1 - q**k) + \
+         2*d*a*G(1-1/alpha)*G(k+1)/G(k+1-1/alpha) * (1-q)**(1/alpha)*I(1-q, 1-1/alpha, k) + \
+         (a**2 - d**2)*G(1-2/alpha)*G(k+1)/G(k+1-2/alpha) * (1-q)**(2/alpha)*I(1-q, 1-2/alpha, k)
 
+def relaunch_ES2_exact_vs_approx():
+  for k in range(5, 10):
+    print("\n>> k= {}".format(k) )
+    for w in np.linspace(1, 4, 20):
+      print("w= {}".format(w) )
+      relaunch_ES2 = relaunch_ES2_pareto(k, a, alpha, w)
+      relaunch_derived_ES2 = relaunch_derived_ES2_pareto(k, a, alpha, w)
+      print("relaunch_ES2= {}, relaunch_derived_ES2= {}".format(relaunch_ES2, relaunch_derived_ES2) )
 
 def relaunch_EC_pareto(k, a, alpha, w):
   d = a*w
@@ -579,12 +583,53 @@ def relaunch_EC_pareto(k, a, alpha, w):
   else:
     return alpha/(alpha-1)*(k*(1-q)*(a-d) + k*a)
 
-def relaunch_ES(k, b, beta, a, alpha, d):
-  # return sum([ES_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
+def relaunch_ES(k, b, beta, a, alpha, w):
+  EL = Pareto(b, beta).mean()
+  ES_wrt_k = lambda k: EL*relaunch_ES_pareto(k, a, alpha, w)
+  return sum([ES_wrt_k(i)*k.pdf(i) for i in k.v_l] )
+
+def relaunch_ES2(k, b, beta, a, alpha, w):
+  EL2 = Pareto(b, beta).moment(2)
+  ES2_wrt_k = lambda k: EL2*relaunch_ES2_pareto(k, a, alpha, w)
+  return sum([ES2_wrt_k(i)*k.pdf(i) for i in k.v_l] )
+
+def relaunch_EC(k, b, beta, a, alpha, w):
+  EL = Pareto(b, beta).mean()
+  EC_wrt_k = lambda k: EL*relaunch_EC_pareto(k, a, alpha, w)
+  return sum([EC_wrt_k(i)*k.pdf(i) for i in k.v_l] )
+
+def relaunch_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha, w):
+  '''Using the result for M/M/c to approximate E[T] in M/G/c.
+     [https://en.wikipedia.org/wiki/M/G/k_queue]
+  '''
+  ar = ar_for_ro0_pareto(ro0, N, Cap, k, b, beta, a, alpha)
+  # ro = relaunch_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha)
+  # if ro is None:
+  #   return None, None, None
   
-  L = Pareto(b, beta) # Take D as the lifetime; D = LR, R = 1
-  ES = L.mean()*relaunch_ES_pareto(k, a, alpha, w)
-  ES2 = L.moment(2)*redsmall_ESl2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+  ES = relaunch_ES(k, b, beta, a, alpha, w)
+  ES2 = relaunch_ES2(k, b, beta, a, alpha, w)
+  EC = relaunch_EC(k, b, beta, a, alpha, w)
+  
+  # log(INFO, "ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
+  EW, Prqing = MGc_EW_Prqing(ar, N*Cap*ES/EC, ES, ES2)
+  ET = ES + EW
+  ro = ar*EC/N*Cap
+  log(INFO, "w= {}, ro= {}".format(w, ro) )
+  return round(ET, 2), round(EW, 2), round(Prqing, 2)
+
+def relaunch_approx_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha, w):
+  ar = ar_for_ro0_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
+  
+  ES = relaunch_ES(k, b, beta, a, alpha, w)
+  EC = relaunch_EC(k, b, beta, a, alpha, w)
+  
+  ro = ar*EC/N*Cap
+  EW = 1/ar * ro**2/(1 - ro)
+  ET = ES + EW
+  # log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
+  log(INFO, "w= {}, ro= {}".format(w, ro) )
+  return round(ET, 2), round(EW, 2), round(ro, 2)
 
 def plot_ro_Esl():
   N, Cap = 10, 100
@@ -674,7 +719,9 @@ if __name__ == "__main__":
   def alpha_gen(ro):
     return alpha
   
-  red = 'Coding'
-  r = redsmall_r_max_wo_exceeding_EC0(N, Cap, k, b, beta, a, alpha_gen, red)
-  print("r= {}".format(r) )
+  # red = 'Coding'
+  # r = redsmall_r_max_wo_exceeding_EC0(N, Cap, k, b, beta, a, alpha_gen, red)
+  # print("r= {}".format(r) )
   
+  relaunch_ES2_exact_vs_approx()
+  # print("binom_(5, 1)= {}".format(binom_(5, 1) ) )

@@ -66,7 +66,8 @@ elif [ $1 = 'd' ]; then
   $PY drl_plots.py
 elif [ $1 = 'r' ]; then
   # $PY rlearning.py
-  $PY redsmall_plots.py
+  # $PY redsmall_plots.py
+  $PY relaunch_plot.py
 elif [ $1 = 'm' ]; then
   $PY modeling.py
   # $PY model_checking.py

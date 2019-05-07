@@ -3,7 +3,7 @@ import mpmath, scipy
 from rvs import *
 
 # ##########################################  Basics  ############################################ #
-def binom(n, k):
+def binom_(n, k):
   return scipy.special.binom(n, k)
 
 def G(z, x=None, type_=None):
@@ -95,3 +95,22 @@ def EC2_k_n_pareto(k, n, loc, a):
       EC2 += E_X_i_j_pareto(n, i, j, loc, a)
   
   return EC2
+
+# ###########################################  Qing  ############################################# #
+def MGc_EW_Prqing(ar, c, EX, EX2):
+  def MMc_EW_Prqing(ar, EX, c):
+    ro = ar*EX/c
+    ro_ = c*ro
+    # Prqing = 1/(1 + (1-ro)*G(c+1)/ro_**c * sum([ro_**i/G(i+1) for i in range(c) ] ) )
+    c_times_ro__power_c = math.exp(c*math.log(c*ro) )
+    # Prqing = 1/(1 + (1-ro) * math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
+    Prqing = 1/(1 + (1-ro) * c*math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
+    
+    # EN = ro/(1-ro)*Prqing + c*ro
+    # log(INFO, "ro= {}, Prqing= {}".format(ro, Prqing) )
+    return Prqing/(c/EX - ar), Prqing
+  # CoeffVar = math.sqrt(EX2 - EX**2)/EX
+  # return (1 + CoeffVar**2)/2 * MMc_EW_Prqing(ar, EX, c)
+  MMc_EW, MMc_Prqing = MMc_EW_Prqing(ar, EX, c)
+  return (1 + (EX2 - EX**2)/EX**2)/2 * MMc_EW, MMc_Prqing
+ 

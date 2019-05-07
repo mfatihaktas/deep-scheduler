@@ -1,11 +1,8 @@
 from modeling import *
-from plot_data import *
+from redsmall_data import *
 
-alpha = 2.1 # 3
-
-ro_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-
-d_l, ro_scherid_X_l_m = get_d_l__ro_scherid_X_l_m(alpha)
+ro0_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+d_l, ro0_scherid_X_l_m = get_d_l__ro0_scherid_X_l_m(alpha)
 
 def plot_ET_wrt_d():
   r, red = 2, 'Coding'
@@ -15,12 +12,12 @@ def plot_ET_wrt_d():
   def plot_(ro0):
     log(INFO, "ro0= {}".format(ro0) )
     
-    scherid_X_l_m = ro_scherid_X_l_m[ro0]
+    scherid_X_l_m = ro0_scherid_X_l_m[ro0]
     sim_ET_l, sim_StdT_l = [], []
     ET_wMGc_l, approx_ET_wMGc_l = [], []
     d_l_ = []
     for d in d_l:
-      ET_wMGc, EW_wMGc, Prqing_wMGc = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+      ET_wMGc, EW_wMGc, Prqing_wMGc = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
       if ET_wMGc is None: # sys is unstable
         break
       elif ET_wMGc > 200:
@@ -32,7 +29,7 @@ def plot_ET_wrt_d():
       sim_ET_l.append(np.mean(X_l_m['ET_l'] ) )
       sim_StdT_l.append(np.std(X_l_m['ET_l'] ) )
       
-      approx_ET_wMGc, approx_EW_wMGc, approx_Prqing_wMGc = approx_ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+      approx_ET_wMGc, approx_EW_wMGc, approx_Prqing_wMGc = relaunch_approx_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
       if approx_ET_wMGc > 200:
         approx_ET_wMGc = None
       approx_ET_wMGc_l.append(approx_ET_wMGc)
@@ -65,17 +62,17 @@ def plot_ET_wrt_d():
     plot.savefig('plot_ET_wrt_d_ro{}.png'.format(ro0), bbox_inches='tight')
     fig.clear()
   
-  for ro0 in ro_l:
+  for ro0 in ro0_l:
     plot_(ro0)
   # plot_(ro0=0.1)
   
-  log(INFO, "done;", ro_l=ro_l, dopt_l=dopt_l)
+  log(INFO, "done;", ro0_l=ro0_l, dopt_l=dopt_l)
 
 def plot_ESl_ET_vs_ro__redsmall_vs_drl():
-  ro_scherid_X_l_m = get_data_redsmall_vs_drl(alpha)
+  ro0_scherid_X_l_m = get_data_redsmall_vs_drl(alpha)
   
   def profile(ro, scherid, X, ulim=float('Inf') ):
-    l = ro_scherid_X_l_m[ro][scherid][X]
+    l = ro0_scherid_X_l_m[ro][scherid][X]
     m, s = np.mean(l), np.std(l)
     if m > ulim:
       m, s = float('NaN'), float('NaN')
@@ -85,7 +82,7 @@ def plot_ESl_ET_vs_ro__redsmall_vs_drl():
   RLScher_ESl_err_l, Redsmall_ESl_err_l = [], []
   RLScher_ET_l, Redsmall_ET_l = [], []
   RLScher_ET_err_l, Redsmall_ET_err_l = [], []
-  for ro in ro_l:
+  for ro in ro0_l:
     mean, stdev = profile(ro, 'RLScher', 'ESl_l')
     RLScher_ESl_l.append(mean)
     RLScher_ESl_err_l.append(stdev)
@@ -101,8 +98,8 @@ def plot_ESl_ET_vs_ro__redsmall_vs_drl():
     Redsmall_ET_err_l.append(stdev)
   
   ## ESl
-  plot.errorbar(ro_l, RLScher_ESl_l, yerr=RLScher_ESl_err_l, label='Redundant-RL', c=NICE_RED, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
-  plot.errorbar(ro_l, Redsmall_ESl_l, yerr=Redsmall_ESl_err_l, label='Redundant-small', c=NICE_GREEN, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  plot.errorbar(ro0_l, RLScher_ESl_l, yerr=RLScher_ESl_err_l, label='Redundant-RL', c=NICE_RED, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  plot.errorbar(ro0_l, Redsmall_ESl_l, yerr=Redsmall_ESl_err_l, label='Redundant-small', c=NICE_GREEN, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
   
   fontsize = 18
   prettify(plot.gca() )
@@ -117,8 +114,8 @@ def plot_ESl_ET_vs_ro__redsmall_vs_drl():
   plot.gcf().clear()
   
   ## ET
-  plot.errorbar(ro_l, RLScher_ET_l, yerr=RLScher_ET_err_l, label='Redundant-RL', c=NICE_RED, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
-  plot.errorbar(ro_l, Redsmall_ET_l, yerr=Redsmall_ET_err_l, label='Redundant-small', c=NICE_GREEN, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  plot.errorbar(ro0_l, RLScher_ET_l, yerr=RLScher_ET_err_l, label='Redundant-RL', c=NICE_RED, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
+  plot.errorbar(ro0_l, Redsmall_ET_l, yerr=Redsmall_ET_err_l, label='Redundant-small', c=NICE_GREEN, marker=next(marker_c), linestyle=':', mew=0.5, ms=8)
   
   prettify(plot.gca() )
   plot.legend(framealpha=0.5, loc='best', numpoints=1)

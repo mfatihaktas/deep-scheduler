@@ -329,12 +329,12 @@ class Cluster_wrelaunch():
 
 # ############################################  Scher  ########################################### #
 class Scher_wrelaunch(object):
-  def __init__(self, mapping_m, sching_m):
+  def __init__(self, mapping_m, sching_m, _id=None):
     self.sching_m = sching_m
     self.mapper = Mapper(mapping_m)
     
     self._type = 'Scher_wrelaunch'
-    self._id = 'Scher_wrelaunch'
+    self._id = _id if _id else 'Scher_wrelaunch'
   
   def __repr__(self):
     return 'Scher[sching_m={}, mapper= {}]'.format(self.sching_m, self.mapper)
