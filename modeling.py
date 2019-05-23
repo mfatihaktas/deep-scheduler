@@ -107,7 +107,8 @@ def redsmall_EC_exact(k, r, b, beta, a, alpha, d=None, red=None):
   Sl = Pareto(a, alpha)
   if d is None:
     return k.mean()*Sl.mean()*D.mean()
-  
+  '''
+  ## Block commented area gives WRONG result!
   Ek = k.mean()
   ESl = Sl.mean()
   ED = D.mean() # b/(1 - 1/beta)
@@ -161,6 +162,10 @@ def redsmall_EC_exact(k, r, b, beta, a, alpha, d=None, red=None):
     EC_given_kD_g_d=EC_given_kD_g_d)
   return EC_given_kD_leq_d*Pr_kD_leq_d + \
          EC_given_kD_g_d*(1 - Pr_kD_leq_d)
+  '''
+  ED_given_D_leq_doverk = lambda k: D.mean_given_leq_x(d/k)
+  return redsmall_EC_exact(k, r, b, beta, a, alpha, d=None, red=red) \
+    + sum([(EC_k_n_pareto(i, i*r, a, alpha) - i*Sl.mean())*ED_given_D_leq_doverk(i)*D.cdf(d/i)*k.pdf(i) for i in k.v_l] )
 
 def redsmall_EC2_exact(k, r, b, beta, a, alpha, d=None, red=None):
   D = Pareto(b, beta)
@@ -405,7 +410,7 @@ def redsmall_ES2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   D = Pareto(b, beta)
   if d is None:
     return D.moment(2)*sum([ES2_k_n_pareto(i, i, a, alpha)*k.pdf(i) for i in k.v_l] )
-  
+  '''
   Pr_kD_leq_d = Pr_kD_leq_d_pareto(k, b, beta, d)
   
   # ED_given_D_leq_doverk = lambda k: mean(D, given_X_leq_x=True, x=d/k)
@@ -425,6 +430,10 @@ def redsmall_ES2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   #   ESl2_given_kD_leq_d = sum([ES2_k_c_pareto(i, r-1, a, alpha)*k.pdf(i) for i in k.v_l] )
   return ESl2_given_kD_leq_d*Pr_kD_leq_d + \
          ESl2_given_kD_g_d*(1 - Pr_kD_leq_d)
+  '''
+  ED2_given_D_leq_doverk = lambda k: moment(D, 2, given_X_leq_x=True, x=d/k)
+  return redsmall_ES2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=red) \
+    + sum([(ES2_k_n_pareto(i, i*r, a, alpha) - ES2_k_n_pareto(i, i, a, alpha) )*ED2_given_D_leq_doverk(i)*D.cdf(d/i)*k.pdf(i) for i in k.v_l] )
 
 def redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   '''Using the result for M/M/c to approximate E[T] in M/G/c.

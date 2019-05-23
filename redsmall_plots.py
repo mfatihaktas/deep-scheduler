@@ -11,7 +11,7 @@ Sl = Pareto(a, alpha_)
 def alpha_gen(ro):
   return alpha_
 
-ro0_l = [0.1] # [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+ro0_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9] # [0.1]
 d_l, ro0_scherid_X_l_m = get_d_l__ro0_scherid_X_l_m(alpha_)
 log(INFO, "", alpha_=alpha_, d_l=d_l)
 
