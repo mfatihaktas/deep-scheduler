@@ -223,7 +223,7 @@ class Cluster_wrelaunch():
       while True:
         j.wait_time = self.env.now - j.arrival_time
         
-        # a would be relaunch time
+        ## a would be relaunch time
         s, a, w_l = self.scher.schedule(j, self.w_l, self)
         if a == -1:
           slog(DEBUG, self.env, self, "a= -1", j)
@@ -344,5 +344,6 @@ class Scher_wrelaunch(object):
     if len(w_l) < j.k:
       return None, -1, None
     
-    a = self.sching_m['relaunch_time'](j)
+    # a = self.sching_m['w']*j.lifetime
+    a = self.sching_m['w'](j)*j.lifetime
     return None, a, w_l[:j.k]

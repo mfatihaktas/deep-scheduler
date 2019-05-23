@@ -188,6 +188,19 @@ class Pareto(RV):
       return float("inf")
     return self.loc*self.a/(self.a-1)
   
+  def mean_given_g_x(self, x):
+    if self.a <= 1:
+      log(WARNING, "Mean is infinite; a= {} <= 1".format(self.a) )
+      return float("inf")
+    if x < self.loc:
+      return self.mean()
+    return x*self.a/(self.a-1)
+  
+  def mean_given_leq_x(self, x):
+    if x < self.loc:
+      return 0
+    return (self.mean() - self.mean_given_g_x(x)*self.tail(x) )/self.cdf(x)
+  
   def moment(self, i):
     if self.a <= i:
       log(WARNING, "{}th moment is infinite; a= {} <= {}".format(i, self.a, i) )
@@ -704,8 +717,10 @@ if __name__ == "__main__":
   # V = TPareto(1, 100, 1.1)
   # print("EV= {}".format(V.mean() ) )
   
-  # b = BZipf(1, 1)
-  # print("b.mean= {}".format(b.mean() ) )
+  b = BZipf(1, 10)
+  print("b.mean= {}".format(b.mean() ) )
+  for x in range(b.l_l, b.u_l+1):
+    print("b.pdf({})= {}".format(x, b.pdf(x) ) )
   
   # u = Uniform(0.25, 0.75)
   # print("u.mean= {}".format(u.mean() ) )
@@ -716,8 +731,9 @@ if __name__ == "__main__":
   # for _ in range(100):
   #   print("d.sample= {}".format(d.sample() ) )
   
-  # '''
-  X = Exp(0.1, 10) # Pareto(40, 2)
+  '''
+  # X = Exp(0.1, 10) # Pareto(40, 2)
+  X = Pareto(10, 3)
   def test(x):
     print(">> x= {}".format(x) )
     Pr_X_leq_x = X.cdf(x)
@@ -725,11 +741,14 @@ if __name__ == "__main__":
     _EX_given_x_g_x = wrong_mean(X, given_X_leq_x=False, x=x)
     EX_given_x_leq_x = mean(X, given_X_leq_x=True, x=x)
     EX_given_x_g_x = mean(X, given_X_leq_x=False, x=x)
+    EX_given_x_leq_x_ = X.mean_given_leq_x(x)
+    EX_given_x_g_x_ = X.mean_given_g_x(x)
     sim_EX_given_x_leq_x = sim_EX(X, given_X_leq_x=True, x=x, nrun=10**5)
     sim_EX_given_x_g_x = sim_EX(X, given_X_leq_x=False, x=x, nrun=10**5)
-    blog(_EX_given_x_leq_x=_EX_given_x_leq_x, _EX_given_x_g_x=_EX_given_x_g_x, EX_given_x_leq_x=EX_given_x_leq_x, EX_given_x_g_x=EX_given_x_g_x)
-    blog(sim_EX_given_x_leq_x=sim_EX_given_x_leq_x, sim_EX_given_x_g_x=sim_EX_given_x_g_x)
+    
+    print("EX_given_x_leq_x= {}, sim_EX_given_x_leq_x= {}, EX_given_x_leq_x_= {}, _EX_given_x_leq_x= {}".format(EX_given_x_leq_x, sim_EX_given_x_leq_x, EX_given_x_leq_x_, _EX_given_x_leq_x) )
+    print("EX_given_x_g_x= {}, sim_EX_given_x_g_x= {}, EX_given_x_g_x_= {}, _EX_given_x_g_x= {}".format(EX_given_x_g_x, sim_EX_given_x_g_x, EX_given_x_g_x_, _EX_given_x_g_x) )
     # print("X.mean= {}, Pr_X_leq_x*EX_given_x_leq_x + (1-Pr_X_leq_x)*EX_given_x_g_x= {}".format(X.mean(), Pr_X_leq_x*EX_given_x_leq_x + (1-Pr_X_leq_x)*EX_given_x_g_x) )
-  for x in np.linspace(X.l_l, 10*X.l_l, 10):
+  for x in np.linspace(X.l_l, 50*X.l_l, 10):
     test(x)
-  # '''
+  '''

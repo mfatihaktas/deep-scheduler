@@ -60,14 +60,15 @@ elif [ $1 = 's' ]; then
   $PY sim_wrelaunch_exp.py
 elif [ $1 = 'e' ]; then
   # rm save_expreplay/*
-  $PY experience_replay.py --ro=0.1
+  # $PY experience_replay.py --ro=0.1
   # nohup $PY experience_replay.py > experience_replay.out 2>&1 &
+  $PY eval_wmpi.py
 elif [ $1 = 'd' ]; then
   $PY drl_plots.py
 elif [ $1 = 'r' ]; then
   # $PY rlearning.py
-  # $PY redsmall_plots.py
-  $PY relaunch_plot.py
+  $PY redsmall_plots.py
+  # $PY relaunch_plot.py
 elif [ $1 = 'm' ]; then
   $PY modeling.py
   # $PY model_checking.py

@@ -2,9 +2,9 @@ import sys, time
 import numpy as np
 from mpi4py import MPI
 
-from rlearning import *
 from scheduler import *
 from modeling import *
+from rlearning import *
 
 def eval_wmpi(rank):
   log(INFO, "starting;", rank=rank)
@@ -105,7 +105,7 @@ if __name__ == "__main__":
   
   sim_learners = False # True
   eval_redsmall_vs_drl = False # True
-  eval_redsmall_vs_wrelaunch = False # True
+  eval_redsmall_vs_wrelaunch = True # False
   ro0_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
   
   sinfo_m['njob'] = 5000*N
@@ -121,16 +121,22 @@ if __name__ == "__main__":
       RLScher(sinfo_m, mapping_m, sching_m, save_dir='save_expreplay_persist'),
       Scher_wMultiplicativeExpansion(mapping_m, {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold':-1} ) ]
   elif eval_redsmall_vs_wrelaunch:
-    # Scher_wMultiplicativeExpansion(mapping_m, {'type': 'expand_if_totaldemand_leq', 'r': r_max_wo_exceeding_EC0(N, Cap, k, b, beta, a, alpha_gen, red), 'threshold':10**9} ),
+    # Scher_wMultiplicativeExpansion(mapping_m, {'type': 'expand_if_totaldemand_leq', 'r': r_max_wo_exceeding_EC0(N, Cap, k, b, beta_, a, alpha_gen, red), 'threshold':10**9} ),
     scher_l = [
       Scher_wMultiplicativeExpansion(mapping_m, {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold':-1} ),
-      Scher_wrelaunch(mapping_m, {'relaunch_time': lambda j: 4*j.lifetime} ) ]
+      Scher_wrelaunch(mapping_m, {'w': lambda j: relaunch_opt_w_using_ES(j.k, j.lifetime, a, alpha_) }, _id='opt_w_using_ES') ]
   else: # Model checking
     # l, u = k.l_l*L.l_l, 50*k.mean()*L.mean()
     # d_l = [0, *np.logspace(math.log10(l), math.log10(u), 20) ]
     # scher_l = [Scher_wMultiplicativeExpansion(mapping_m, {'type': 'expand_if_totaldemand_leq', 'r': r, 'threshold': d} ) for d in d_l]
     
-    w_l = [1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    scher_l = [Scher_wrelaunch(mapping_m, {'relaunch_time': lambda j: w*j.lifetime}, _id='Scher_wrelaunch_w={}'.format(w) ) for w in w_l]
+    # w_l = [1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    # scher_l = [Scher_wrelaunch(mapping_m, {'w': lambda j: w}, _id='w={}'.format(w) ) for w in w_l]
+    
+    log(INFO, "", N=N, Cap=Cap, k=k, b=b, beta_=beta_, a=a, alpha_=alpha_)
+    opt_w_using_ET = relaunch_opt_w_using_ET(0.7, N, Cap, k, b, beta_, a, alpha_)
+    scher_l = [
+      Scher_wrelaunch(mapping_m, {'w': lambda j: relaunch_opt_w_using_ES(j.k, j.lifetime, a, alpha_) }, _id='opt_w_using_ES'),
+      Scher_wrelaunch(mapping_m, {'w': lambda j: opt_w_using_ET}, _id='opt_w_using_ET') ]
   
   eval_wmpi(rank)

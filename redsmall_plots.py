@@ -1,8 +1,19 @@
 from modeling import *
 from redsmall_data import *
 
-ro0_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-d_l, ro0_scherid_X_l_m = get_d_l__ro0_scherid_X_l_m(alpha)
+N, Cap = 20, 10
+k = BZipf(1, 10) # BZipf(1, 5)
+R = Uniform(1, 1)
+b, beta_ = 10, 3 # 4
+L = Pareto(b, beta_)
+a, alpha_ = 1, 3
+Sl = Pareto(a, alpha_)
+def alpha_gen(ro):
+  return alpha_
+
+ro0_l = [0.1] # [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+d_l, ro0_scherid_X_l_m = get_d_l__ro0_scherid_X_l_m(alpha_)
+log(INFO, "", alpha_=alpha_, d_l=d_l)
 
 def plot_ET_wrt_d():
   r, red = 2, 'Coding'
@@ -17,10 +28,10 @@ def plot_ET_wrt_d():
     ET_wMGc_l, approx_ET_wMGc_l = [], []
     d_l_ = []
     for d in d_l:
-      ET_wMGc, EW_wMGc, Prqing_wMGc = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
+      ET_wMGc, EW_wMGc, Prqing_wMGc = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, d, red)
       if ET_wMGc is None: # sys is unstable
         break
-      elif ET_wMGc > 200:
+      elif ET_wMGc > 100:
         ET_wMGc = None
       ET_wMGc_l.append(ET_wMGc)
       
@@ -29,19 +40,19 @@ def plot_ET_wrt_d():
       sim_ET_l.append(np.mean(X_l_m['ET_l'] ) )
       sim_StdT_l.append(np.std(X_l_m['ET_l'] ) )
       
-      approx_ET_wMGc, approx_EW_wMGc, approx_Prqing_wMGc = relaunch_approx_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-      if approx_ET_wMGc > 200:
+      approx_ET_wMGc, approx_EW_wMGc, approx_Prqing_wMGc = redsmall_approx_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, d, red)
+      if approx_ET_wMGc > 100:
         approx_ET_wMGc = None
       approx_ET_wMGc_l.append(approx_ET_wMGc)
     plot.errorbar(d_l_, sim_ET_l, yerr=sim_StdT_l, label='Simulation', c=NICE_RED, marker='d', ls=':', mew=0.5, ms=8)
     plot.plot(d_l_, ET_wMGc_l, label='M/G/c', c=NICE_BLUE, marker='o', ls=':')
     plot.plot(d_l_, approx_ET_wMGc_l, label='Asymptotic', c=NICE_GREEN, marker='p', ls=':', mew=0.5, ms=8)
     
-    # d_opt = optimal_d_pareto(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=max(d_l_) )
+    # d_opt = optimal_d_pareto(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, red, max_d=max(d_l_) )
     # dopt_l.append(d_opt)
     # # d_opt = min(d_opt, max(d_l_) )
     # # if d_opt <= max(d_l_):
-    # ET_wMGc, EW_wMGc, Prqing_wMGc = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d_opt, red)
+    # ET_wMGc, EW_wMGc, Prqing_wMGc = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, d_opt, red)
     # log(INFO, "*** ro0= {}, d_opt= {}, ET_wMGc= {}".format(ro0, d_opt, ET_wMGc) )
     # plot.plot([d_opt], [ET_wMGc], label=r'$\sim$optimal', c='orangered', marker='x', ls=':', mew=3, ms=10)
     
@@ -69,7 +80,7 @@ def plot_ET_wrt_d():
   log(INFO, "done;", ro0_l=ro0_l, dopt_l=dopt_l)
 
 def plot_ESl_ET_vs_ro__redsmall_vs_drl():
-  ro0_scherid_X_l_m = get_data_redsmall_vs_drl(alpha)
+  ro0_scherid_X_l_m = get_data_redsmall_vs_drl(alpha_)
   
   def profile(ro, scherid, X, ulim=float('Inf') ):
     l = ro0_scherid_X_l_m[ro][scherid][X]
@@ -129,16 +140,6 @@ def plot_ESl_ET_vs_ro__redsmall_vs_drl():
   log(INFO, "done.")
 
 if __name__ == "__main__":
-  N, Cap = 20, 10
-  k = BZipf(1, 10) # BZipf(1, 5)
-  R = Uniform(1, 1)
-  b, beta = 10, 3 # 4
-  L = Pareto(b, beta)
-  a, alpha = 1, 3
-  Sl = Pareto(a, alpha)
-  def alpha_gen(ro):
-    return alpha
-  
   # ar = round(ar_for_ro(ro, N, Cap, k, R, L, S), 2)
   # sinfo_m = {
   #   'njob': 5000*N,  #   'nworker': N, 'wcap': Cap, 'ar': ar,  #   'k_rv': k,  #   'reqed_rv': R,  #   'lifetime_rv': L,  #   'straggle_m': {'slowdown': lambda load: S.sample() } }

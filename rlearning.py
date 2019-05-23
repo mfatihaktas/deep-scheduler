@@ -11,7 +11,7 @@ LEARNING_RATE = 0.01 # 0.01 # 0.0001
 STATE_LEN = 2 # 3
  
 N, Cap = 20, 10
-k = BZipf(1, 10)
+k = BZipf(1, 10) # BZipf(1, 10)
 R = Uniform(1, 1)
 M = 1000
 sching_m = {
@@ -24,16 +24,16 @@ log(INFO, "Global variables:", STATE_LEN=STATE_LEN, sching_m=sching_m, mapping_m
 lessreal_sim = True
 log(INFO, "lessreal_sim= {}".format(lessreal_sim) )
 if lessreal_sim:
-  b, beta = 10, 3 # 2
-  L = Pareto(b, beta) # TPareto(10, 10**5, 2) # TPareto(10, 10**6, 4)
-  a, alpha = 1, 3 # 2.1
-  Sl = Pareto(a, alpha) # Uniform(1, 1)
+  b, beta_ = 10, 3 # 2
+  L = Pareto(b, beta_) # TPareto(10, 10**5, 2) # TPareto(10, 10**6, 4)
+  a, alpha_ = 1, 3 # 2.1
+  Sl = Pareto(a, alpha_) # Uniform(1, 1)
   sinfo_m = {
     'njob': 2000*N, # 10*N,
     'nworker': N, 'wcap': Cap, 'ar': None,
     'k_rv': k, 'reqed_rv': R, 'lifetime_rv': L, 'Sl': Sl,
     'straggle_m': {'slowdown': lambda load: Sl.sample() } }
-  alpha_gen = lambda load: alpha
+  alpha_gen = lambda load: alpha_
 else:
   sinfo_m = {
     'njob': 2000*N,
@@ -49,7 +49,7 @@ else:
   sinfo_m['ar'] = 2/5*ar_ub
 
 ## Learned with experience_replay.py
-## alpha = 2.1
+## alpha_ = 2.1
 slen__ro_learning_count_m = {
   2: {
     0.1: 1885,

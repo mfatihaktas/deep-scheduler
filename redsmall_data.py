@@ -166,7 +166,8 @@ def get_data_redsmall_vs_drl(alpha):
     return None
   return ro_scherid_X_l_m
 
-def get_d_l__ro_scherid_X_l_m(alpha):
+def get_d_l__ro0_scherid_X_l_m(alpha):
+  d_l, ro_scherid_X_l_m = None, None
   if alpha == 3:
     '''
     sinfo_m: {
@@ -1355,7 +1356,6 @@ def get_d_l__ro_scherid_X_l_m(alpha):
         }
       }
     }
-    return d_l, ro_scherid_X_l_m
   elif alpha == 2.1:
     '''
     sinfo_m: {
