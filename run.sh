@@ -70,8 +70,9 @@ elif [ $1 = 'r' ]; then
   $PY redsmall_plots.py
   # $PY relaunch_plot.py
 elif [ $1 = 'm' ]; then
-  $PY modeling.py
+  # $PY modeling.py
   # $PY model_checking.py
+  $PY modeling_wDolly.py
 elif [ $1 = 'n' ]; then
   $PY numeric_comparison.py
 else

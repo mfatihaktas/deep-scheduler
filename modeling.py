@@ -324,6 +324,7 @@ def compare_redsmall_EC_exact_approx():
     print("\n")
 
 def redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
+  '''
   def func_ro(ro):
     # return ar/N/Cap * redsmall_EC_exact(k, r, b, beta, a, alpha_gen(ro), d, red)
     return ar/N/Cap * redsmall_EC_model(k, r, b, beta, a, alpha_gen(ro), d, red)
@@ -359,6 +360,9 @@ def redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None
   # ro = scipy.optimize.fixed_point(ro_, 0.5)
   # ro = scipy.optimize.fixed_point(ro_, [0.01, 0.99] )
   return ro
+  '''
+  alpha = alpha_gen(0.1)
+  return ar/N/Cap * redsmall_EC_model(k, r, b, beta, a, alpha, d, red)
 
 def redsmall_ES(ro, N, Cap, k, r, b, beta, a, alpha_gen, d=None, red=None):
   alpha = alpha_gen(ro)
@@ -452,13 +456,21 @@ def redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   # Sl = Pareto(a, alpha)
   # sim_m = sim_red(k, r, B, Sl, d, red, nrun=2*10**4)
   # ES, ES2, EC = sim_m['ES'], sim_m['ES2'], sim_m['EC']
-  log(INFO, "", ES=ES, ES2=ES2, EC=EC)
+  # if ES > 100 or ES < 0 or ES2 < 0 or EC < 0:
   
   # log(INFO, "ar*EC/(N*Cap)= {}".format(ar*EC/(N*Cap) ) )
+  
+  # ar = ro0*N*Cap/k.mean()/D.mean()/Sl.mean()
   EW, Prqing = MGc_EW_Prqing(ar, N*Cap*ES/EC, ES, ES2)
+  if EW < 0:
+    # log(ERROR, "!!!", EW=EW, Prqing=Prqing, ES=ES, ES2=ES2, EC=EC)
+    # return None, None, None
+    # return (ES + abs(EW))**2, None, None
+    return 10**6, None, None
+  
   ET = ES + EW
   # log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
-  log(INFO, "d= {}, ro= {}".format(d, ro) )
+  # log(INFO, "d= {}, ro= {}".format(d, ro) )
   return round(ET, 2), round(EW, 2), round(Prqing, 2)
 
 def redsmall_optimal_d(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None):
@@ -482,31 +494,51 @@ def redsmall_optimal_d(ro0, N, Cap, k, r, b, beta, a, alpha_gen, red, max_d=None
       de = d
   return db
   '''
+  log(INFO, "ro0= {}, max_d= {}".format(ro0, max_d) )
   func = lambda d: redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+  # func = lambda d: int(redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0] )
   
   if max_d is None:
     d = 0
     ET_d0 = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
-    print(">> ET_d0= {}".format(ET_d0) )
+    # print(">> ET_d0= {}".format(ET_d0) )
     
     L = Pareto(b, beta)
     EL = L.mean()
     # print("EL= {}".format(EL) )
     l = 0 # 10
     u = 10**3*EL
-    while u - l > 10:
+    while u - l > 0.5:
       d = (l + u)/2
       ET = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
-      if ET is None or ET > 1.5*ET_d0:
+      if ET is None or ET > 1.05*ET_d0:
         u = d
       else:
         l = d
     max_d = (l + u)/2
-  # log(INFO, "max_d= {}".format(max_d) )
-  
-  r = scipy.optimize.minimize_scalar(func, bounds=(0, max_d), method='bounded')
+    
+    # d = L.l_l
+    # ET = 0
+    # while d < 10**3 and ET <= ET_d0:
+    #   ET = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+    #   d += 100
+    # max_d = d
+  log(INFO, "max_d= {}".format(max_d) )
+  r = scipy.optimize.minimize_scalar(func, bounds=(0, max_d), method='bounded') # method='bounded'
   log(INFO, "r= {}".format(r) )
   return round(r.x, 1)
+  
+  # l, u = 0, 5000 # max_d
+  # while u - l > 0.5:
+  #   d = (l + u)/2
+  #   ET = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)[0]
+  #   d_ = 2*d
+  #   ET_ = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d_, red)[0]
+  #   if ET_ >= ET:
+  #     u = d
+  #   else:
+  #     l = d
+  # return d
 
 def redsmall_approx_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red):
   ar = ar_for_ro0_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
@@ -524,27 +556,28 @@ def redsmall_approx_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta, a, alpha_gen, 
   log(INFO, "d= {}, ro= {}".format(d, ro) )
   return round(ET, 2), round(EW, 2), round(ro, 2)
 
-def redsmall_ET_EW(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None):
+def redsmall_ET_EW(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, EW0=None, K=None):
   '''Using (1) to approximate E[T] in M/G/c with heavy tailed job sizes.
      [Konstantinos Psounis, "Systems with Multiple Servers under Heavy-tailed Workloads"
       http://www-bcf.usc.edu/~kpsounis/EE650/Readlist07/Papers07/multiserver.pdf] '''
-  if K is None:
-    alpha0 = alpha_gen(ro0)
-    K = EW0/(ro0/(1-ro0)*redsmall_EC2_exact(k, r, b, beta, a, alpha0)/redsmall_EC_exact(k, r, b, beta, a, alpha0) )
+  # if K is None:
+  #   alpha0 = alpha_gen(ro0)
+  #   K = EW0/(ro0/(1-ro0)*redsmall_EC2_exact(k, r, b, beta, a, alpha0)/redsmall_EC_exact(k, r, b, beta, a, alpha0) )
   
   ar = ar_for_ro0_pareto(ro0, N, Cap, k, b, beta, a, alpha_gen)
   ro = redsmall_ro_pareto(ar, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   if ro is None:
     return None, None
   alpha = alpha_gen(ro)
+  # log(INFO, "", ro=ro, N=N, Cap=Cap, k=k, r=r, b=b, beta=beta, a=a, alpha=alpha, d=d, red=red)
   
   L = Pareto(b, beta) # Take D as the lifetime; D = LR, R = 1
   ES = redsmall_ES(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
   ES2 = redsmall_ES2(ro, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-  print("ES= {}, ES2= {}".format(ES, ES2) )
+  # log(INFO, "ES= {}, ES2= {}".format(ES, ES2) )
   EC = redsmall_EC_exact(k, r, b, beta, a, alpha, d, red)
   EC2 = redsmall_EC2_exact(k, r, b, beta, a, alpha, d, red)
-  print("EC= {}, EC2= {}".format(EC, EC2) )
+  # log(INFO, "EC= {}, EC2= {}".format(EC, EC2) )
   def Pr_blocking(ar, ro):
     Pr_shortjob = L.cdf(5*L.mean() ) # 0.9 # 1/2
     long_jlifetime = ES + math.sqrt((ES2 - ES**2)*Pr_shortjob/(1-Pr_shortjob) ) # 10*L.mean()
@@ -556,15 +589,15 @@ def redsmall_ET_EW(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red, K=None
     blog(Pr_shortjob=Pr_shortjob, long_jlifetime=long_jlifetime, narr_atleast_forblocking=narr_atleast_forblocking, ar_long=ar_long)
     return 1 - math.exp(-ar_long)*sum([ar_long**i/math.factorial(i) for i in range(int(narr_atleast_forblocking)+1) ] )
   
-  pblocking = K # Pr_blocking(ar, ro)
-  EW = ro/(1-ro)*EC2/EC * pblocking
+  pblocking = Pr_blocking(ar, ro) # K
+  EW = ro/(1-ro)*ES2/ES * pblocking # EC2/EC
   
   ET = ES + EW
   log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}, pblocking= {}".format(d, ro, ES, EW, ET, pblocking) )
   return ET, EW
 
 def plot_ET():
-  N, Cap = 10, 100
+  N, Cap = 20, 10
   b, beta = 10, 3
   a, alpha = 1, 3
   # D = Pareto(b, beta)
@@ -572,36 +605,50 @@ def plot_ET():
   k = BZipf(1, 10)
   def alpha_gen(ro):
     return alpha
-  ro0, EW0 = 0.55, 20
+  # ro0, EW0 = 0.55, 20
   
   fontsize = 14
-  def plot_(red, r):
+  def plot_(red, r, ro0):
     log(INFO, "red= {}, r= {}".format(red, r) )
     d_l, ET_l = [], []
+    ET_wMGc_l = []
     l = a*b # D.mean()*S.mean()
-    for d in np.logspace(math.log10(l), math.log10(100*l), 20):
+    # for d in np.logspace(math.log10(l), math.log10(100*l), 20):
+    for d in np.linspace(l, 100*l, 100):
       print(">> d= {}".format(d) )
-      ET, EW = redsmall_ET_EW(ro0, EW0, N, Cap, k, r, b, beta, a, alpha_gen, d, red)
-      print("ET= {}".format(ET) )
       d_l.append(d)
+      
+      ET_wMGc, EW_wMGc, Prqing_wMGc = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, d, red)
+      if ET_wMGc is None or ET_wMGc > 100:
+        ET_wMGc = None
+      ET_wMGc_l.append(ET_wMGc)
+      
+      ET, EW = None, None # redsmall_ET_EW(ro0, N, Cap, k, r, b, beta, a, alpha_gen, d, red) # EW0
+      if ET is None or ET > 100:
+        ET = None
       ET_l.append(ET)
-    plot.plot(d_l, ET_l, label='w/ {}, r={}'.format(red, r), c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
+    # plot.plot(d_l, ET_l, label='w/ {}, r={}'.format(red, r), c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
+    plot.plot(d_l, ET_l, label='Heavy-tail approx', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
+    plot.plot(d_l, ET_wMGc_l, label='M/G/c approx', c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=1)
+    
+    prettify(plot.gca() )
+    plot.legend()
+    plot.xscale('log')
+    plot.xlabel(r'$d$', fontsize=fontsize)
+    plot.ylabel(r'$E[T]$', fontsize=fontsize)
+    
+    # plot.title(r'$N= {}$, $C= {}$, $k \sim$ {}'.format(N, Cap, k) + '\n' + r'$\rho_0= {}$, $E[W_0]= {}$, $b= {}$, $\beta= {}$, $a= {}$, $\alpha= {}$'.format(ro0, EW0, b, beta, a, alpha) )
+    plot.gcf().set_size_inches(5, 5)
+    plot.savefig('plot_ET_ro0{}.png'.format(ro0), bbox_inches='tight')
+    plot.gcf().clear()
   
-  plot_('Rep', 2)
-  plot_('Coding', 2)
-  plot_('Rep', 3)
-  plot_('Coding', 3)
+  # plot_('Rep', 2)
+  # plot_('Coding', 2, ro0=0.3)
+  plot_('Coding', 2, ro0=0.6)
+  # plot_('Coding', 2, ro0=0.8)
+  # plot_('Rep', 3)
+  # plot_('Coding', 3)
   
-  prettify(plot.gca() )
-  plot.legend()
-  plot.xscale('log')
-  plot.xlabel('d', fontsize=fontsize)
-  plot.ylabel('E[T]', fontsize=fontsize)
-  
-  plot.title(r'$N= {}$, $C= {}$, $k \sim$ {}'.format(N, Cap, k) + '\n' + r'$\rho_0= {}$, $E[W_0]= {}$, $b= {}$, $\beta= {}$, $a= {}$, $\alpha= {}$'.format(ro0, EW0, b, beta, a, alpha) )
-  plot.gcf().set_size_inches(5, 5)
-  plot.savefig('plot_ET.png', bbox_inches='tight')
-  plot.gcf().clear()
   log(INFO, "done.")
 
 def redsmall_r_max_wo_exceeding_EC0(N, Cap, k, b, beta, a, alpha_gen, red):
@@ -833,8 +880,10 @@ def plot_ro_Esl():
   log(INFO, "done.")
 
 if __name__ == "__main__":
+  plot_ET()
+  
   # plot_slowdown()
-  compare_redsmall_EC_exact_approx()
+  # compare_redsmall_EC_exact_approx()
   # plot_ro_Esl()
   
   # red = 'Coding'
@@ -844,7 +893,7 @@ if __name__ == "__main__":
   # relaunch_ES2_exact_vs_approx()
   # print("binom_(5, 1)= {}".format(binom_(5, 1) ) )
   
-  ro0 = 0.5
+  # ro0 = 0.5
   # opt_w = relaunch_opt_w_using_ET(ro0, N, Cap, k, b, beta_, a, alpha_)
   # opt_w = relaunch_opt_w_using_ES(k=5, b=1, a=a, alpha=alpha_)
   # log(INFO, "opt_w= {}".format(opt_w) )

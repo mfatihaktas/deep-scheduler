@@ -69,7 +69,7 @@ class Scher(object):
 
 # #################################  Scher_wMultiplicativeExpansion  ############################# #
 class Scher_wMultiplicativeExpansion(object):
-  def __init__(self, mapping_m, sching_m):
+  def __init__(self, mapping_m, sching_m, _id=None):
     self.sching_m = sching_m
     self.mapper = Mapper(mapping_m)
     
@@ -79,6 +79,8 @@ class Scher_wMultiplicativeExpansion(object):
     elif sching_m['type'] == 'expand_if_totaldemand_leq':
       self.schedule = self.expand_if_totaldemand_leq
       self._id = 'd={}'.format(self.sching_m['threshold'] )
+    if _id is not None:
+      self._id = _id
   
   def __repr__(self):
     return 'Scher_wMultiplicativeExpansion[sching_m={}, mapper= {}, _id= {}]'.format(self.sching_m, self.mapper, self._id)

@@ -101,7 +101,7 @@ def EC2_k_n_pareto(k, n, loc, a):
 def MGc_EW_Prqing(ar, c, EX, EX2):
   def MMc_EW_Prqing(ar, EX, c):
     ro = ar*EX/c
-    log(INFO, "c= {}, ro= {}".format(c, ro) )
+    # log(INFO, "c= {}, ro= {}".format(c, ro) )
     ro_ = c*ro
     # Prqing = 1/(1 + (1-ro)*G(c+1)/ro_**c * sum([ro_**i/G(i+1) for i in range(c) ] ) )
     c_times_ro__power_c = math.exp(c*math.log(c*ro) )

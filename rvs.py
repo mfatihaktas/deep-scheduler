@@ -199,6 +199,8 @@ class Pareto(RV):
   def mean_given_leq_x(self, x):
     if x < self.loc:
       return 0
+    if x <= self.loc:
+      return 0
     return (self.mean() - self.mean_given_g_x(x)*self.tail(x) )/self.cdf(x)
   
   def moment(self, i):
@@ -305,8 +307,8 @@ class Dolly(RV):
   def __repr__(self):
     return "Dolly[{}, {}]".format(self.l_l, self.u_l)
   
-  def tolatex(self):
-    return "Dolly"
+  def to_latex(self):
+    return "\mathrm{Dolly}"
   
   def pdf(self, x):
     return self.dist.pmf(x) if (x >= self.l_l and x <= self.u_l) else 0

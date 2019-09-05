@@ -4,7 +4,7 @@ from redsmall_data import *
 N, Cap = 20, 10
 k = BZipf(1, 10) # BZipf(1, 5)
 R = Uniform(1, 1)
-b, beta_ = 10, 3 # 4
+b, beta_ = 10, 2.1 # 3
 L = Pareto(b, beta_)
 a, alpha_ = 1, 3
 Sl = Pareto(a, alpha_)
@@ -12,8 +12,8 @@ def alpha_gen(ro):
   return alpha_
 
 ro0_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9] # [0.1]
-d_l, ro0_scherid_X_l_m = get_d_l__ro0_scherid_X_l_m(alpha_)
-log(INFO, "", alpha_=alpha_, d_l=d_l)
+d_l, ro0_scherid_X_l_m = get_d_l__ro0_scherid_X_l_m(beta_, alpha_)
+log(INFO, "", alpha_=alpha_, d_l=d_l, ro0_scherid_X_l_m=ro0_scherid_X_l_m)
 
 def plot_ET_wrt_d():
   r, red = 2, 'Coding'
@@ -28,33 +28,38 @@ def plot_ET_wrt_d():
     ET_wMGc_l, approx_ET_wMGc_l = [], []
     d_l_ = []
     for d in d_l:
-      ET_wMGc, EW_wMGc, Prqing_wMGc = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, d, red)
-      if ET_wMGc is None: # sys is unstable
+    # for d in sorted([float(k[2:]) for k, _ in scherid_X_l_m.items() ] ):
+    # for key in [k for k, _ in scherid_X_l_m.items() ]:
+      X_l_m = scherid_X_l_m['d={}'.format(d) ]
+      # X_l_m = scherid_X_l_m[key]
+      # d = float(key[2:])
+      sim_ET = np.mean(X_l_m['ET_l'] )
+      if sim_ET > 200:
         break
-      elif ET_wMGc > 100:
+      d_l_.append(d)
+      sim_ET_l.append(sim_ET)
+      sim_StdT_l.append(np.std(X_l_m['ET_l'] ) )
+      
+      ET_wMGc, EW_wMGc, Prqing_wMGc = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, d, red)
+      if ET_wMGc is None or ET_wMGc > 100:
         ET_wMGc = None
       ET_wMGc_l.append(ET_wMGc)
       
-      d_l_.append(d)
-      X_l_m = scherid_X_l_m['d={}'.format(d) ]
-      sim_ET_l.append(np.mean(X_l_m['ET_l'] ) )
-      sim_StdT_l.append(np.std(X_l_m['ET_l'] ) )
-      
       approx_ET_wMGc, approx_EW_wMGc, approx_Prqing_wMGc = redsmall_approx_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, d, red)
-      if approx_ET_wMGc > 100:
+      if approx_ET_wMGc is None or approx_ET_wMGc > 100:
         approx_ET_wMGc = None
       approx_ET_wMGc_l.append(approx_ET_wMGc)
     plot.errorbar(d_l_, sim_ET_l, yerr=sim_StdT_l, label='Simulation', c=NICE_RED, marker='d', ls=':', mew=0.5, ms=8)
     plot.plot(d_l_, ET_wMGc_l, label='M/G/c', c=NICE_BLUE, marker='o', ls=':')
     plot.plot(d_l_, approx_ET_wMGc_l, label='Asymptotic', c=NICE_GREEN, marker='p', ls=':', mew=0.5, ms=8)
     
-    # d_opt = optimal_d_pareto(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, red, max_d=max(d_l_) )
-    # dopt_l.append(d_opt)
-    # # d_opt = min(d_opt, max(d_l_) )
-    # # if d_opt <= max(d_l_):
-    # ET_wMGc, EW_wMGc, Prqing_wMGc = ET_EW_Prqing_pareto_wMGc(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, d_opt, red)
-    # log(INFO, "*** ro0= {}, d_opt= {}, ET_wMGc= {}".format(ro0, d_opt, ET_wMGc) )
-    # plot.plot([d_opt], [ET_wMGc], label=r'$\sim$optimal', c='orangered', marker='x', ls=':', mew=3, ms=10)
+    d_opt = redsmall_optimal_d(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, red, max_d=max(d_l_) )
+    dopt_l.append(d_opt)
+    # d_opt = min(d_opt, max(d_l_) )
+    # if d_opt <= max(d_l_):
+    ET_wMGc, EW_wMGc, Prqing_wMGc = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, b, beta_, a, alpha_gen, d_opt, red)
+    log(INFO, "*** ro0= {}, d_opt= {}, max_d= {}, ET_wMGc= {}".format(ro0, d_opt, max(d_l_), ET_wMGc) )
+    plot.plot([d_opt], [ET_wMGc], label=r'$\sim$optimal', c='orangered', marker='x', ls=':', mew=3, ms=10)
     
     plot.xscale('log')
     plot.xlim(right=max(d_l_)*2)
