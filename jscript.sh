@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --partition=main             # Partition (job queue)
 #SBATCH --job-name=eval_wmpi
-#SBATCH --nodes=11              # Number of nodes you require
-#SBATCH --ntasks=11             # Total # of tasks across all nodes
+#SBATCH --nodes=21              # Number of nodes you require
+#SBATCH --ntasks=21             # Total # of tasks across all nodes
 #SBATCH --cpus-per-task=1            # Cores per task (>1 if multithread tasks)
 #SBATCH --mem=6000                   # Real memory (RAM) required (MB)
-#SBATCH --time=48:00:00              # Total run time limit (HH:MM:SS)
+#SBATCH --time=62:00:00              # Total run time limit (HH:MM:SS)
 #SBATCH --export=ALL                 # Export your current env to the job env
 #SBATCH --output=log/eval_wmpi.%N.%j.out
 

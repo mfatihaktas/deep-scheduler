@@ -4,7 +4,7 @@ from redsmall_data import *
 N, Cap = 20, 10
 k = BZipf(1, 10) # BZipf(1, 5)
 R = Uniform(1, 1)
-b, beta_ = 10, 2.1 # 3
+b, beta_ = 10, 3 # 2.1
 L = Pareto(b, beta_)
 a, alpha_ = 1, 3
 Sl = Pareto(a, alpha_)

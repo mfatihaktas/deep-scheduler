@@ -12,7 +12,7 @@ STATE_LEN = 2 # 3
 
 red = 'Coding'
 N, Cap = 20, 10
-k = BZipf(1, 10) # BZipf(1, 10)
+k = BZipf(1, 10)
 R = Uniform(1, 1)
 M = 1000
 sching_m = {
@@ -28,7 +28,7 @@ if lessreal_sim:
   b, beta_ = 10, 3 # 2.1 # 3
   L = Pareto(b, beta_) # TPareto(10, 10**5, 2) # TPareto(10, 10**6, 4)
   a, alpha_ = 1, 3 # 2.1 # 3
-  Sl = Pareto(a, alpha_) # Uniform(1, 1)
+  Sl = Dolly() # Pareto(a, alpha_) # Uniform(1, 1)
   sinfo_m = {
     'njob': 2000*N, # 10*N,
     'nworker': N, 'wcap': Cap, 'ar': None,

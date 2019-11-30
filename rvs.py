@@ -159,8 +159,7 @@ class Pareto(RV):
     return "Pareto(loc= {}, a= {})".format(self.loc, self.a)
   
   def to_latex(self):
-    # return r'Pareto($\min= {}$, tail index= ${}$)'.format(self.loc, self.a)
-    return r'Pareto(${}$, ${}$)'.format(self.loc, self.a)
+    return r'{}({}, {})'.format('\mathrm{Pareto}', self.loc, self.a)
   
   def tail(self, x):
     if x < self.l_l:
@@ -333,8 +332,7 @@ class Dolly(RV):
     return random.randint(self.l_l, self.u_l)
   
   def sample(self):
-    u = random.uniform(0, 1)
-    return self.dist.rvs()[0] + u/100
+    return self.dist.rvs() + random.uniform(0, 1)/100
 
 class Bern(RV):
   def __init__(self, L, U, p):
@@ -456,7 +454,7 @@ class BZipf(RV):
     return "BZipf([{}, {}], tail index= {})".format(self.l_l, self.u_l, self.a)
   
   def to_latex(self):
-    return r'Zipf($[{}, {}]$, ${}$)'.format(self.l_l, self.u_l, self.a)
+    return r'{}([{}, {}], {})'.format('\mathrm{Zipf}', self.l_l, self.u_l, self.a)
   
   def pdf(self, x):
     return self.dist.pmf(x)
@@ -754,3 +752,7 @@ if __name__ == "__main__":
   for x in np.linspace(X.l_l, 50*X.l_l, 10):
     test(x)
   '''
+  
+  d = Dolly()
+  for _ in range(10):
+    print(d.sample() )

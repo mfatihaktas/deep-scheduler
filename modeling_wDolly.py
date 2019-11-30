@@ -16,9 +16,11 @@ def EXnk(X, n, k, m=1):
     return 0
   
   if m == 1:
-    EXnk, abserr = scipy.integrate.quad(lambda x: 1 - Pr_Xnk_leq_x(X, n, k, x), 0.0001, np.Inf) # 2*X.u_l
+    # EXnk, abserr = scipy.integrate.quad(lambda x: 1 - Pr_Xnk_leq_x(X, n, k, x), 0.0001, np.Inf) # 2*X.u_l
+    EXnk = float(mpmath.quad(lambda x: 1 - Pr_Xnk_leq_x(X, n, k, x), [0.0001, 10*X.u_l] ) )
   else:
-    EXnk, abserr = scipy.integrate.quad(lambda x: m*x**(m-1) * (1 - Pr_Xnk_leq_x(X, n, k, x)), 0.0001, np.Inf)
+    # EXnk, abserr = scipy.integrate.quad(lambda x: m*x**(m-1) * (1 - Pr_Xnk_leq_x(X, n, k, x)), 0.0001, np.Inf)
+    EXnk = float(mpmath.quad(lambda x: m*x**(m-1) * (1 - Pr_Xnk_leq_x(X, n, k, x) ), [0.0001, 10*X.u_l] ) )
   return EXnk
 
 def ECnk(X, n, k):
@@ -78,7 +80,7 @@ def redsmall_EC_wSl(k, r, D, Sl, d=None, red='coding'):
 def ar_for_ro0(ro0, N, Cap, k, r, D, Sl):
   return ro0*N*Cap/k.mean()/D.mean()/Sl.mean()
 
-def redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, D, Sl, d, red='coding'):
+def redsmall_ET_EW_Prqing_wMGc_wSl(ro0, N, Cap, k, r, D, Sl, d, red='coding'):
   '''Using the result for M/M/c to approximate E[T] in M/G/c.
      [https://en.wikipedia.org/wiki/M/G/k_queue]
   '''
@@ -99,28 +101,47 @@ def redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, D, Sl, d, red='coding'):
   ET = ES + EW
   # log(INFO, "d= {}, ro= {}, ES= {}, EW= {}, ET= {}".format(d, ro, ES, EW, ET) )
   # log(INFO, "d= {}, ro= {}".format(d, ro) )
-  return round(ET, 2), round(EW, 2), round(Prqing, 2)
+  # return round(ET, 2), round(EW, 2), round(Prqing, 2)
+  return ET, EW, Prqing
+
+def redsmall_approx_ET_EW_Prqing_wMGc_wSl(ro0, N, Cap, k, r, D, Sl, d, red='coding'):
+  ar = ar_for_ro0(ro0, N, Cap, k, r, D, Sl)
+  ro = ro0
+  
+  ES = redsmall_ES_wSl(k, r, D, Sl, d, red)
+  # ES2 = redsmall_ES2_wSl(k, r, D, Sl, d, red)
+  # EC = redsmall_EC_wSl(k, r, D, Sl, d, red)
+  log(INFO, "d= {}".format(d), ar=ar, ES=ES) # , ES2=ES2, EC=EC
+  
+  EW = 1/ar * ro**2/(1 - ro)
+  
+  ET = ES + EW
+  return ET, EW, ro
 
 def plot_ET(N, Cap, k, r, D, Sl, red='coding'):
   def plot_(ro0):
     log(INFO, "ro0= {}".format(ro0) )
     d_l, ET_l = [], []
-    for d in np.linspace(D.l_l, D.mean()*20, 7):
-      ET, EW, Prqing = redsmall_ET_EW_Prqing_wMGc(ro0, N, Cap, k, r, D, Sl, d, red='coding') # redsmall_ES_wSl(k, r, D, Sl, d, red)
-      log(INFO, "d= {}, ET= {}".format(d, ET) )
+    for d in np.linspace(D.l_l, D.mean()*15, 7):
+      ET, EW, Prqing = redsmall_ET_EW_Prqing_wMGc_wSl(ro0, N, Cap, k, r, D, Sl, d, red='coding') # redsmall_ES_wSl(k, r, D, Sl, d, red)
+      log(INFO, "d= {}, ET= {}, EW= {}, Prqing= {}".format(d, ET, EW, Prqing) )
       
+      if ET > 150:
+        break
       d_l.append(d)
       ET_l.append(ET)
-    plot.plot(d_l, ET_l, label=r'\rho_0= {}'.format(ro0), c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=0.1, ms=8)
+    plot.plot(d_l, ET_l, label=r'$\rho_0= {}$'.format(ro0), c=next(darkcolor_c), marker=next(marker_c), ls=':', mew=0.1, ms=8)
   
-  plot_(ro0=0.4)
+  plot_(ro0=0.8)
+  # plot_(ro0=0.9)
   
   fontsize = 20
   plot.legend(loc='best', framealpha=0.5, fontsize=14, numpoints=1)
   plot.xlabel(r'$d$', fontsize=fontsize)
   plot.ylabel(r'$E[T]$', fontsize=fontsize)
   
-  plot.title(r'$r= {}$, $k \sim {}$, $D \sim {}$, $Sl \sim {}$'.format(r, k.to_latex(), D.to_latex(), Sl.to_latex() ), fontsize=fontsize)
+  plot.title(r'$r= {}$, $k \sim {}$'.format(r, k.to_latex() ) + "\n" \
+             + r'$D \sim {}$, $Sl \sim {}$'.format(D.to_latex(), Sl.to_latex() ), fontsize=fontsize)
   fig = plot.gcf()
   fig.set_size_inches(4, 4)
   plot.savefig('plot_ET.png', bbox_inches='tight')

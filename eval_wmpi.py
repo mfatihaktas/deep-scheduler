@@ -102,7 +102,7 @@ if __name__ == "__main__":
   eval_redsmall_vs_drl = False # True
   eval_redsmall_vs_wrelaunch = False # True
   # ro0_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-  ro0_l = [0.55]
+  ro0_l = [0.9]
 
   sinfo_m['njob'] = 5000*N
   red, r = 'Coding', 2

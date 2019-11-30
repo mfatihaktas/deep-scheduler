@@ -11,10 +11,10 @@ def G(z, x=None, type_=None):
     return scipy.special.gamma(z)
   else:
     if type_ == 'lower':
-      return scipy.special.gammainc(z, x)*G(z)
+      return float(scipy.special.gammainc(z, x)*G(z) )
     elif type_ == 'upper':
       # return (1 - scipy.special.gammainc(z, x) )*G(z)
-      return scipy.special.gammaincc(z, x)*G(z)
+      return float(scipy.special.gammaincc(z, x)*G(z) )
 
 def I(u_l, m, n):
   # den = B(m, n)
@@ -99,14 +99,21 @@ def EC2_k_n_pareto(k, n, loc, a):
 
 # ###########################################  Qing  ############################################# #
 def MGc_EW_Prqing(ar, c, EX, EX2):
+  log(INFO, "", ar=ar, c=c, EX=EX, EX2=EX2)
+  
   def MMc_EW_Prqing(ar, EX, c):
     ro = ar*EX/c
     # log(INFO, "c= {}, ro= {}".format(c, ro) )
     ro_ = c*ro
     # Prqing = 1/(1 + (1-ro)*G(c+1)/ro_**c * sum([ro_**i/G(i+1) for i in range(c) ] ) )
-    c_times_ro__power_c = math.exp(c*math.log(c*ro) )
+    
+    # c_times_ro__power_c = math.exp(c*math.log(c*ro) )
+    c_times_ro__power_c = (c*ro)**c
     # Prqing = 1/(1 + (1-ro) * math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
-    Prqing = 1/(1 + (1-ro) * c*math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
+    x = (1-ro) * c*math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c
+    # Prqing = 1/(1 + (1-ro) * c*math.exp(ro_)*G(c, ro_, 'upper')/c_times_ro__power_c)
+    # print("x= {}".format(x) )
+    Prqing = 1/(1 + (1-ro) * x)
     
     # EN = ro/(1-ro)*Prqing + c*ro
     # log(INFO, "ro= {}, Prqing= {}".format(ro, Prqing) )
