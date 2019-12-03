@@ -1,5 +1,5 @@
 from modeling_wDolly import *
-from redsmall_data_wDolly import *
+from data.redsmall_data_wDolly import *
 
 N, Cap = 20, 10
 k = BZipf(1, 10) # BZipf(1, 5)
@@ -8,7 +8,7 @@ L = Pareto(b, beta_)
 Sl = Dolly()
 r, red = 2, 'Coding'
 
-ro0_l = [0.9] # [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7] # , 0.8, 0.9]
+ro0_l = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9] # [0.9]
 d_l, ro0_scherid_X_l_m = get_d_l__ro0_scherid_X_l_m(beta_)
 # log(INFO, "", d_l=d_l, ro0_scherid_X_l_m=ro0_scherid_X_l_m)
 
